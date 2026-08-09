@@ -71,6 +71,59 @@ describe('Comprehensive - Problem Validation', () => {
     expect(() => new VrpProblem(nodes, [new Customer(1, 1, 2, 10)], [new Vehicle(1, 0)]))
       .to.throw(ValidationError);
   });
+
+  it('rejects a node shared between two customers', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+      3: new LocationNode(3, 30, 0),
+    };
+    const customers = [
+      new Customer(1, 1, 2, 10),
+      new Customer(2, 2, 3, 10),
+    ];
+    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('shared between customers 1 and 2');
+  });
+
+  it('allows a customer to deliver and pick up at the same node', () => {
+    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
+    const problem = new VrpProblem(nodes, [new Customer(1, 1, 1, 10)], [new Vehicle(1, 5)]);
+    expect(problem.customers.length).to.equal(1);
+  });
+
+  it('rejects non-integer node ids', () => {
+    const nodes = { 1.5: new LocationNode(1.5, 10, 0) };
+    expect(() => new VrpProblem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)]))
+      .to.throw(ValidationError);
+  });
+
+  it('rejects non-integer customer ids', () => {
+    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
+    expect(() => new VrpProblem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)]))
+      .to.throw(ValidationError);
+  });
+
+  it('rejects inverted delivery time window', () => {
+    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
+    const customers = [new CustomerWithTimeWindows(1, 1, 1, 10, 100, 0, 0, 200)];
+    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('delivery window is inverted');
+  });
+
+  it('rejects inverted pickup time window', () => {
+    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
+    const customers = [new CustomerWithTimeWindows(1, 1, 1, 10, 0, 200, 100, 0)];
+    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('pickup window is inverted');
+  });
 });
 
 describe('Comprehensive - Solution Edge Cases', () => {
@@ -190,6 +243,55 @@ describe('Comprehensive - Multi-Depot', () => {
     const problem = new MultiDepotProblem(nodes, customers, vehicles, depots, assignments);
     expect(problem.depots.length).to.equal(1);
     expect(problem.getDepotForVehicle(1)?.name).to.equal('Depot A');
+  });
+
+  it('MultiDepotProblem rejects empty depots', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    expect(() => new MultiDepotProblem(
+      nodes,
+      [new Customer(1, 1, 2, 10)],
+      [new Vehicle(1, 10)],
+      [],
+      new Map(),
+    )).to.throw(ValidationError);
+  });
+
+  it('MultiDepotProblem rejects assignment to unknown vehicle', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    expect(() => new MultiDepotProblem(
+      nodes,
+      [new Customer(1, 1, 2, 10)],
+      [new Vehicle(1, 10)],
+      [new Depot(0, 0, 0)],
+      new Map([[99, 0]]),
+    )).to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('does not exist');
+  });
+
+  it('MultiDepotProblem rejects assignment to unknown depot', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    expect(() => new MultiDepotProblem(
+      nodes,
+      [new Customer(1, 1, 2, 10)],
+      [new Vehicle(1, 10)],
+      [new Depot(0, 0, 0)],
+      new Map([[1, 99]]),
+    )).to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('does not exist');
   });
 });
 

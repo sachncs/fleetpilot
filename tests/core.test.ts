@@ -137,12 +137,16 @@ describe('ALNS', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
       3: new LocationNode(3, 0, 10, 'D2'),
       4: new LocationNode(4, 0, 20, 'P2'),
+      5: new LocationNode(5, 30, 10, 'D3'),
+      6: new LocationNode(6, 40, 10, 'P3'),
+      7: new LocationNode(7, 30, 20, 'D4'),
+      8: new LocationNode(8, 40, 20, 'P4'),
     };
     const customers = [
       new Customer(1, 1, 2, 50),
       new Customer(2, 3, 4, 50),
-      new Customer(3, 2, 1, 30),
-      new Customer(4, 4, 3, 40),
+      new Customer(3, 5, 6, 30),
+      new Customer(4, 7, 8, 40),
     ];
     const vehicles = [new Vehicle(1, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
@@ -166,14 +170,20 @@ describe('ALNS', () => {
       4: new LocationNode(4, 0, 20, 'P2'),
       5: new LocationNode(5, 30, 0, 'D3'),
       6: new LocationNode(6, 40, 0, 'P3'),
+      7: new LocationNode(7, 30, 10, 'D4'),
+      8: new LocationNode(8, 40, 10, 'P4'),
+      9: new LocationNode(9, 50, 10, 'D5'),
+      10: new LocationNode(10, 60, 10, 'P5'),
+      11: new LocationNode(11, 50, 20, 'D6'),
+      12: new LocationNode(12, 60, 20, 'P6'),
     };
     const customers = [
       new Customer(1, 1, 2, 20),
       new Customer(2, 3, 4, 30),
-      new Customer(3, 2, 5, 40),
-      new Customer(4, 5, 6, 10),
-      new Customer(5, 4, 1, 25),
-      new Customer(6, 6, 3, 35),
+      new Customer(3, 5, 6, 40),
+      new Customer(4, 7, 8, 10),
+      new Customer(5, 9, 10, 25),
+      new Customer(6, 11, 12, 35),
     ];
     const vehicles = [new Vehicle(1, 200)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
