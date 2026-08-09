@@ -226,6 +226,32 @@ describe('TransferManager', () => {
     expect(second).to.be.false;
   });
 
+  it('handles vehicle waiting state transitions', () => {
+    const manager = new VehicleFleetManager();
+    manager.addVehicle(new VehicleWithCapabilities(1, 10));
+    manager.setVehicleWaiting(1, true, 'resource');
+    manager.setVehicleWaiting(1, false);
+    const state = manager.getVehicleState(1);
+    expect(state?.isWaiting).to.be.false;
+  });
+
+  it('getAvailableVehiclesAtHub returns vehicles at the hub', () => {
+    const manager = new VehicleFleetManager();
+    manager.addVehicle(new VehicleWithCapabilities(1, 10));
+    manager.updateVehicleState(1, 5, 'hub', 100, 0);
+    const available = manager.getAvailableVehiclesAtHub(5, 200);
+    expect(available.length).to.equal(1);
+  });
+
+  it('getFleetUtilization returns utilization stats for each vehicle', () => {
+    const manager = new VehicleFleetManager();
+    manager.addVehicle(new VehicleWithCapabilities(1, 10));
+    manager.updateVehicleState(1, 0, 'delivery', 50, 0);
+    const stats = manager.getFleetUtilization();
+    expect(stats.length).to.equal(1);
+    expect(stats[0]!.utilizationRate).to.be.at.least(0);
+  });
+
   it('allows non-overlapping transfers at same hub', () => {
     const manager = new TransferManager();
     const hub = new TransferHub(3, 100, 0, 'Hub', 1);
