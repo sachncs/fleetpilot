@@ -224,7 +224,6 @@ export class BRKGA {
         priorities: Array.from({ length: n }, () => this.random()),
         assignments: Array.from({ length: n }, () => this.random()),
         dependencies: Array.from({ length: n }, () => this.random()),
-        transfers: Array.from({ length: n }, () => this.random()),
       },
       fitness: null,
       solution: null,
@@ -238,7 +237,6 @@ export class BRKGA {
         priorities: Array.from<number>({ length: n }),
         assignments: Array.from<number>({ length: n }),
         dependencies: Array.from<number>({ length: n }),
-        transfers: Array.from<number>({ length: n }),
       },
       fitness: null,
       solution: null,
@@ -250,13 +248,11 @@ export class BRKGA {
         child.chromosome.priorities[i] = elite.chromosome.priorities[i]!;
         child.chromosome.assignments[i] = elite.chromosome.assignments[i]!;
         child.chromosome.dependencies[i] = elite.chromosome.dependencies[i]!;
-        child.chromosome.transfers[i] = elite.chromosome.transfers[i]!;
       } else {
         // Inherit from non-elite
         child.chromosome.priorities[i] = nonElite.chromosome.priorities[i]!;
         child.chromosome.assignments[i] = nonElite.chromosome.assignments[i]!;
         child.chromosome.dependencies[i] = nonElite.chromosome.dependencies[i]!;
-        child.chromosome.transfers[i] = nonElite.chromosome.transfers[i]!;
       }
     }
 
@@ -357,7 +353,6 @@ export class BRKGA {
             priorities: [...top.chromosome.priorities],
             assignments: [...top.chromosome.assignments],
             dependencies: [...top.chromosome.dependencies],
-            transfers: [...top.chromosome.transfers],
           },
           fitness: top.fitness,
           solution: top.solution?.clone() ?? null,
@@ -479,7 +474,6 @@ export class BRKGA {
                   priorities: [...islandBest.chromosome.priorities],
                   assignments: [...islandBest.chromosome.assignments],
                   dependencies: [...islandBest.chromosome.dependencies],
-                  transfers: [...islandBest.chromosome.transfers],
                 },
                 fitness: islandBest.fitness,
               };
@@ -510,7 +504,6 @@ export class BRKGA {
                 priorities: [...donor.chromosome.priorities],
                 assignments: [...donor.chromosome.assignments],
                 dependencies: [...donor.chromosome.dependencies],
-                transfers: [...donor.chromosome.transfers],
               });
             }
           }
@@ -549,7 +542,6 @@ export class BRKGA {
                 priorities: [...ind.chromosome.priorities],
                 assignments: [...ind.chromosome.assignments],
                 dependencies: [...ind.chromosome.dependencies],
-                transfers: [...ind.chromosome.transfers],
               },
               fitness: ind.fitness,
             };
@@ -587,7 +579,6 @@ export class BRKGA {
       priorities: [...chromosome.priorities],
       assignments: [...chromosome.assignments],
       dependencies: [...chromosome.dependencies],
-      transfers: [...chromosome.transfers],
     };
 
     for (let i = 0; i < n; i++) {
@@ -599,9 +590,6 @@ export class BRKGA {
       }
       if (this.random() < rate) {
         mutated.dependencies[i] = this.random();
-      }
-      if (this.random() < rate) {
-        mutated.transfers[i] = this.random();
       }
     }
 

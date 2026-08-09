@@ -57,7 +57,6 @@ describe('Decoder edge cases', () => {
       priorities: [0.1, 0.5, 0.9],
       assignments: [0.1, 0.5, 0.9],
       dependencies: [0.5, 0.5, 0.5],
-      transfers: [0.5, 0.5, 0.5],
     };
     const solution = decoder.decode(chromosome);
     expect(solution.isComplete()).to.be.true;
@@ -70,7 +69,6 @@ describe('Decoder edge cases', () => {
       priorities: [0, 0],
       assignments: [0, 0],
       dependencies: [0, 0],
-      transfers: [0, 0],
     };
     const solution = decoder.decode(chromosome);
     expect(solution.isComplete()).to.be.true;
@@ -83,7 +81,6 @@ describe('Decoder edge cases', () => {
       priorities: [0.5, 0.5],
       assignments: [0.5, 0.5],
       dependencies: [0.1, 0.9],
-      transfers: [0.5, 0.5],
     };
     const solution = decoder.decode(chromosome);
     expect(solution.isComplete()).to.be.true;
@@ -184,7 +181,7 @@ describe('Decoder encode with various customer states', () => {
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);
-    expect(chromosome).to.have.all.keys('priorities', 'assignments', 'dependencies', 'transfers');
+    expect(chromosome).to.have.all.keys('priorities', 'assignments', 'dependencies');
   });
 
   it('encode produces valid genes for multi-customer problem', () => {

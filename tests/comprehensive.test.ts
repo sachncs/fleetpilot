@@ -532,7 +532,6 @@ describe('Comprehensive - BRKGA Edge Cases', () => {
       priorities: [0.5],
       assignments: [0.5],
       dependencies: [0.5],
-      transfers: [0.5],
     };
     const solution = decoder.decode(chromosome);
     expect(solution.routes).to.have.lengthOf(problem.vehicles.length);

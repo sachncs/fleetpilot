@@ -116,7 +116,6 @@ describe('Benchmarks', () => {
       priorities: problem.customers.map(() => Math.random()),
       assignments: problem.customers.map(() => Math.random()),
       dependencies: problem.customers.map(() => Math.random()),
-      transfers: problem.customers.map(() => Math.random()),
     };
 
     const first = decoder.decode(chromosome);
@@ -136,7 +135,6 @@ describe('Benchmarks', () => {
       priorities: problem.customers.map(() => Math.random()),
       assignments: problem.customers.map(() => Math.random()),
       dependencies: problem.customers.map(() => Math.random()),
-      transfers: problem.customers.map(() => Math.random()),
     };
 
     const first = decoder.decode(chromosome);

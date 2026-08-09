@@ -85,7 +85,7 @@ describe('runWorkerTask (in-process)', () => {
 
     emit({ type: 'evolve', generations: 3 });
     emit({ type: 'inject', migrants: [
-      { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5], transfers: [0.5, 0.5] },
+      { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5] },
     ] });
     emit({ type: 'finish' });
     emit({ type: 'unknown-msg-type' });
@@ -107,7 +107,7 @@ describe('runWorkerTask (in-process)', () => {
     emit({ type: 'inject', migrants: [
       null,
       { priorities: 'not-an-array' },
-      { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5], transfers: [0.5, 0.5] },
+      { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5] },
     ] });
     emit({ type: 'finish' });
 

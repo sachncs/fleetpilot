@@ -3,11 +3,15 @@ import { VrpSolution, Route } from '../../core/solution.js';
 import { ValidationError } from '../../errors.js';
 
 /**
- * Paper chromosome structure (4n genes):
+ * Chromosome structure (3n genes):
  * - π (n genes): Operation priorities (determines order)
  * - σ (n genes): Vehicle assignment hints
  * - α (n genes): Dependency ordering for cross-vehicle transfers
- * - β (n genes): Transfer coordination timing
+ *
+ * Originally the paper specified a 4n structure with a β (transfers) component,
+ * but the current decoder does not read β. Per item 2.6 we drop it rather
+ * than ship dead genes; if a transfer-aware decode is added later, β will
+ * come back and the chromosome will return to 4n.
  */
 export interface Chromosome {
   /** Priority genes (π) - determines operation order */
@@ -16,8 +20,6 @@ export interface Chromosome {
   assignments: number[];
   /** Dependency genes (α) - ordering for dependencies */
   dependencies: number[];
-  /** Transfer genes (β) - transfer coordination */
-  transfers: number[];
 }
 
 interface RouteLoad {
@@ -217,7 +219,6 @@ export class Decoder {
     const priorities: number[] = Array.from<number>({ length: n }).fill(0);
     const assignments: number[] = Array.from<number>({ length: n }).fill(0);
     const dependencies: number[] = Array.from<number>({ length: n }).fill(0);
-    const transfers: number[] = Array.from<number>({ length: n }).fill(0);
 
     for (let rIdx = 0; rIdx < solution.routes.length; rIdx++) {
       const route = solution.routes[rIdx];
@@ -239,11 +240,10 @@ export class Decoder {
           const pTime = solution.nodeTimes[customer.pickupNodeId] ?? 0;
           const gap = pTime - dTime - customer.processingTime;
           dependencies[customerIndex] = Math.min(1, Math.max(0, gap / 100));
-          transfers[customerIndex] = 0.5;
         }
       }
     }
 
-    return { priorities, assignments, dependencies, transfers };
+    return { priorities, assignments, dependencies };
   }
 }

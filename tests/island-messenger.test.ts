@@ -30,7 +30,7 @@ describe('island-messenger sendCommand', () => {
       type: 'checkpoint',
       islandId: 0,
       generation: 1,
-      population: [{ chromosome: { priorities: [0.5], assignments: [0.5], dependencies: [0.5], transfers: [0.5] }, fitness: 0 }],
+      population: [{ chromosome: { priorities: [0.5], assignments: [0.5], dependencies: [0.5] }, fitness: 0 }],
     });
     const result = await promise;
     expect(result.type).to.equal('checkpoint');

@@ -1,7 +1,6 @@
 import { expect } from 'chai';
 
 import type { WorkerData } from '../src/worker-validation.js';
-
 import { bootstrapWorker } from '../src/worker.js';
 
 function makeMockPort(): {

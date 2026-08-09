@@ -72,8 +72,7 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
         return (
           'priorities' in value && Array.isArray(value.priorities) &&
           'assignments' in value && Array.isArray(value.assignments) &&
-          'dependencies' in value && Array.isArray(value.dependencies) &&
-          'transfers' in value && Array.isArray(value.transfers)
+          'dependencies' in value && Array.isArray(value.dependencies)
         );
       }
 
@@ -118,7 +117,6 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
                 priorities: migrantRaw.priorities,
                 assignments: migrantRaw.assignments,
                 dependencies: migrantRaw.dependencies,
-                transfers: migrantRaw.transfers,
               },
               fitness: null,
               solution: null,

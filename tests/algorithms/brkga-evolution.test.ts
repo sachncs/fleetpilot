@@ -19,7 +19,6 @@ describe('BRKGA Evolution', () => {
         priorities: Array<number>(n).fill(0.1),
         assignments: Array<number>(n).fill(0.2),
         dependencies: Array<number>(n).fill(0.3),
-        transfers: Array<number>(n).fill(0.4),
       },
       fitness: 100,
       solution: null,
@@ -29,7 +28,6 @@ describe('BRKGA Evolution', () => {
         priorities: Array<number>(n).fill(0.9),
         assignments: Array<number>(n).fill(0.8),
         dependencies: Array<number>(n).fill(0.7),
-        transfers: Array<number>(n).fill(0.6),
       },
       fitness: 200,
       solution: null,
@@ -42,7 +40,6 @@ describe('BRKGA Evolution', () => {
     expect(child.chromosome.priorities.every(v => v === 0.1)).to.be.true;
     expect(child.chromosome.assignments.every(v => v === 0.2)).to.be.true;
     expect(child.chromosome.dependencies.every(v => v === 0.3)).to.be.true;
-    expect(child.chromosome.transfers.every(v => v === 0.4)).to.be.true;
   });
 
   it('evolvePopulation preserves correct elite/mutant/crossover counts', () => {
@@ -56,7 +53,6 @@ describe('BRKGA Evolution', () => {
           priorities: [Math.random(), Math.random()],
           assignments: [Math.random(), Math.random()],
           dependencies: [Math.random(), Math.random()],
-          transfers: [Math.random(), Math.random()],
         },
         fitness: i,
         solution: null,
@@ -83,7 +79,6 @@ describe('BRKGA Evolution', () => {
           priorities: [i / 20, i / 20],
           assignments: [i / 20, i / 20],
           dependencies: [i / 20, i / 20],
-          transfers: [i / 20, i / 20],
         },
         fitness: i,
         solution: null,
@@ -109,7 +104,6 @@ describe('BRKGA Evolution', () => {
       expect(ind.chromosome.priorities.length).to.equal(problem.customers.length);
       expect(ind.chromosome.assignments.length).to.equal(problem.customers.length);
       expect(ind.chromosome.dependencies.length).to.equal(problem.customers.length);
-      expect(ind.chromosome.transfers.length).to.equal(problem.customers.length);
     }
   });
 
@@ -124,7 +118,6 @@ describe('BRKGA Evolution', () => {
           priorities: [0.5, 0.5],
           assignments: [0.5, 0.5],
           dependencies: [0.5, 0.5],
-          transfers: [0.5, 0.5],
         },
         fitness: i,
         solution: null,
@@ -153,7 +146,6 @@ describe('BRKGA Evolution', () => {
           priorities: [0.25, 0.25],
           assignments: [0.25, 0.25],
           dependencies: [0.25, 0.25],
-          transfers: [0.25, 0.25],
         },
         fitness: i,
         solution: null,
@@ -172,8 +164,7 @@ describe('BRKGA Evolution', () => {
       .every(e =>
         e.chromosome.priorities.every(g => g !== 0.25) &&
         e.chromosome.assignments.every(g => g !== 0.25) &&
-        e.chromosome.dependencies.every(g => g !== 0.25) &&
-        e.chromosome.transfers.every(g => g !== 0.25),
+        e.chromosome.dependencies.every(g => g !== 0.25),
       );
     expect(allMutated).to.be.true;
   });
@@ -197,7 +188,6 @@ describe('BRKGA Evolution', () => {
           priorities: [v, v],
           assignments: [v, v],
           dependencies: [v, v],
-          transfers: [v, v],
         },
         fitness: i,
         solution: null,
@@ -211,10 +201,9 @@ describe('BRKGA Evolution', () => {
       const someGeneChanged =
         e.chromosome.priorities.some(g => g !== 0.25) ||
         e.chromosome.assignments.some(g => g !== 0.25) ||
-        e.chromosome.dependencies.some(g => g !== 0.25) ||
-        e.chromosome.transfers.some(g => g !== 0.25);
+        e.chromosome.dependencies.some(g => g !== 0.25);
 
-      // With eliteMutationRate = 0.05 and 4*2=8 genes, at least some elites
+      // With eliteMutationRate = 0.05 and 3*2=6 genes, at least some elites
       // should have mutations (probability of 0 is negligible)
       if (someGeneChanged) {
         return; // test passes
@@ -226,8 +215,7 @@ describe('BRKGA Evolution', () => {
       .every(e =>
         e.chromosome.priorities.every(g => g === 0.25) &&
         e.chromosome.assignments.every(g => g === 0.25) &&
-        e.chromosome.dependencies.every(g => g === 0.25) &&
-        e.chromosome.transfers.every(g => g === 0.25),
+        e.chromosome.dependencies.every(g => g === 0.25),
       );
     expect(allUnchanged).to.be.false;
   });

@@ -14,7 +14,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0.3, 0.7],
       assignments: [0.4, 0.6],
       dependencies: [0.5, 0.5],
-      transfers: [0.5, 0.5],
     };
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
@@ -28,7 +27,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0.5],
       assignments: [0.5],
       dependencies: [0.5],
-      transfers: [0.5],
     };
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
@@ -51,7 +49,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0.3, 0.7],
       assignments: [0.1, 0.9],
       dependencies: [0.5, 0.5],
-      transfers: [0.5, 0.5],
     };
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
@@ -65,13 +62,11 @@ describe('BRKGA Decoder', () => {
       priorities: [0.1, 0.9],
       assignments: [0.5, 0.5],
       dependencies: [0.5, 0.5],
-      transfers: [0.5, 0.5],
     };
     const highFirst: Chromosome = {
       priorities: [0.9, 0.1],
       assignments: [0.5, 0.5],
       dependencies: [0.5, 0.5],
-      transfers: [0.5, 0.5],
     };
     const solA = decoder.decode(lowFirst);
     const solB = decoder.decode(highFirst);
@@ -93,7 +88,6 @@ describe('BRKGA Decoder', () => {
     expect(chromosome.priorities.length).to.equal(problem.customers.length);
     expect(chromosome.assignments.length).to.equal(problem.customers.length);
     expect(chromosome.dependencies.length).to.equal(problem.customers.length);
-    expect(chromosome.transfers.length).to.equal(problem.customers.length);
   });
 
   it('encode-decode round-trip preserves feasibility', () => {
@@ -134,7 +128,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0.1, 0.5, 0.9],
       assignments: [0.1, 0.1, 0.1],
       dependencies: [0.5, 0.5, 0.5],
-      transfers: [0.5, 0.5, 0.5],
     };
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
@@ -167,7 +160,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0.1, 0.5, 0.9],
       assignments: [0.1, 0.1, 0.1],
       dependencies: [0.5, 0.5, 0.5],
-      transfers: [0.5, 0.5, 0.5],
     };
     const solution = decoder.decode(chromosome);
 
@@ -198,7 +190,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0.1, 0.9],
       assignments: [0.5, 0.5],
       dependencies: [0.5, 0.5],
-      transfers: [0.5, 0.5],
     };
     expect(() => decoder.decode(chromosome)).to.throw(ValidationError);
   });
@@ -210,7 +201,6 @@ describe('BRKGA Decoder', () => {
       priorities: [0, 0],
       assignments: [0, 0],
       dependencies: [0, 0],
-      transfers: [0, 0],
     };
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
@@ -223,7 +213,6 @@ describe('BRKGA Decoder', () => {
       priorities: [1, 1],
       assignments: [1, 1],
       dependencies: [1, 1],
-      transfers: [1, 1],
     };
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
@@ -297,6 +286,5 @@ describe('BRKGA Decoder', () => {
 
     const chromosome = decoder.encode(solution);
     expect(chromosome.dependencies[0]).to.be.at.least(0).and.at.most(1);
-    expect(chromosome.transfers[0]).to.equal(0.5);
   });
 });
