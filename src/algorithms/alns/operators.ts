@@ -102,11 +102,7 @@ export const RemovalOperators = {
 
     // Start with a random customer
     const seedIndex = Math.floor(Math.random() * solution.problem.customers.length);
-    const seed = solution.problem.customers[seedIndex];
-    if (!seed) {
-      return { solution: newVrpSolution, removed };
-    }
-
+    const seed = solution.problem.customers[seedIndex]!;
     const removedSet = new Set<number>([seed.id]);
     removed.push(seed);
 
@@ -157,17 +153,12 @@ export const RemovalOperators = {
     if (!seed) {
       return { solution: newVrpSolution, removed };
     }
-    const seedNode = solution.problem.nodes[seed.deliveryNodeId];
-
-    if (!seedNode) {
-      return { solution: newVrpSolution, removed };
-    }
+    const seedNode = solution.problem.nodes[seed.deliveryNodeId]!;
 
     // Sort customers by distance to seed
     const sortedCustomers = [...solution.problem.customers].sort((a, b) => {
-      const aNode = solution.problem.nodes[a.deliveryNodeId];
-      const bNode = solution.problem.nodes[b.deliveryNodeId];
-      if (!aNode || !bNode) return 0;
+      const aNode = solution.problem.nodes[a.deliveryNodeId]!;
+      const bNode = solution.problem.nodes[b.deliveryNodeId]!;
       const distA = Math.hypot(aNode.x - seedNode.x, aNode.y - seedNode.y);
       const distB = Math.hypot(bNode.x - seedNode.x, bNode.y - seedNode.y);
       return distA - distB;
@@ -175,8 +166,7 @@ export const RemovalOperators = {
 
     // Remove k closest customers
     for (let i = 0; i < k && i < sortedCustomers.length; i++) {
-      const customer = sortedCustomers[i];
-      if (!customer) continue;
+      const customer = sortedCustomers[i]!;
 
       if (removeCustomerFromRoutes(newVrpSolution, customer)) {
         removed.push(customer);
@@ -200,17 +190,13 @@ export const RemovalOperators = {
 
     // Pick random seed
     const seedIndex = Math.floor(Math.random() * solution.problem.customers.length);
-    const seed = solution.problem.customers[seedIndex];
-    if (!seed) return { solution: newVrpSolution, removed };
-
-    const seedNode = solution.problem.nodes[seed.deliveryNodeId];
-    if (!seedNode) return { solution: newVrpSolution, removed };
+    const seed = solution.problem.customers[seedIndex]!;
+    const seedNode = solution.problem.nodes[seed.deliveryNodeId]!;
 
     // Sort by pure distance
     const sortedCustomers = [...solution.problem.customers].sort((a, b) => {
-      const aNode = solution.problem.nodes[a.deliveryNodeId];
-      const bNode = solution.problem.nodes[b.deliveryNodeId];
-      if (!aNode || !bNode) return 0;
+      const aNode = solution.problem.nodes[a.deliveryNodeId]!;
+      const bNode = solution.problem.nodes[b.deliveryNodeId]!;
       return Math.hypot(aNode.x - seedNode.x, aNode.y - seedNode.y) -
         Math.hypot(bNode.x - seedNode.x, bNode.y - seedNode.y);
     });
