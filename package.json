@@ -35,6 +35,7 @@
     "test": "mocha",
     "test:watch": "mocha --watch",
     "test:coverage": "c8 mocha",
+    "verify": "npm run typecheck && npm run lint && npm run test:coverage",
     "docs": "typedoc",
     "docs:md": "typedoc --plugin typedoc-plugin-markdown --out docs/md",
     "typecheck": "tsc --noEmit",
