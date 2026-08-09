@@ -500,15 +500,13 @@ samples/                           # Example problem files
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
-## Code of Conduct
-
-This project follows the [Contributor Covenant v2.1](CODE_OF_CONDUCT.md).
+Bug reports and PRs welcome on GitHub. Open an issue before sending
+large changes so we can align on direction.
 
 ## Security
 
-Report vulnerabilities to **sachncs@gmail.com** — see [SECURITY.md](SECURITY.md).
+Report vulnerabilities to **sachncs@gmail.com**. Please don't open a
+public issue for security-sensitive reports.
 
 ## License
 
