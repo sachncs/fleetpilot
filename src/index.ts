@@ -114,6 +114,12 @@ export interface SolveOptions {
   targetMakespan?: number;
   /** Called with progress updates */
   onProgress?: (progress: SolverProgress) => void;
+  /** BRKGA island count (default: 1 = single-island). Forwarded to BRKGA. */
+  islands?: number;
+  /** Generations between BRKGA elite migrations (default: 50). Forwarded to BRKGA. */
+  migrationInterval?: number;
+  /** Fraction of each island that emigrates (default: 0.05). Forwarded to BRKGA. */
+  migrantFraction?: number;
 }
 
 /**
@@ -211,6 +217,9 @@ export class VrpRpdSolver {
       warmStartSolution: warmStart ? alnsSolution : undefined,
       warmStartProportion: 0.15,
       maxTimeMs: options.maxTimeMs ?? 0,
+      islands: options.islands,
+      migrationInterval: options.migrationInterval,
+      migrantFraction: options.migrantFraction,
       onProgress: reportBrkga
         ? (progress: BRKGAProgress) => {
             reportBrkga({
