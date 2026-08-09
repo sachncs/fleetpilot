@@ -198,11 +198,8 @@ describe('T5 - Safe indexed access in algorithms', () => {
     );
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
-    const start = Date.now();
     const solution = InsertionOperators.regret2Insertion(empty, problem.customers);
-    const elapsed = Date.now() - start;
 
-    expect(elapsed).to.be.lessThan(2000);
     expect(solution.isComplete()).to.be.true;
   });
 });

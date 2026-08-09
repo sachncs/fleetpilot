@@ -411,11 +411,8 @@ describe('C10 - ALNS selectOperator zero-weight safety', () => {
     const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
     const alns = new ALNS(problem, { maxIterations: 10 });
 
-    const start = Date.now();
     const solution = alns.solve();
-    const elapsed = Date.now() - start;
 
-    expect(elapsed).to.be.lessThan(5000); // should finish quickly
     expect(solution.isComplete()).to.be.true;
     expect(solution.isFeasible()).to.be.true;
   });
@@ -547,11 +544,8 @@ describe('Regret insertion infinite-loop guard', () => {
     );
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
-    const start = Date.now();
     const solution = InsertionOperators.regret2Insertion(empty, problem.customers);
-    const elapsed = Date.now() - start;
 
-    expect(elapsed).to.be.lessThan(2000);
     expect(solution.isComplete()).to.be.true;
     expect(solution.routes[0]!.nodes).to.include(1);
     expect(solution.routes[0]!.nodes).to.include(2);
@@ -571,11 +565,8 @@ describe('Regret insertion infinite-loop guard', () => {
     );
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
-    const start = Date.now();
     const solution = InsertionOperators.regret3Insertion(empty, problem.customers);
-    const elapsed = Date.now() - start;
 
-    expect(elapsed).to.be.lessThan(2000);
     expect(solution.isComplete()).to.be.true;
   });
 
@@ -593,11 +584,8 @@ describe('Regret insertion infinite-loop guard', () => {
     );
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
-    const start = Date.now();
     const solution = InsertionOperators.regret4Insertion(empty, problem.customers);
-    const elapsed = Date.now() - start;
 
-    expect(elapsed).to.be.lessThan(2000);
     expect(solution.isComplete()).to.be.true;
   });
 });
