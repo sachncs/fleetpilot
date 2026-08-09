@@ -185,6 +185,10 @@ export class TrafficAwareProblem extends VrpProblem {
   }
 
   override getTravelTime(fromId: number, toId: number, departureTime: number = 0): number {
+    if (!this.trafficModel.hasSegment(fromId, toId)) {
+      const distance = this.getDistance(fromId, toId);
+      return distance / this.defaultSpeed;
+    }
     return this.trafficModel.getTravelTime(fromId, toId, departureTime);
   }
 

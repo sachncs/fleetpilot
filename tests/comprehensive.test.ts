@@ -217,7 +217,7 @@ describe('Comprehensive - Traffic-Aware', () => {
     expect(travelTime).to.equal(baseTime * 2.0);
   });
 
-  it('getTravelTime without traffic factor uses default', () => {
+  it('getTravelTime falls back to Euclidean distance when no segment is configured', () => {
     const nodes = {
       0: new LocationNode(0, 0, 0, 'Depot'),
       1: new LocationNode(1, 10, 0, 'D1'),
@@ -228,7 +228,7 @@ describe('Comprehensive - Traffic-Aware', () => {
     const problem = new TrafficAwareProblem(nodes, customers, vehicles, 0, model);
 
     const travelTime = problem.getTravelTime(0, 1, 0);
-    expect(travelTime).to.equal(0);
+    expect(travelTime).to.be.closeTo(10, 1e-9);
   });
 });
 
