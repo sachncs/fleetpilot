@@ -1,4 +1,7 @@
+import { ValidationError } from '../errors.js';
+
 import type { LocationNode, Customer, Vehicle } from './problem.js';
+import { validateProblemBase } from './problem.js';
 
 /**
  * Represents a depot where vehicles can start and end their routes.
@@ -39,6 +42,46 @@ export class MultiDepotProblem {
     public readonly depots: ReadonlyArray<Depot>,
     public readonly vehicleDepotAssignments: ReadonlyMap<number, number>,
   ) {
+    validateProblemBase(nodes, customers, vehicles);
+
+    if (depots.length === 0) {
+      throw new ValidationError('Problem depots cannot be empty');
+    }
+    const depotIds = new Set<number>();
+    for (const depot of depots) {
+      if (depotIds.has(depot.id)) {
+        throw new ValidationError(`Duplicate depot ID: ${depot.id}`);
+      }
+      depotIds.add(depot.id);
+      if (!Number.isInteger(depot.id)) {
+        throw new ValidationError(`Depot ID must be an integer, got ${depot.id}`);
+      }
+      if (!Number.isFinite(depot.x) || !Number.isFinite(depot.y)) {
+        throw new ValidationError(
+          `Depot ${depot.id} has invalid coordinates: x=${depot.x}, y=${depot.y}`,
+        );
+      }
+      if (depot.x < 0 || depot.y < 0) {
+        throw new ValidationError(
+          `Depot ${depot.id} has negative coordinates: x=${depot.x}, y=${depot.y}`,
+        );
+      }
+    }
+
+    const vehicleIds = new Set(vehicles.map(v => v.id));
+    for (const [vehicleId, depotId] of vehicleDepotAssignments) {
+      if (!vehicleIds.has(vehicleId)) {
+        throw new ValidationError(
+          `Vehicle ${vehicleId} in depot assignments does not exist`,
+        );
+      }
+      if (!depotIds.has(depotId)) {
+        throw new ValidationError(
+          `Depot ${depotId} assigned to vehicle ${vehicleId} does not exist`,
+        );
+      }
+    }
+
     this.distanceMatrix = this.calculateDistanceMatrix();
   }
 
