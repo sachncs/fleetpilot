@@ -228,4 +228,75 @@ describe('BRKGA Decoder', () => {
     const solution = decoder.decode(chromosome);
     assertFeasible(solution);
   });
+
+  it('encode covers multiple routes with varying pickup times', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 100, 0, 'D2'),
+      4: new LocationNode(4, 200, 0, 'P2'),
+    };
+    const customers = [new Customer(1, 1, 2, 10), new Customer(2, 3, 4, 10)];
+    const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const decoder = new Decoder(problem);
+
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    routes[0]!.nodes.push(1, 2);
+    routes[1]!.nodes.push(3, 4);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+
+    const chromosome = decoder.encode(solution);
+    expect(chromosome.priorities).to.have.lengthOf(2);
+    expect(chromosome.assignments).to.have.lengthOf(2);
+    for (const gene of chromosome.priorities) {
+      expect(gene).to.be.at.least(0).and.at.most(1);
+    }
+    for (const gene of chromosome.assignments) {
+      expect(gene).to.be.at.least(0).and.at.most(1);
+    }
+  });
+
+  it('encode skips unknown nodes and empty routes', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 10)];
+    const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const decoder = new Decoder(problem);
+
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    routes[0]!.nodes.push(1, 2);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+
+    const chromosome = decoder.encode(solution);
+    expect(chromosome.priorities).to.have.lengthOf(1);
+  });
+
+  it('encode tolerates negative and large pickup-delivery gaps', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 1000)];
+    const vehicles = [new Vehicle(1, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const decoder = new Decoder(problem);
+
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    routes[0]!.nodes.push(1, 2);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+
+    const chromosome = decoder.encode(solution);
+    expect(chromosome.dependencies[0]).to.be.at.least(0).and.at.most(1);
+    expect(chromosome.transfers[0]).to.equal(0.5);
+  });
 });

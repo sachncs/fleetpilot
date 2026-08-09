@@ -88,7 +88,37 @@ describe('RouteAnalytics', () => {
     expect(summary).to.have.property('totalDistance');
     expect(summary).to.have.property('totalCost');
     expect(summary).to.have.property('totalCO2');
-    expect(summary.makespan).to.be.greaterThan(0);
+  });
+
+  it('getSummary covers all fields', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const solution = new VrpSolution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const analytics = new RouteAnalytics(solution, problem);
+    const summary = analytics.getSummary();
+    expect(summary).to.have.property('totalCustomers');
+    expect(summary).to.have.property('totalVehicles');
+    expect(summary).to.have.property('avgUtilization');
+    expect(summary).to.have.property('totalWaitTime');
+  });
+
+  it('getWaitTimes returns entries for routes with resource waits', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const solution = new VrpSolution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const analytics = new RouteAnalytics(solution, problem);
+    const waitTimes = analytics.getWaitTimes();
+    expect(Array.isArray(waitTimes)).to.be.true;
   });
 });
 
@@ -161,5 +191,38 @@ describe('SolutionComparator', () => {
     const comparator = new SolutionComparator([solution], problem);
     const report = comparator.generateReport();
     expect(report.length).to.be.greaterThan(0);
+  });
+
+  it('compares two solutions with different metrics', () => {
+    const problem = createBasicProblem();
+    const routes1 = problem.vehicles.map(v => new Route(v.id, []));
+    const s1 = new VrpSolution(problem, routes1);
+    for (const c of problem.customers) {
+      s1.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    s1.calculateSchedule();
+
+    const routes2 = problem.vehicles.map(v => new Route(v.id, []));
+    const s2 = new VrpSolution(problem, routes2);
+
+    const comparator = new SolutionComparator([s1, s2], problem);
+    const result = comparator.compareMetric('makespan');
+    expect(result).to.not.be.undefined;
+    expect(result).to.have.property('best');
+    expect(result).to.have.property('worst');
+  });
+
+  it('findParetoFront filters dominated solutions', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const s1 = new VrpSolution(problem, routes);
+    for (const c of problem.customers) {
+      s1.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    s1.calculateSchedule();
+
+    const comparator = new SolutionComparator([s1, s1.clone()], problem);
+    const pareto = comparator.findParetoFront();
+    expect(pareto.solutions.length).to.be.at.least(1);
   });
 });

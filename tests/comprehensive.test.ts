@@ -124,6 +124,31 @@ describe('Comprehensive - Problem Validation', () => {
       .with.property('message')
       .that.includes('pickup window is inverted');
   });
+
+  it('rejects non-integer depot node id', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    const customers = [new Customer(1, 1, 2, 10)];
+    const depot = 1.5 as unknown as number;
+    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 10)], depot))
+      .to.throw(ValidationError);
+  });
+
+  it('getDistance returns 0 for missing node ids', () => {
+    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
+    const problem = new VrpProblem(nodes, [new Customer(1, 0, 0, 10)], [new Vehicle(1, 10)], 0);
+    expect(problem.getDistance(999, 1)).to.equal(0);
+    expect(problem.getDistance(0, 999)).to.equal(0);
+  });
+
+  it('getTravelTime returns distance divided by speed', () => {
+    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
+    const problem = new VrpProblem(nodes, [new Customer(1, 0, 0, 10)], [new Vehicle(1, 10)], 0);
+    expect(problem.getTravelTime(0, 1, 2)).to.equal(5);
+  });
 });
 
 describe('Comprehensive - Solution Edge Cases', () => {
@@ -292,6 +317,57 @@ describe('Comprehensive - Multi-Depot', () => {
     )).to.throw(ValidationError)
       .with.property('message')
       .that.includes('does not exist');
+  });
+
+  it('MultiDepotProblem getDepotById returns depot for known id and undefined for unknown', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    const problem = new MultiDepotProblem(
+      nodes,
+      [new Customer(1, 1, 2, 10)],
+      [new Vehicle(1, 10)],
+      [new Depot(0, 0, 0)],
+      new Map([[1, 0]]),
+    );
+    expect(problem.getDepotById(0)?.name).to.equal('');
+    expect(problem.getDepotById(999)).to.be.undefined;
+  });
+
+  it('MultiDepotProblem getDepotForVehicle returns depot when assigned and undefined when not', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    const problem = new MultiDepotProblem(
+      nodes,
+      [new Customer(1, 1, 2, 10)],
+      [new Vehicle(1, 10)],
+      [new Depot(0, 0, 0)],
+      new Map([[1, 0]]),
+    );
+    expect(problem.getDepotForVehicle(1)?.id).to.equal(0);
+    expect(problem.getDepotForVehicle(999)).to.be.undefined;
+  });
+
+  it('MultiDepotProblem getDistance returns 0 for missing nodes', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    const problem = new MultiDepotProblem(
+      nodes,
+      [new Customer(1, 1, 2, 10)],
+      [new Vehicle(1, 10)],
+      [new Depot(0, 0, 0)],
+      new Map([[1, 0]]),
+    );
+    expect(problem.getDistance(999, 1)).to.equal(0);
+    expect(problem.getDistance(0, 1)).to.be.closeTo(10, 0.0001);
   });
 });
 

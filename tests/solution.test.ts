@@ -1,0 +1,153 @@
+import { expect } from 'chai';
+
+import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
+import { VrpSolution, Route } from '../src/core/solution.js';
+
+import { createBasicProblem, createTwoVehicleProblem } from './helpers.js';
+
+describe('Solution evaluation methods', () => {
+  it('evaluateMakespanWithRoute returns the new makespan for a candidate route', () => {
+    const problem = createBasicProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const c = problem.customers[0]!;
+    const candidate = new Route(1, [c.deliveryNodeId, c.pickupNodeId]);
+    const makespan = solution.evaluateMakespanWithRoute(0, candidate);
+    expect(makespan).to.be.a('number');
+    expect(makespan).to.be.greaterThan(0);
+  });
+
+  it('evaluateMakespanWithTwoRoutes returns the combined makespan', () => {
+    const problem = createBasicProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const c1 = problem.customers[0]!;
+    const c2 = problem.customers[1]!;
+    const r1 = new Route(1, [c1.deliveryNodeId, c1.pickupNodeId]);
+    const r2 = new Route(2, [c2.deliveryNodeId, c2.pickupNodeId]);
+    const result = solution.evaluateMakespanWithTwoRoutes(0, r1, 1, r2, 0);
+    expect(result.makespan).to.be.a('number');
+    expect(result.makespan).to.be.greaterThan(0);
+  });
+
+  it('evaluateRouteReturnTime returns a finite number', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const c = problem.customers[0]!;
+    routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+    const result = solution.evaluateRouteReturnTime(routes[0]!, {});
+    expect(result.returnTime).to.be.a('number');
+    expect(Number.isFinite(result.returnTime)).to.be.true;
+  });
+
+  it('calculateRouteDistance returns Euclidean distance', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const c = problem.customers[0]!;
+    routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    const solution = new VrpSolution(problem, routes);
+    const distance = solution.calculateRouteDistance(routes[0]!);
+    expect(distance).to.be.greaterThan(0);
+  });
+
+  it('checkTimeWindows returns true for feasible TW', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new CustomerWithTimeWindows(1, 1, 2, 10, 0, 1000, 50, 2000)];
+    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    routes[0]!.nodes.push(1, 2);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+    expect(solution.checkTimeWindows()).to.be.true;
+  });
+
+  it('checkTimeWindows returns false for TW violations', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new CustomerWithTimeWindows(1, 1, 2, 10, 0, 5, 0, 5)];
+    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    routes[0]!.nodes.push(1, 2);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+    expect(solution.checkTimeWindows()).to.be.false;
+  });
+
+  it('getObjectives returns distance, cost, and CO2', () => {
+    const problem = createTwoVehicleProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+    const objectives = solution.getObjectives();
+    expect(objectives).to.have.property('totalDistance');
+    expect(objectives).to.have.property('totalCost');
+    expect(objectives).to.have.property('totalCO2');
+  });
+
+  it('Route.addNode and removeNode maintain a set', () => {
+    const route = new Route(1, []);
+    route.addNode(5);
+    expect(route.hasNode(5)).to.be.true;
+    route.removeNode(5);
+    expect(route.hasNode(5)).to.be.false;
+  });
+
+  it('Route.clone is a deep copy', () => {
+    const route = new Route(1, [1, 2, 3]);
+    const cloned = route.clone();
+    expect(cloned.nodes).to.deep.equal(route.nodes);
+    cloned.nodes.push(99);
+    expect(route.nodes).to.not.include(99);
+  });
+
+  it('Solution.clone produces an independent solution', () => {
+    const problem = createBasicProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const cloned = solution.clone();
+    cloned.routes[0]!.nodes.push(99);
+    expect(solution.routes[0]!.nodes).to.not.include(99);
+  });
+
+  it('checkCapacity returns true for feasible routes', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    for (const c of problem.customers) {
+      routes[0]!.nodes.push(c.deliveryNodeId);
+    }
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+    expect(solution.checkCapacity()).to.be.true;
+  });
+
+  it('isFeasible returns false if any check fails', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const solution = new VrpSolution(problem, routes);
+    expect(solution.isFeasible()).to.be.false;
+  });
+
+  it('serialize then deserialize round-trips', () => {
+    const problem = createBasicProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+    const data = solution.serialize();
+    const restored = VrpSolution.deserialize(data, problem);
+    expect(restored.routes).to.have.lengthOf(solution.routes.length);
+    expect(restored.makespan).to.equal(solution.makespan);
+    expect(restored.totalDistance).to.equal(solution.totalDistance);
+    expect(restored.totalCost).to.equal(solution.totalCost);
+    expect(restored.totalCO2).to.equal(solution.totalCO2);
+  });
+});

@@ -455,4 +455,194 @@ describe('Security S4 - Worker data validation', () => {
     });
     expect(error).to.be.null;
   });
+
+  it('validateWorkerData accepts valid TW customers', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{
+        id: 1,
+        deliveryNodeId: 0,
+        pickupNodeId: 0,
+        processingTime: 10,
+        earliestDeliveryTime: 0,
+        latestDeliveryTime: 100,
+        earliestPickupTime: 0,
+        latestPickupTime: 100,
+      }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.be.null;
+  });
+
+  it('validateWorkerData rejects partial TW fields', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{
+        id: 1,
+        deliveryNodeId: 0,
+        pickupNodeId: 0,
+        processingTime: 10,
+        earliestDeliveryTime: 0,
+      }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData rejects inverted TW windows', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{
+        id: 1,
+        deliveryNodeId: 0,
+        pickupNodeId: 0,
+        processingTime: 10,
+        earliestDeliveryTime: 100,
+        latestDeliveryTime: 0,
+        earliestPickupTime: 0,
+        latestPickupTime: 100,
+      }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData rejects non-finite TW values', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{
+        id: 1,
+        deliveryNodeId: 0,
+        pickupNodeId: 0,
+        processingTime: 10,
+        earliestDeliveryTime: Infinity,
+        latestDeliveryTime: 100,
+        earliestPickupTime: 0,
+        latestPickupTime: 100,
+      }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData rejects negative processingTime', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{
+        id: 1,
+        deliveryNodeId: 0,
+        pickupNodeId: 0,
+        processingTime: -1,
+      }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData rejects vehicle with invalid costPerKm', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
+      vehicles: [{ id: 1, capacity: 10, costPerKm: -1 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData validates traffic segments when problemKind is traffic', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'traffic',
+      trafficSegments: [
+        { fromId: 0, toId: 0, baseTravelTime: 1, currentTravelTime: 1, congestionLevel: 'low' },
+      ],
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.be.null;
+  });
+
+  it('validateWorkerData rejects traffic segments with negative travel times', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'traffic',
+      trafficSegments: [
+        { fromId: 0, toId: 0, baseTravelTime: -1, currentTravelTime: 1, congestionLevel: 'low' },
+      ],
+      type: 'ALNS',
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData accepts valid island-brkga data', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'island-brkga',
+      islandId: 0,
+      options: { islandPopulationSize: 10, islandMaxGenerations: 50, migrationInterval: 5 },
+    });
+    expect(error).to.be.null;
+  });
+
+  it('validateWorkerData rejects invalid islandId', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'island-brkga',
+      islandId: -1,
+      options: { islandPopulationSize: 10, islandMaxGenerations: 50, migrationInterval: 5 },
+    });
+    expect(error).to.not.be.null;
+  });
+
+  it('validateWorkerData rejects missing islandPopulationSize', () => {
+    const error = validateWorkerData({
+      nodes: { 0: { id: 0, x: 0, y: 0, name: 'Depot' } },
+      customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
+      vehicles: [{ id: 1, capacity: 10 }],
+      depotNodeId: 0,
+      problemKind: 'base',
+      type: 'island-brkga',
+      islandId: 0,
+      options: {},
+    });
+    expect(error).to.not.be.null;
+  });
 });

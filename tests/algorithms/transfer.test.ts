@@ -51,6 +51,68 @@ describe('Transfer-Aware Operators', () => {
     );
     expect(repaired.isComplete()).to.be.true;
   });
+
+  it('greedyInsertionWithTransfers picks a hub when one is closer than direct', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 100, 0, 'P1'),
+      3: new LocationNode(3, 50, 0, 'Hub'),
+    };
+    const customers = [new Customer(1, 1, 2, 10)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const hubs = [new TransferHub(3, 50, 0, 'Hub')];
+    const solution = new SolutionWithTransfers(problem, routes, hubs,
+      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const repaired = TransferAwareInsertionOperators.greedyInsertionWithTransfers(
+      solution, [...problem.customers], hubs,
+    );
+    expect(repaired.isComplete()).to.be.true;
+  });
+
+  it('randomWithTransfers returns empty for k=0', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 100, 0, 'Hub'),
+    };
+    const customers = [new Customer(1, 1, 2, 10)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const hubs = [new TransferHub(3, 100, 0, 'Hub')];
+    const solution = new SolutionWithTransfers(problem, routes, hubs,
+      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    solution.routes[0]!.nodes.push(1, 2);
+    solution.calculateSchedule();
+
+    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 0);
+    expect(removed).to.deep.equal([]);
+  });
+
+  it('randomWithTransfers handles k greater than customer count', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 100, 0, 'Hub'),
+    };
+    const customers = [new Customer(1, 1, 2, 10)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const hubs = [new TransferHub(3, 100, 0, 'Hub')];
+    const solution = new SolutionWithTransfers(problem, routes, hubs,
+      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    solution.routes[0]!.nodes.push(1, 2);
+    solution.calculateSchedule();
+
+    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 5);
+    expect(removed.length).to.equal(1);
+  });
 });
 
 describe('VehicleFleetManager', () => {

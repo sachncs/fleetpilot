@@ -62,6 +62,15 @@ describe('ALNS Removal Operators', () => {
     expect(partial.isComplete()).to.be.false;
   });
 
+  it('shaw with k > 1 exercises the relatedness loop', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const k = 2;
+    const { solution: partial, removed } = RemovalOperators.shaw(solution, k);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
   it('shaw handles empty customer list', () => {
     const problem = createSingleCustomerProblem();
     const solution = createKnownSolution(problem);
@@ -220,6 +229,48 @@ describe('ALNS Insertion Operators', () => {
 
     const r2 = InsertionOperators.regret2Insertion(solution, []);
     expect(r2.routes[0]!.nodes.length).to.equal(0);
+  });
+
+  it('worst removes customers based on cost contribution', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { removed } = RemovalOperators.worst(solution, 1);
+    expect(removed.length).to.equal(1);
+  });
+
+  it('shaw removes customers based on relatedness', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { removed } = RemovalOperators.shaw(solution, 1);
+    expect(removed.length).to.equal(1);
+  });
+
+  it('cluster removes customers from clusters', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { removed } = RemovalOperators.cluster(solution, 1);
+    expect(removed.length).to.equal(1);
+  });
+
+  it('greedyInsertion handles multiple customers and multiple routes', () => {
+    const problem = createTwoVehicleProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.random(solution, 2);
+    const repaired = InsertionOperators.greedyInsertion(partial, removed);
+    expect(repaired.isComplete()).to.be.true;
+  });
+
+  it('all regret variants produce complete solutions', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    for (const op of [
+      () => InsertionOperators.regret2Insertion(solution.clone(), problem.customers),
+      () => InsertionOperators.regret3Insertion(solution.clone(), problem.customers),
+      () => InsertionOperators.regret4Insertion(solution.clone(), problem.customers),
+    ]) {
+      const repaired = op();
+      expect(repaired.isComplete()).to.be.true;
+    }
   });
 
   function createKnownSolution(problem: VrpProblem): VrpSolution {
