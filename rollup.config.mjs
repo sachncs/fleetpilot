@@ -33,6 +33,18 @@ const config = [
     external: (id) => !id.startsWith('.') && !id.startsWith('/'),
   },
   {
+    input: 'src/worker.ts',
+    output: { file: 'dist/worker.js', format: 'esm', sourcemap: true },
+    plugins: [
+      typescript({
+        tsconfig: './tsconfig.json',
+        declaration: false,
+        declarationMap: false,
+      }),
+    ],
+    external: (id) => !id.startsWith('.') && !id.startsWith('/'),
+  },
+  {
     input: 'src/index.ts',
     output: { file: 'dist/index.d.ts', format: 'esm' },
     plugins: [dts()],
