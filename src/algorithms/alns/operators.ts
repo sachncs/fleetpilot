@@ -44,9 +44,7 @@ export const RemovalOperators = {
 
     for (let i = 0; i < k && allCustomers.length > 0; i++) {
       const randomIndex = Math.floor(Math.random() * allCustomers.length);
-      const [spliced] = allCustomers.splice(randomIndex, 1);
-      if (!spliced) continue;
-      const customer = spliced;
+      const customer = allCustomers.splice(randomIndex, 1)[0]!;
 
       if (removeCustomerFromRoutes(newVrpSolution, customer)) {
         removed.push(customer);
@@ -76,9 +74,7 @@ export const RemovalOperators = {
     customerCosts.sort((a, b) => b.cost - a.cost);
 
     for (let i = 0; i < k && i < customerCosts.length; i++) {
-      const entry = customerCosts[i];
-      if (!entry) continue;
-      const customer = entry.customer;
+      const customer = customerCosts[i]!.customer;
 
       if (removeCustomerFromRoutes(newVrpSolution, customer)) {
         removed.push(customer);
@@ -202,8 +198,7 @@ export const RemovalOperators = {
     });
 
     for (let i = 0; i < k && i < sortedCustomers.length; i++) {
-      const customer = sortedCustomers[i];
-      if (!customer) continue;
+      const customer = sortedCustomers[i]!;
 
       if (removeCustomerFromRoutes(newVrpSolution, customer)) {
         removed.push(customer);
@@ -250,9 +245,7 @@ export const RemovalOperators = {
 
     // Remove k most critical customers
     for (let i = 0; i < k && i < tightnessScores.length; i++) {
-      const entry = tightnessScores[i];
-      if (!entry) continue;
-      const customer = entry.customer;
+      const customer = tightnessScores[i]!.customer;
 
       if (removeCustomerFromRoutes(newVrpSolution, customer)) {
         removed.push(customer);
@@ -273,10 +266,8 @@ function calculateRelatedness(
   nodes: Record<number, LocationNode>,
   nodeTimes: Record<number, number>,
 ): number {
-  const d1 = nodes[c1.deliveryNodeId];
-  const d2 = nodes[c2.deliveryNodeId];
-
-  if (!d1 || !d2) return Infinity;
+  const d1 = nodes[c1.deliveryNodeId]!;
+  const d2 = nodes[c2.deliveryNodeId]!;
 
   // Spatial component
   const dist = Math.hypot(d1.x - d2.x, d1.y - d2.y);
@@ -309,8 +300,7 @@ export const InsertionOperators = {
 
       // Try inserting in each route
       for (let rIdx = 0; rIdx < newVrpSolution.routes.length; rIdx++) {
-        const route = newVrpSolution.routes[rIdx];
-        if (!route) continue;
+        const route = newVrpSolution.routes[rIdx]!;
 
         // Try all positions for delivery
         for (let dPos = 0; dPos <= route.nodes.length; dPos++) {
@@ -392,8 +382,7 @@ function regretInsertion(
 
       // Find best positions in each route
       for (let rIdx = 0; rIdx < newVrpSolution.routes.length; rIdx++) {
-        const route = newVrpSolution.routes[rIdx];
-        if (!route) continue;
+        const route = newVrpSolution.routes[rIdx]!;
 
         let bestRouteCost = Infinity;
         let bestDPos = 0;
@@ -420,12 +409,10 @@ function regretInsertion(
       costs.sort((a, b) => a.cost - b.cost);
 
       // Calculate regret (difference between k-th best and best)
-      const best = costs[0];
-      if (!best) continue;
+      const best = costs[0]!;
 
       if (costs.length >= k) {
-        const kth = costs[k - 1];
-        if (!kth) continue;
+        const kth = costs[k - 1]!;
         const regret = kth.cost - best.cost;
         if (regret > bestRegret) {
           bestRegret = regret;
@@ -436,8 +423,7 @@ function regretInsertion(
         }
       } else if (costs.length >= 2 && k > costs.length) {
         // Fallback to available regret
-        const worst = costs[costs.length - 1];
-        if (!worst) continue;
+        const worst = costs[costs.length - 1]!;
         const regret = worst.cost - best.cost;
         if (regret > bestRegret) {
           bestRegret = regret;
@@ -459,11 +445,9 @@ function regretInsertion(
     }
 
     if (bestCustomer) {
-      const route = newVrpSolution.routes[bestRouteIndex];
-      if (route) {
-        route.nodes.splice(bestDeliveryPos, 0, bestCustomer.deliveryNodeId);
-        route.nodes.splice(bestPickupPos + 1, 0, bestCustomer.pickupNodeId);
-      }
+      const route = newVrpSolution.routes[bestRouteIndex]!;
+      route.nodes.splice(bestDeliveryPos, 0, bestCustomer.deliveryNodeId);
+      route.nodes.splice(bestPickupPos + 1, 0, bestCustomer.pickupNodeId);
       const index = remaining.indexOf(bestCustomer);
       remaining.splice(index, 1);
     } else if (remaining.length > 0) {
