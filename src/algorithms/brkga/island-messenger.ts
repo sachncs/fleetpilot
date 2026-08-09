@@ -13,7 +13,7 @@ export interface WireIndividual {
 }
 
 /**
- *
+ * TODO(6.3): document IslandCheckpointMessage
  */
 export interface IslandCheckpointMessage {
   type: 'checkpoint';
@@ -23,7 +23,7 @@ export interface IslandCheckpointMessage {
 }
 
 /**
- *
+ * TODO(6.3): document IslandFinishMessage
  */
 export interface IslandFinishMessage {
   type: 'finish';
@@ -32,12 +32,12 @@ export interface IslandFinishMessage {
 }
 
 /**
- *
+ * TODO(6.3): document IslandWorkerMessage
  */
 export type IslandWorkerMessage = IslandCheckpointMessage | IslandFinishMessage;
 
 /**
- *
+ * TODO(6.3): document EvolveCommand
  */
 export interface EvolveCommand {
   type: 'evolve';
@@ -45,7 +45,7 @@ export interface EvolveCommand {
 }
 
 /**
- *
+ * TODO(6.3): document InjectCommand
  */
 export interface InjectCommand {
   type: 'inject';
@@ -53,14 +53,14 @@ export interface InjectCommand {
 }
 
 /**
- *
+ * TODO(6.3): document FinishCommand
  */
 export interface FinishCommand {
   type: 'finish';
 }
 
 /**
- *
+ * TODO(6.3): document IslandCommand
  */
 export type IslandCommand = EvolveCommand | InjectCommand | FinishCommand;
 

@@ -52,14 +52,14 @@ export class TransferManager {
   > = new Map();
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   registerHub(hub: TransferHub): void {
     this.hubs.set(hub.id, hub);
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getHub(hubId: number): TransferHub | undefined {
     return this.hubs.get(hubId);
@@ -127,14 +127,14 @@ export class TransferManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getTransfersForHub(hubId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(t => t.hubNodeId === hubId);
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getTransfersForVehicle(vehicleId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(
@@ -162,7 +162,7 @@ export class TransferManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   isVehicleAtHub(vehicleId: number, hubId: number, time: number): boolean {
     const schedule = this.vehicleSchedules.get(vehicleId) || [];
@@ -170,7 +170,7 @@ export class TransferManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   clearAll(): void {
     this.transfers.clear();
@@ -178,14 +178,14 @@ export class TransferManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getAllTransfers(): readonly ResourceTransfer[] {
     return Array.from(this.transfers.values());
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getAllHubs(): readonly TransferHub[] {
     return Array.from(this.hubs.values());

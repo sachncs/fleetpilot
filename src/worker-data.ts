@@ -18,7 +18,7 @@ import type {
 } from './worker-validation.js';
 
 /**
- *
+ * TODO(6.3): document WorkerMeta
  */
 export interface WorkerMeta {
   type: 'ALNS' | 'BRKGA' | 'island-brkga';

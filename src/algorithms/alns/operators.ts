@@ -452,11 +452,11 @@ function regretInsertion(
 }
 
 /**
- *
+ * TODO(6.3): document RemovalOperatorKey
  */
 export type RemovalOperatorKey = keyof typeof RemovalOperators;
 /**
- *
+ * TODO(6.3): document InsertionOperatorKey
  */
 export type InsertionOperatorKey = keyof typeof InsertionOperators;
 

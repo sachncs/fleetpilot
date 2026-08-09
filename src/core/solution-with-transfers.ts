@@ -233,7 +233,7 @@ export class SolutionWithTransfers extends VrpSolution {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   override isFeasible(): boolean {
     const baseFeasible = super.isFeasible();
@@ -277,7 +277,7 @@ export class SolutionWithTransfers extends VrpSolution {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   override clone(): SolutionWithTransfers {
     const cloned = new SolutionWithTransfers(
@@ -321,14 +321,14 @@ export class ProblemWithTransfers extends VrpProblem {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   isTransferHub(nodeId: number): boolean {
     return this.transferHubs.some(h => h.id === nodeId);
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getTransferHub(nodeId: number): TransferHub | undefined {
     return this.transferHubs.find(h => h.id === nodeId);

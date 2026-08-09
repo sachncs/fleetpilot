@@ -2,7 +2,7 @@ import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 
 /**
- *
+ * TODO(6.3): document GeoJSONFeature
  */
 export interface GeoJSONFeature {
   type: 'Feature';
@@ -14,7 +14,7 @@ export interface GeoJSONFeature {
 }
 
 /**
- *
+ * TODO(6.3): document GeoJSON
  */
 export interface GeoJSON {
   type: 'FeatureCollection';
@@ -22,7 +22,7 @@ export interface GeoJSON {
 }
 
 /**
- *
+ * TODO(6.3): document KMLPlacemark
  */
 export interface KMLPlacemark {
   name: string;

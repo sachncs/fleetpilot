@@ -97,7 +97,7 @@ function isWorkerResult(msg: object): msg is WorkerResult {
 }
 
 /**
- *
+ * TODO(6.3): document SolveOptions
  */
 export interface SolveOptions {
   alnsIterations?: number;
@@ -117,7 +117,7 @@ export interface SolveOptions {
 }
 
 /**
- *
+ * TODO(6.3): document SolverProgress
  */
 export interface SolverProgress {
   stage: 'ALNS' | 'BRKGA' | 'parallel';
@@ -128,7 +128,7 @@ export interface SolverProgress {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerResult
  */
 export interface WorkerResult {
   makespan: number;

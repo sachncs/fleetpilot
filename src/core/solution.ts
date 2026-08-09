@@ -26,14 +26,14 @@ export class Route {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   addNode(nodeId: number): void {
     this.nodes.push(nodeId);
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   removeNode(nodeId: number): void {
     const index = this.nodes.indexOf(nodeId);
@@ -43,14 +43,14 @@ export class Route {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   hasNode(nodeId: number): boolean {
     return this.nodes.includes(nodeId);
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   clone(): Route {
     return new Route(this.vehicleId, [...this.nodes]);
@@ -524,7 +524,7 @@ export class VrpSolution {
 }
 
 /**
- *
+ * TODO(6.3): document SerializedRoute
  */
 export interface SerializedRoute {
   vehicleId: number;
@@ -532,7 +532,7 @@ export interface SerializedRoute {
 }
 
 /**
- *
+ * TODO(6.3): document SerializedSolution
  */
 export interface SerializedSolution {
   routes: SerializedRoute[];

@@ -3,7 +3,7 @@ import type { VrpSolution } from '../core/solution.js';
 import { isCustomerWithTimeWindows } from '../core/solution.js';
 
 /**
- *
+ * TODO(6.3): document VehicleUtilization
  */
 export interface VehicleUtilization {
   vehicleId: number;
@@ -16,7 +16,7 @@ export interface VehicleUtilization {
 }
 
 /**
- *
+ * TODO(6.3): document WaitTimeAnalysis
  */
 export interface WaitTimeAnalysis {
   nodeId: number;
@@ -26,7 +26,7 @@ export interface WaitTimeAnalysis {
 }
 
 /**
- *
+ * TODO(6.3): document LoadOverTime
  */
 export interface LoadOverTime {
   time: number;
@@ -34,7 +34,7 @@ export interface LoadOverTime {
 }
 
 /**
- *
+ * TODO(6.3): document RouteComparison
  */
 export interface RouteComparison {
   routeId: number;

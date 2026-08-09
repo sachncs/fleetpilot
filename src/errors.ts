@@ -1,7 +1,7 @@
 /** Base error for all VRP-RPD library errors. */
 export class VrpError extends Error {
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(message: string) {
     super(message);
@@ -13,7 +13,7 @@ export class VrpError extends Error {
 /** Thrown when problem or solver options fail validation. */
 export class ValidationError extends VrpError {
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(message: string) {
     super(message);
@@ -25,7 +25,7 @@ export class ValidationError extends VrpError {
 /** Thrown when a solution violates hard constraints. */
 export class InfeasibleSolutionError extends VrpError {
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(message: string) {
     super(message);
@@ -37,7 +37,7 @@ export class InfeasibleSolutionError extends VrpError {
 /** Thrown when an algorithm fails to converge. */
 export class AlgorithmConvergenceError extends VrpError {
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(message: string) {
     super(message);

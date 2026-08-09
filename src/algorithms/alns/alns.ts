@@ -14,7 +14,7 @@ import {
 } from './operators.js';
 
 /**
- *
+ * TODO(6.3): document ALNSProgress
  */
 export interface ALNSProgress {
   iteration: number;
@@ -25,7 +25,7 @@ export interface ALNSProgress {
 }
 
 /**
- *
+ * TODO(6.3): document ALNSOptions
  */
 export interface ALNSOptions {
   maxIterations?: number;

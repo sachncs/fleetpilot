@@ -209,7 +209,7 @@ export class VrpProblem {
   readonly distanceMatrix: Readonly<Record<number, Readonly<Record<number, number>>>>;
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(
     public readonly nodes: Readonly<Record<number, LocationNode>>,

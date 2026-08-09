@@ -59,12 +59,12 @@ function updateLoad(
  */
 export class Decoder {
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(private readonly problem: VrpProblem) {}
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   decode(chromosome: Chromosome): VrpSolution {
     const numCustomers = this.problem.customers.length;

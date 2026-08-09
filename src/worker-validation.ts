@@ -1,5 +1,5 @@
 /**
- *
+ * TODO(6.3): document WorkerNodeData
  */
 export interface WorkerNodeData {
   id: number;
@@ -9,7 +9,7 @@ export interface WorkerNodeData {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerCustomerData
  */
 export interface WorkerCustomerData {
   id: number;
@@ -23,7 +23,7 @@ export interface WorkerCustomerData {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerVehicleData
  */
 export interface WorkerVehicleData {
   id: number;
@@ -35,7 +35,7 @@ export interface WorkerVehicleData {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerTrafficSegmentData
  */
 export interface WorkerTrafficSegmentData {
   fromId: number;
@@ -46,7 +46,7 @@ export interface WorkerTrafficSegmentData {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerTimeFactorData
  */
 export interface WorkerTimeFactorData {
   startTime: number;
@@ -54,7 +54,7 @@ export interface WorkerTimeFactorData {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerData
  */
 export interface WorkerData {
   nodes: Record<number, WorkerNodeData>;
@@ -75,7 +75,7 @@ export interface WorkerData {
 }
 
 /**
- *
+ * TODO(6.3): document WorkerResult
  */
 export interface WorkerResult {
   makespan: number;
@@ -84,7 +84,7 @@ export interface WorkerResult {
 }
 
 /**
- *
+ * TODO(6.3): document isWorkerData
  */
 export function isWorkerData(value: unknown): value is WorkerData {
   if (typeof value !== 'object' || value === null) return false;
@@ -102,7 +102,7 @@ export function isWorkerData(value: unknown): value is WorkerData {
 }
 
 /**
- *
+ * TODO(6.3): document validateWorkerData
  */
 export function validateWorkerData(data: WorkerData): string | null {
   const nodeIds = Object.keys(data.nodes).map(Number);

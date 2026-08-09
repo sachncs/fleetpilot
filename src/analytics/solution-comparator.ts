@@ -4,7 +4,7 @@ import type { VrpSolution } from '../core/solution.js';
 import { RouteAnalytics } from './route-analytics.js';
 
 /**
- *
+ * TODO(6.3): document SolutionMetrics
  */
 export interface SolutionMetrics {
   makespan: number;
@@ -17,7 +17,7 @@ export interface SolutionMetrics {
 }
 
 /**
- *
+ * TODO(6.3): document ComparisonResult
  */
 export interface ComparisonResult {
   metric: string;
@@ -28,7 +28,7 @@ export interface ComparisonResult {
 }
 
 /**
- *
+ * TODO(6.3): document ParetoFront
  */
 export interface ParetoFront {
   solutions: number[];

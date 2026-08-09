@@ -22,7 +22,7 @@ export class TrafficModel {
     new Map();
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   setSegment(segment: TrafficSegment): void {
     const key = this.makeKey(segment.fromId, segment.toId);
@@ -30,7 +30,7 @@ export class TrafficModel {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   setTimeFactors(
     fromId: number,
@@ -138,7 +138,7 @@ export class TrafficModel {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getCongestionLevel(
     fromId: number,
@@ -194,7 +194,7 @@ export class TrafficAwareProblem extends VrpProblem {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   override getTravelTime(fromId: number, toId: number, departureTime: number = 0): number {
     if (!this.trafficModel.hasSegment(fromId, toId)) {
@@ -205,7 +205,7 @@ export class TrafficAwareProblem extends VrpProblem {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   initializeTrafficFromDistances(): void {
     const nodeIds = Object.keys(this.nodes).map(Number);

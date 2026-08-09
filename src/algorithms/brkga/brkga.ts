@@ -13,7 +13,7 @@ import { Decoder, type Chromosome } from './decoder.js';
 import { sendCommand, type WireIndividual } from './island-messenger.js';
 
 /**
- *
+ * TODO(6.3): document BRKGAProgress
  */
 export interface BRKGAProgress {
   generation: number;
@@ -23,7 +23,7 @@ export interface BRKGAProgress {
 }
 
 /**
- *
+ * TODO(6.3): document BRKGAOptions
  */
 export interface BRKGAOptions {
   populationSize?: number;
@@ -60,7 +60,7 @@ export interface BRKGAOptions {
 }
 
 /**
- *
+ * TODO(6.3): document Individual
  */
 export interface Individual {
   chromosome: Chromosome;
@@ -187,7 +187,7 @@ export class BRKGA {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   initializePopulation(): Individual[] {
     const population: Individual[] = [];

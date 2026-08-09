@@ -86,7 +86,7 @@ export class VehicleFleetManager {
   private readonly states: Map<number, VehicleState> = new Map();
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   constructor(vehicles: VehicleWithCapabilities[] = []) {
     for (const vehicle of vehicles) {
@@ -95,7 +95,7 @@ export class VehicleFleetManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   addVehicle(vehicle: VehicleWithCapabilities): void {
     this.vehicles.set(vehicle.id, vehicle);
@@ -112,14 +112,14 @@ export class VehicleFleetManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getVehicle(vehicleId: number): VehicleWithCapabilities | undefined {
     return this.vehicles.get(vehicleId);
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getVehicleState(vehicleId: number): VehicleState | undefined {
     return this.states.get(vehicleId);
@@ -261,7 +261,7 @@ export class VehicleFleetManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   resetAllStates(): void {
     for (const [id] of this.vehicles.entries()) {
@@ -279,7 +279,7 @@ export class VehicleFleetManager {
   }
 
   /**
-   *
+   * TODO(6.3): document TODO
    */
   getAllVehicles(): readonly VehicleWithCapabilities[] {
     return Array.from(this.vehicles.values());
