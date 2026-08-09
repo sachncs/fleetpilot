@@ -298,6 +298,10 @@ export class BRKGA {
       }
 
       for (const ind of population) {
+        if (this.maxTimeMs > 0 && Date.now() - startTime >= this.maxTimeMs) {
+          this.logger.log(`BRKGA stopped mid-decode at generation ${g}`);
+          break;
+        }
         if (ind.fitness === null) {
           try {
             const solution = this.decoder.decode(ind.chromosome);
