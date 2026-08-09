@@ -132,7 +132,9 @@ describe('Transfer-Aware Operators', () => {
       solution, [...problem.customers], hubs,
     );
     expect(repaired.isComplete()).to.be.true;
-    expect(repaired.transfers.length).to.be.at.least(0);
+    // 4 customers with processingTime 50, 2 vehicles with capacity 10 each:
+    // no inter-vehicle transfer needed.
+    expect(repaired.transfers.length).to.equal(0);
   });
 });
 
@@ -249,7 +251,8 @@ describe('TransferManager', () => {
     manager.updateVehicleState(1, 0, 'delivery', 50, 0);
     const stats = manager.getFleetUtilization();
     expect(stats.length).to.equal(1);
-    expect(stats[0]!.utilizationRate).to.be.at.least(0);
+    // utilizationRate = initialLoad / capacity, clamped to [0, 1].
+    expect(stats[0]!.utilizationRate).to.be.at.least(0).and.at.most(1);
   });
 
   it('allows non-overlapping transfers at same hub', () => {

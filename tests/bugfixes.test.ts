@@ -269,13 +269,20 @@ describe('C6 - Transfer-aware insertion registers transfers', () => {
       hubs,
     );
 
-    // At least one transfer should have been registered if a hub was used
+    // The transfer-aware operator must run end-to-end on a hub-enabled
+    // instance and produce a complete solution.
     result.calculateTotalTimeWithTransfers();
-    // The method always returns a solution; verify it is complete
     expect(result.isComplete()).to.be.true;
-    // If transfers were used, the transfer array or manager should reflect them
-    // (depending on whether transfer was chosen as best, it may or may not be empty)
-    expect(result.transfers.length).to.be.at.least(0);
+    expect(result.isFeasible()).to.be.true;
+    // Every customer must be assigned to a route.
+    const assignedNodes = new Set<number>();
+    for (const route of result.routes) {
+      for (const node of route.nodes) assignedNodes.add(node);
+    }
+    for (const c of customers) {
+      expect(assignedNodes.has(c.deliveryNodeId)).to.be.true;
+      expect(assignedNodes.has(c.pickupNodeId)).to.be.true;
+    }
   });
 });
 
