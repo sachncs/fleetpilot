@@ -52,9 +52,14 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
       const evaluate = () => {
         for (const ind of population) {
           if (ind.fitness === null) {
-            const sol = brkga.decoder.decode(ind.chromosome);
-            ind.fitness = sol.isFeasible() ? sol.makespan : Infinity;
-            ind.solution = sol;
+            try {
+              const sol = brkga.decoder.decode(ind.chromosome);
+              ind.fitness = sol.isFeasible() ? sol.makespan : Infinity;
+              ind.solution = sol;
+            } catch {
+              ind.fitness = Infinity;
+              ind.solution = null;
+            }
           }
         }
         population.sort((a, b) => (a.fitness ?? Infinity) - (b.fitness ?? Infinity));

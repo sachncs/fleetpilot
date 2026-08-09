@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { Decoder, type Chromosome } from '../../src/algorithms/brkga/decoder.js';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
 import { VrpSolution, Route } from '../../src/core/solution.js';
+import { ValidationError } from '../../src/errors.js';
 import { createBasicProblem, createSingleCustomerProblem, assertFeasible } from '../helpers.js';
 
 describe('BRKGA Decoder', () => {
@@ -141,6 +142,65 @@ describe('BRKGA Decoder', () => {
     const vehicle2Nodes = solution.routes[1]!.nodes.length;
 
     expect(vehicle2Nodes).to.be.greaterThan(0);
+  });
+
+  it('pickups share a route with the vehicle that actually delivered', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 30, 0, 'D2'),
+      4: new LocationNode(4, 40, 0, 'P2'),
+      5: new LocationNode(5, 50, 0, 'D3'),
+      6: new LocationNode(6, 60, 0, 'P3'),
+    };
+    const customers = [
+      new Customer(1, 1, 2, 5),
+      new Customer(2, 3, 4, 5),
+      new Customer(3, 5, 6, 5),
+    ];
+    const vehicles = [new Vehicle(1, 1), new Vehicle(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const decoder = new Decoder(problem);
+
+    const chromosome: Chromosome = {
+      priorities: [0.1, 0.5, 0.9],
+      assignments: [0.1, 0.1, 0.1],
+      dependencies: [0.5, 0.5, 0.5],
+      transfers: [0.5, 0.5, 0.5],
+    };
+    const solution = decoder.decode(chromosome);
+
+    for (const customer of customers) {
+      const deliveryRoute = solution.routes.find(r => r.nodes.includes(customer.deliveryNodeId));
+      expect(deliveryRoute, `customer ${customer.id} delivery is routed`).to.not.be.undefined;
+      expect(
+        deliveryRoute!.nodes.includes(customer.pickupNodeId),
+        `customer ${customer.id} pickup shares the delivery vehicle`,
+      ).to.be.true;
+    }
+  });
+
+  it('decode throws when a customer cannot be placed within capacity', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 30, 0, 'D2'),
+      4: new LocationNode(4, 40, 0, 'P2'),
+    };
+    const customers = [new Customer(1, 1, 2, 5), new Customer(2, 3, 4, 5)];
+    const vehicles = [new Vehicle(1, 1)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const decoder = new Decoder(problem);
+
+    const chromosome: Chromosome = {
+      priorities: [0.1, 0.9],
+      assignments: [0.5, 0.5],
+      dependencies: [0.5, 0.5],
+      transfers: [0.5, 0.5],
+    };
+    expect(() => decoder.decode(chromosome)).to.throw(ValidationError);
   });
 
   it('decode handles all-zero chromosome (boundary)', () => {

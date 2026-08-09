@@ -299,9 +299,14 @@ export class BRKGA {
 
       for (const ind of population) {
         if (ind.fitness === null) {
-          const solution = this.decoder.decode(ind.chromosome);
-          ind.fitness = solution.isFeasible() ? solution.makespan : Infinity;
-          ind.solution = solution;
+          try {
+            const solution = this.decoder.decode(ind.chromosome);
+            ind.fitness = solution.isFeasible() ? solution.makespan : Infinity;
+            ind.solution = solution;
+          } catch {
+            ind.fitness = Infinity;
+            ind.solution = null;
+          }
         }
       }
 

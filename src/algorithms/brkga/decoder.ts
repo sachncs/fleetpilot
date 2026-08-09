@@ -1,5 +1,6 @@
 import type { VrpProblem, Customer, Vehicle } from '../../core/problem.js';
 import { VrpSolution, Route } from '../../core/solution.js';
+import { ValidationError } from '../../errors.js';
 
 /**
  * Paper chromosome structure (4n genes):
@@ -93,6 +94,8 @@ export class Decoder {
 
     const deliveryScheduled = new Set<number>();
     const pickupScheduled = new Set<number>();
+    const deliveryVehicle: number[] = [];
+    deliveryVehicle.length = numCustomers;
 
     // Pass 1: Schedule all deliveries with O(1) capacity checks
     for (const idx of customerOrder) {
@@ -110,6 +113,7 @@ export class Decoder {
         route.nodes.push(customer.deliveryNodeId);
         updateLoad(load, 'delivery');
         deliveryScheduled.add(idx);
+        deliveryVehicle[idx] = targetV;
       } else {
         const alt = this.findCapableVehicleFast(routeLoads, routes, customer, 'delivery', targetV);
         if (alt >= 0) {
@@ -119,7 +123,12 @@ export class Decoder {
             altRoute.nodes.push(customer.deliveryNodeId);
             updateLoad(altLoad, 'delivery');
             deliveryScheduled.add(idx);
+            deliveryVehicle[idx] = alt;
           }
+        } else {
+          throw new ValidationError(
+            `Customer ${customer.id} delivery cannot be placed within vehicle capacity`,
+          );
         }
       }
     }
@@ -136,7 +145,7 @@ export class Decoder {
       if (!customer) continue;
       if (solution.nodeTimes[customer.deliveryNodeId] === undefined) continue;
 
-      const targetV = assignedVehicle[idx];
+      const targetV = deliveryVehicle[idx] ?? assignedVehicle[idx];
       if (targetV === undefined) continue;
       const route = routes[targetV];
       if (!route) continue;
@@ -157,21 +166,11 @@ export class Decoder {
             updateLoad(altLoad, 'pickup');
             pickupScheduled.add(idx);
           }
+        } else {
+          throw new ValidationError(
+            `Customer ${customer.id} pickup cannot be placed within vehicle capacity`,
+          );
         }
-      }
-    }
-
-    // Force any remaining unscheduled pickups
-    for (const idx of customerOrder) {
-      if (!deliveryScheduled.has(idx) || pickupScheduled.has(idx)) continue;
-      const customer = this.problem.customers[idx];
-      if (!customer) continue;
-      const targetV = assignedVehicle[idx];
-      if (targetV === undefined) continue;
-      const route = routes[targetV];
-      if (route) {
-        route.nodes.push(customer.pickupNodeId);
-        pickupScheduled.add(idx);
       }
     }
 
