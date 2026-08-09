@@ -310,8 +310,8 @@ export class BRKGA {
       const top = population[0];
       const topFitness = top?.fitness ?? Infinity;
       if (
-        !hallOfFame ||
-        (hallOfFame.fitness !== null && topFitness < hallOfFame.fitness)
+        topFitness < Infinity &&
+        (!hallOfFame || (hallOfFame.fitness !== null && topFitness < hallOfFame.fitness))
       ) {
         if (!top) continue;
         hallOfFame = {
@@ -346,37 +346,43 @@ export class BRKGA {
         this.onProgress({
           generation: g,
           maxGenerations: this.maxGenerations,
-          bestMakespan: hallOfFame.fitness ?? Infinity,
+          bestMakespan: hallOfFame?.fitness ?? Infinity,
           populationSize: this.populationSize,
         });
       }
 
       if (g % 10 === 0) {
         this.logger.log(
-          `BRKGA Gen ${g}: Best makespan = ${(hallOfFame.fitness ?? Infinity).toFixed(2)}`,
+          `BRKGA Gen ${g}: Best makespan = ${(hallOfFame?.fitness ?? Infinity).toFixed(2)}`,
         );
       }
     }
 
     return (
-      hallOfFame?.solution ?? this.decoder.decode(this.randomIndividual().chromosome)
+      hallOfFame?.solution ?? this.decodeFeasibleRandom()
     );
+  }
+
+  private decodeFeasibleRandom(): VrpSolution {
+    let solution: VrpSolution | null = null;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      const candidate = this.decoder.decode(this.randomIndividual().chromosome);
+      if (candidate.isFeasible()) return candidate;
+      solution = candidate;
+    }
+    return solution ?? this.decoder.decode(this.randomIndividual().chromosome);
   }
 
   protected async solveIslands(startTime: number): Promise<VrpSolution> {
     const islandPopulationSize = Math.max(10, Math.floor(this.populationSize / this.islands));
     const islandMaxGenerations = this.maxGenerations;
-    const workerPath = resolve(process.cwd(), 'dist', 'worker.js');
+    const workerPath = getWorkerPath();
 
     const workers: Worker[] = [];
 
     for (let i = 0; i < this.islands; i++) {
       const worker = new Worker(workerPath, {
-        workerData: {
-          nodes: this.problem.nodes,
-          customers: this.problem.customers,
-          vehicles: this.problem.vehicles,
-          depotNodeId: this.problem.depotNodeId,
+        workerData: serializeProblem(this.problem, {
           type: 'island-brkga',
           islandId: i,
           options: {

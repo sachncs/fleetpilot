@@ -3,6 +3,7 @@ import { expect } from 'chai';
 import { ALNS } from '../src/algorithms/alns/alns.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { VrpSolution, Route } from '../src/core/solution.js';
 
 describe('Algorithm Correctness', () => {
   const makeProblem = () => {
@@ -62,6 +63,24 @@ describe('Algorithm Correctness', () => {
 
     expect(solution.isComplete()).to.be.true;
     expect(solution.makespan).to.be.greaterThan(0);
+  });
+
+  it('BRKGA never returns an infeasible candidate as best', async () => {
+    const problem = makeProblem();
+    const route = new Route(1, [1, 2]);
+    const infeasible = new VrpSolution(problem, [route]);
+    infeasible.calculateSchedule();
+    expect(infeasible.isFeasible()).to.be.false;
+
+    const warm = new BRKGA(problem, {
+      populationSize: 3,
+      maxGenerations: 3,
+      warmStartSolution: infeasible,
+    });
+    const solution = await warm.solve();
+
+    expect(solution.isFeasible()).to.be.true;
+    expect(solution.isComplete()).to.be.true;
   });
 
   it('Decoder produces complete solution', async () => {
