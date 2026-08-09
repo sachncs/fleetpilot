@@ -10,3 +10,5 @@ docs/md/
 *.swp
 *.swo
 *~
+tests/**/*.js.map
+tests/**/*.d.ts.map
