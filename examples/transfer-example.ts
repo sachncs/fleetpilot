@@ -6,10 +6,8 @@
  */
 
 import {
-  Problem,
-  Node,
+  LocationNode,
   Customer,
-  Solution,
   Route,
   TransferHub,
   TransferManager,
@@ -21,13 +19,13 @@ import {
 } from '../src/index.js';
 
 // Create nodes
-const nodes: Record<number, Node> = {
-  0: new Node(0, 0, 0, 'Depot'),
-  1: new Node(1, 10, 0, 'D1'),
-  2: new Node(2, 20, 0, 'P1'),
-  3: new Node(3, 0, 10, 'D2'),
-  4: new Node(4, 0, 20, 'P2'),
-  5: new Node(5, 10, 10, 'Hub'), // Transfer hub
+const nodes: Record<number, LocationNode> = {
+  0: new LocationNode(0, 0, 0, 'Depot'),
+  1: new LocationNode(1, 10, 0, 'D1'),
+  2: new LocationNode(2, 20, 0, 'P1'),
+  3: new LocationNode(3, 0, 10, 'D2'),
+  4: new LocationNode(4, 0, 20, 'P2'),
+  5: new LocationNode(5, 10, 10, 'Hub'), // Transfer hub
 };
 
 // Create customers
