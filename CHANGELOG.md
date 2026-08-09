@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Removed unreachable defensive null checks in ALNS operators (`operators.ts`, `transfer-aware-operators.ts`) and BRKGA decoder
+- Removed unreachable preferred-load recheck in `findCapableVehicleFast`
+
+## [1.1.0] - 2026-08-10
+
 ### Added
 - **Island-model BRKGA** - Multi-population parallel evolution via `worker_threads` with `IslandMessenger` for elite migration between islands
 - **CLI** - Command-line solver with JSON input/output (`vrp-solver`)
@@ -126,5 +132,6 @@ This implementation is based on:
 
 | Version | Date | Notes |
 |---------|------|-------|
+| 1.1.0 | 2026-08-10 | Worker infra, validation, ALNS+decoder hardening |
 | 1.0.0 | 2026-05-04 | TypeScript conversion |
 | 0.1.0 | 2026-03-xx | Initial JavaScript |

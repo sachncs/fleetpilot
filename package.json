@@ -1,6 +1,6 @@
 {
   "name": "vehicle-routing",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "VRP-RPD solver for Indian logistics: route optimization with ALNS + BRKGA metaheuristics, time windows, multi-depot, and traffic-aware routing",
   "type": "module",
   "main": "./dist/index.cjs",

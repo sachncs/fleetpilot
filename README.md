@@ -493,10 +493,9 @@ samples/                           # Example problem files
 
 ## Roadmap
 
-- **v0.1.x** — Current: ALNS + BRKGA two-stage solver, time windows, multi-depot, traffic-aware routing, transfer-aware operators, GIS export, island-model parallelism.
-- **v0.2.0** — Planned: lower-cost transfer models, dynamic stochastic customer arrivals, mid-route re-optimisation triggers.
-- **v0.3.0** — Planned: GPU-accelerated BRKGA fitness evaluation, REST gateway, GeoJSON streaming.
-- **v1.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles.
+- **v1.1.0** — Current: hardened worker infrastructure, validated problem inputs, BRKGA feasibility-only hall-of-fame, paired pickups/deliveries on the same vehicle, tight decoder error semantics, CLI non-finite numeric guards, parallel solving verified end-to-end.
+- **v1.2.0** — Planned: incremental schedule updates, ALNS insertion O(v·n²), distance cache, deterministic seeded RNG.
+- **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models.
 
 ## Contributing
 
