@@ -11,9 +11,45 @@ describe('Solution evaluation methods', () => {
     const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
     const c = problem.customers[0]!;
     const candidate = new Route(1, [c.deliveryNodeId, c.pickupNodeId]);
+
+    // Walk the route manually: depot -> D -> (process 50) -> P (must wait) -> depot
+    // Distances: 0->D=10, D->P=10, P->0=20. Arrival at P = 10+50 = 60.
+    // Return time = 60 + 20 = 80.
     const makespan = solution.evaluateMakespanWithRoute(0, candidate);
-    expect(makespan).to.be.a('number');
-    expect(makespan).to.be.greaterThan(0);
+    expect(makespan).to.equal(80);
+  });
+
+  it('evaluateMakespanWithRoute matches calculateSchedule when applied', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const c = problem.customers[0]!;
+    routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    const solution = new VrpSolution(problem, routes);
+    solution.calculateSchedule();
+
+    const candidate = routes[0]!;
+    const expectedMakespan = solution.makespan;
+    const evaluated = solution.evaluateMakespanWithRoute(0, candidate);
+    expect(evaluated).to.equal(expectedMakespan);
+  });
+
+  it('evaluateMakespanWithRoute: longer route -> strictly larger makespan', () => {
+    const problem = createBasicProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const c1 = problem.customers[0]!;
+    const c2 = problem.customers[1]!;
+
+    const short = new Route(1, [c1.deliveryNodeId, c1.pickupNodeId]);
+    const long = new Route(1, [
+      c1.deliveryNodeId,
+      c1.pickupNodeId,
+      c2.deliveryNodeId,
+      c2.pickupNodeId,
+    ]);
+
+    const shortMakespan = solution.evaluateMakespanWithRoute(0, short);
+    const longMakespan = solution.evaluateMakespanWithRoute(0, long);
+    expect(longMakespan).to.be.greaterThan(shortMakespan);
   });
 
   it('evaluateMakespanWithTwoRoutes returns the combined makespan', () => {
@@ -23,21 +59,48 @@ describe('Solution evaluation methods', () => {
     const c2 = problem.customers[1]!;
     const r1 = new Route(1, [c1.deliveryNodeId, c1.pickupNodeId]);
     const r2 = new Route(2, [c2.deliveryNodeId, c2.pickupNodeId]);
+
     const result = solution.evaluateMakespanWithTwoRoutes(0, r1, 1, r2, 0);
-    expect(result.makespan).to.be.a('number');
-    expect(result.makespan).to.be.greaterThan(0);
+    // Independent routes, each ends at time 80.
+    expect(result.makespan).to.equal(80);
+    expect(result.hubReadyTime).to.equal(0);
   });
 
-  it('evaluateRouteReturnTime returns a finite number', () => {
+  it('evaluateMakespanWithTwoRoutes: takes max of both route return times', () => {
+    const problem = createTwoVehicleProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const c1 = problem.customers[0]!;
+    const c2 = problem.customers[1]!;
+    const r1 = new Route(1, [c1.deliveryNodeId, c1.pickupNodeId]);
+    const r2 = new Route(2, [c2.deliveryNodeId, c2.pickupNodeId]);
+
+    const result = solution.evaluateMakespanWithTwoRoutes(0, r1, 1, r2, 0);
+    const onlyR1 = solution.evaluateMakespanWithRoute(0, r1);
+    expect(result.makespan).to.be.at.least(onlyR1);
+  });
+
+  it('evaluateRouteReturnTime returns the depot-return time for the route', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map(v => new Route(v.id, []));
     const c = problem.customers[0]!;
     routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
+
     const result = solution.evaluateRouteReturnTime(routes[0]!, {});
     expect(result.returnTime).to.be.a('number');
     expect(Number.isFinite(result.returnTime)).to.be.true;
+    // Same problem as the first test: depot -> 10 -> 50 (service) -> 10 -> 20 back
+    expect(result.returnTime).to.equal(80);
+  });
+
+  it('evaluateRouteReturnTime: empty route returns travel-from-depot-to-depot', () => {
+    const problem = createBasicProblem();
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const emptyRoute = new Route(1, []);
+    const result = solution.evaluateRouteReturnTime(emptyRoute, {});
+    // Single vehicle starting and ending at depot with no stops: distance 0.
+    expect(result.returnTime).to.equal(0);
   });
 
   it('calculateRouteDistance returns Euclidean distance', () => {
