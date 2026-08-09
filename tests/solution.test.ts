@@ -177,7 +177,7 @@ describe('Solution evaluation methods', () => {
     const objectives = solution.getObjectives();
     expect(objectives).to.have.property('totalDistance');
     expect(objectives).to.have.property('totalCost');
-    expect(objectives).to.have.property('totalCO2');
+    expect(objectives).to.have.property('totalCo2');
   });
 
   it('Route.addNode and removeNode maintain a set', () => {
@@ -235,6 +235,6 @@ describe('Solution evaluation methods', () => {
     expect(restored.makespan).to.equal(solution.makespan);
     expect(restored.totalDistance).to.equal(solution.totalDistance);
     expect(restored.totalCost).to.equal(solution.totalCost);
-    expect(restored.totalCO2).to.equal(solution.totalCO2);
+    expect(restored.totalCo2).to.equal(solution.totalCo2);
   });
 });

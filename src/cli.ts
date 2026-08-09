@@ -275,7 +275,7 @@ async function main(): Promise<void> {
     makespan: solution.makespan,
     totalDistance: solution.totalDistance,
     totalCost: solution.totalCost,
-    totalCO2: solution.totalCO2,
+    totalCo2: solution.totalCo2,
     feasible: solution.isFeasible(),
     routes: solution.routes.map(r => ({
       vehicleId: r.vehicleId,

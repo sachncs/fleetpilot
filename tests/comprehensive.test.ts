@@ -232,13 +232,13 @@ describe('Comprehensive - Solution Edge Cases', () => {
 
     solution.totalDistance = 100;
     solution.totalCost = 200;
-    solution.totalCO2 = 300;
+    solution.totalCo2 = 300;
     solution.makespan = 400;
 
     const obj = solution.getObjectives();
     expect(obj.totalDistance).to.equal(100);
     expect(obj.totalCost).to.equal(200);
-    expect(obj.totalCO2).to.equal(300);
+    expect(obj.totalCo2).to.equal(300);
     expect(obj.makespan).to.equal(400);
   });
 
@@ -578,26 +578,26 @@ describe('Comprehensive - Solution Feasibility', () => {
 });
 
 describe('Comprehensive - GIS Export', () => {
-  it('toKML produces valid output', () => {
+  it('toKml produces valid output', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const kml = exporter.toKML();
+    const kml = exporter.toKml();
     expect(kml).to.include('<kml');
     expect(kml).to.include('</kml>');
   });
 
-  it('toCSV produces tabular route data', () => {
+  it('toCsv produces tabular route data', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const csv = exporter.toCSV();
+    const csv = exporter.toCsv();
     expect(csv).to.include('Route');
     const lines = csv.trim().split('\n');
     expect(lines.length).to.be.greaterThan(1);

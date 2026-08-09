@@ -168,7 +168,7 @@ a `BRKGA` instance directly. They are not yet wired into `SolveOptions`
 | `LocationNode` | class | Node with coordinates |
 | `RouteAnalytics` | class | Post-solution summary metrics |
 | `SolutionComparator` | class | Pareto-front comparison |
-| `GISExporter` | class | `.toGeoJSON()` / `.toKML()` / `.toCSV()` |
+| `GISExporter` | class | `.toGeoJson()` / `.toKml()` / `.toCsv()` |
 | `TrafficModel` | class | Time-dependent segment factors |
 | `VrpError` → `ValidationError` \| `InfeasibleSolutionError` \| `AlgorithmConvergenceError` | classes | Typed error hierarchy |
 
@@ -218,12 +218,12 @@ import { RouteAnalytics, GISExporter } from 'vehicle-routing';
 
 const analytics = new RouteAnalytics(solution, problem);
 console.log(analytics.getSummary());
-// { makespan, totalDistance, totalCost, totalCO2, avgUtilization, ... }
+// { makespan, totalDistance, totalCost, totalCo2, avgUtilization, ... }
 
 const exporter = new GISExporter(solution, problem);
-const geojson = exporter.toGeoJSON();   // QGIS / Mapbox
-const kml     = exporter.toKML();       // Google Earth
-const csv     = exporter.toCSV();       // Excel
+const geojson = exporter.toGeoJson();   // QGIS / Mapbox
+const kml     = exporter.toKml();       // Google Earth
+const csv     = exporter.toCsv();       // Excel
 ```
 
 ### Progress Tracking

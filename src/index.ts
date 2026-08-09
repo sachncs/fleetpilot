@@ -75,7 +75,7 @@ export type {
 
 // Export
 export { GISExporter } from './export/gis-exporter.js';
-export type { GeoJSON, GeoJSONFeature, KMLPlacemark } from './export/gis-exporter.js';
+export type { GeoJson, GeoJsonFeature, KmlPlacemark } from './export/gis-exporter.js';
 
 // Main solver class
 import { Worker } from 'worker_threads';

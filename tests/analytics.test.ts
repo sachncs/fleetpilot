@@ -87,7 +87,7 @@ describe('RouteAnalytics', () => {
     const summary = analytics.getSummary();
     expect(summary).to.have.property('totalDistance');
     expect(summary).to.have.property('totalCost');
-    expect(summary).to.have.property('totalCO2');
+    expect(summary).to.have.property('totalCo2');
   });
 
   it('getSummary covers all fields', () => {
@@ -138,7 +138,7 @@ describe('SolutionComparator', () => {
     expect(metrics).to.have.property('makespan');
     expect(metrics).to.have.property('totalDistance');
     expect(metrics).to.have.property('totalCost');
-    expect(metrics).to.have.property('totalCO2');
+    expect(metrics).to.have.property('totalCo2');
     expect(metrics).to.have.property('avgVehicleUtilization');
     expect(metrics).to.have.property('totalWaitTime');
     expect(metrics).to.have.property('feasibilityScore');

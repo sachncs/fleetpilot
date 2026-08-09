@@ -10,7 +10,7 @@ export interface SolutionMetrics {
   makespan: number;
   totalDistance: number;
   totalCost: number;
-  totalCO2: number;
+  totalCo2: number;
   avgVehicleUtilization: number;
   totalWaitTime: number;
   feasibilityScore: number;
@@ -64,7 +64,7 @@ export class SolutionComparator {
       makespan: solution.makespan,
       totalDistance: solution.totalDistance,
       totalCost: solution.totalCost,
-      totalCO2: solution.totalCO2,
+      totalCo2: solution.totalCo2,
       avgVehicleUtilization: summary.avgUtilization,
       totalWaitTime: summary.totalWaitTime,
       feasibilityScore: solution.isFeasible() ? 1 : 0,
@@ -122,7 +122,7 @@ export class SolutionComparator {
       'makespan',
       'totalDistance',
       'totalCost',
-      'totalCO2',
+      'totalCo2',
       'avgVehicleUtilization',
       'totalWaitTime',
     ];
@@ -164,11 +164,11 @@ export class SolutionComparator {
           other.makespan <= current.makespan &&
           other.totalDistance <= current.totalDistance &&
           other.totalCost <= current.totalCost &&
-          other.totalCO2 <= current.totalCO2 &&
+          other.totalCo2 <= current.totalCo2 &&
           (other.makespan < current.makespan ||
             other.totalDistance < current.totalDistance ||
             other.totalCost < current.totalCost ||
-            other.totalCO2 < current.totalCO2);
+            other.totalCo2 < current.totalCo2);
 
         if (dominates) {
           dominated = true;
@@ -182,7 +182,7 @@ export class SolutionComparator {
           makespan: current.makespan,
           distance: current.totalDistance,
           cost: current.totalCost,
-          co2: current.totalCO2,
+          co2: current.totalCo2,
         });
       }
     }

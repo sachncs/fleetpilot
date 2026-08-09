@@ -292,7 +292,7 @@ export class SolutionWithTransfers extends VrpSolution {
     cloned.resourceReadyTimes = { ...this.resourceReadyTimes };
     cloned.totalDistance = this.totalDistance;
     cloned.totalCost = this.totalCost;
-    cloned.totalCO2 = this.totalCO2;
+    cloned.totalCo2 = this.totalCo2;
     cloned.transfers = [...this.transfers];
 
     return cloned;

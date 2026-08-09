@@ -2,9 +2,9 @@ import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 
 /**
- * TODO(6.3): document GeoJSONFeature
+ * TODO(6.3): document GeoJsonFeature
  */
-export interface GeoJSONFeature {
+export interface GeoJsonFeature {
   type: 'Feature';
   geometry: {
     type: 'LineString' | 'Point';
@@ -16,15 +16,15 @@ export interface GeoJSONFeature {
 /**
  * TODO(6.3): document GeoJSON
  */
-export interface GeoJSON {
+export interface GeoJson {
   type: 'FeatureCollection';
-  features: GeoJSONFeature[];
+  features: GeoJsonFeature[];
 }
 
 /**
- * TODO(6.3): document KMLPlacemark
+ * TODO(6.3): document KmlPlacemark
  */
-export interface KMLPlacemark {
+export interface KmlPlacemark {
   name: string;
   description: string;
   coordinates: [number, number][] | [number, number];
@@ -36,7 +36,7 @@ export interface KMLPlacemark {
 }
 
 /**
- * Exports VRP-RPD solutions to GIS formats (GeoJSON, KML).
+ * Exports VRP-RPD solutions to GIS formats (GeoJson, KML).
  */
 export class GISExporter {
   /**
@@ -51,10 +51,10 @@ export class GISExporter {
   ) {}
 
   /**
-   * @returns GeoJSON FeatureCollection representing the solution
+   * @returns GeoJson FeatureCollection representing the solution
    */
-  toGeoJSON(): GeoJSON {
-    const features: GeoJSONFeature[] = [];
+  toGeoJson(): GeoJson {
+    const features: GeoJsonFeature[] = [];
 
     // Add depot as a point
     const depotCoords = this.getDepotCoords();
@@ -149,8 +149,8 @@ export class GISExporter {
   /**
    * @returns KML document string representing the solution
    */
-  toKML(): string {
-    const placemarks: KMLPlacemark[] = [];
+  toKml(): string {
+    const placemarks: KmlPlacemark[] = [];
     const colors = ['#38bdf8', '#818cf8', '#f472b6', '#fbbf24', '#34d399'];
 
     // Add routes
@@ -217,7 +217,7 @@ export class GISExporter {
   /**
    * @returns CSV string with route, node, and timing data
    */
-  toCSV(): string {
+  toCsv(): string {
     let csv = 'Route,Vehicle,NodeId,NodeType,X,Y,ArrivalTime,Sequence\n';
 
     for (let i = 0; i < this.solution.routes.length; i++) {

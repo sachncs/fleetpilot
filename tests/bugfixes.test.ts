@@ -17,7 +17,7 @@ import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.j
 import { GISExporter } from '../src/export/gis-exporter.js';
 
 // ============================================================
-// C1: totalCost / totalCO2 must be per-route, per-vehicle
+// C1: totalCost / totalCo2 must be per-route, per-vehicle
 // ============================================================
 describe('C1 - Cost and CO2 per-route correctness', () => {
   it('multi-vehicle cost is sum of per-route costs', () => {
@@ -52,7 +52,7 @@ describe('C1 - Cost and CO2 per-route correctness', () => {
     expect(solution.totalDistance).to.equal(80);
     // But cost must be per-route
     expect(solution.totalCost).to.equal(expectedCost);
-    expect(solution.totalCO2).to.equal(expectedCO2);
+    expect(solution.totalCo2).to.equal(expectedCO2);
   });
 
   it('single-vehicle cost matches totalDistance * rate', () => {
@@ -72,7 +72,7 @@ describe('C1 - Cost and CO2 per-route correctness', () => {
     // Route distance = 10 + 10 + 20 = 40
     expect(solution.totalDistance).to.equal(40);
     expect(solution.totalCost).to.equal(40 * 5);
-    expect(solution.totalCO2).to.equal(40 * 5);
+    expect(solution.totalCo2).to.equal(40 * 5);
   });
 });
 
@@ -442,7 +442,7 @@ describe('Security - GISExporter escaping', () => {
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const kml = exporter.toKML();
+    const kml = exporter.toKml();
 
     // Verify KML has correct structure
     expect(kml).to.include('<?xml version="1.0" encoding="UTF-8"?>');
@@ -464,7 +464,7 @@ describe('Security - GISExporter escaping', () => {
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const csv = exporter.toCSV();
+    const csv = exporter.toCsv();
 
     // CSV lines should have consistent column count
     const lines = csv.split('\n').filter(l => l.trim().length > 0);

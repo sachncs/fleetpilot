@@ -88,7 +88,7 @@ describe('T3 - nodeTimes string key access', () => {
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const geojson = exporter.toGeoJSON();
+    const geojson = exporter.toGeoJson();
 
     const routeFeature = geojson.features.find(f => f.properties['type'] === 'route');
     expect(routeFeature).to.exist;
@@ -111,7 +111,7 @@ describe('T3 - nodeTimes string key access', () => {
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const csv = exporter.toCSV();
+    const csv = exporter.toCsv();
 
     // CSV should include a depot_return row with a valid arrival time
     const lines = csv.split('\n').filter(l => l.includes('depot_return'));

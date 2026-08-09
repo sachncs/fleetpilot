@@ -67,7 +67,7 @@ export class VrpSolution {
   resourceReadyTimes: Record<number, number>;
   totalDistance: number;
   totalCost: number;
-  totalCO2: number;
+  totalCo2: number;
 
   /**
    * @param problem - VrpProblem instance this solution solves
@@ -83,7 +83,7 @@ export class VrpSolution {
     this.resourceReadyTimes = {};
     this.totalDistance = 0;
     this.totalCost = 0;
-    this.totalCO2 = 0;
+    this.totalCo2 = 0;
   }
 
   /**
@@ -184,14 +184,14 @@ export class VrpSolution {
 
     // Calculate total cost and CO2 (per-route, per-vehicle)
     this.totalCost = 0;
-    this.totalCO2 = 0;
+    this.totalCo2 = 0;
     for (const route of this.routes) {
       const vehicle = this.problem.vehicleMap.get(route.vehicleId);
       if (!vehicle) continue;
 
       const routeDistance = this.calculateRouteDistance(route);
       this.totalCost += routeDistance * vehicle.costPerKm;
-      this.totalCO2 += routeDistance * vehicle.co2PerKm;
+      this.totalCo2 += routeDistance * vehicle.co2PerKm;
     }
 
     return this.makespan;
@@ -676,7 +676,7 @@ export class VrpSolution {
     cloned.resourceReadyTimes = { ...this.resourceReadyTimes };
     cloned.totalDistance = this.totalDistance;
     cloned.totalCost = this.totalCost;
-    cloned.totalCO2 = this.totalCO2;
+    cloned.totalCo2 = this.totalCo2;
     return cloned;
   }
 
@@ -687,13 +687,13 @@ export class VrpSolution {
     makespan: number;
     totalDistance: number;
     totalCost: number;
-    totalCO2: number;
+    totalCo2: number;
   }> {
     return {
       makespan: this.makespan,
       totalDistance: this.totalDistance,
       totalCost: this.totalCost,
-      totalCO2: this.totalCO2,
+      totalCo2: this.totalCo2,
     };
   }
 
@@ -707,7 +707,7 @@ export class VrpSolution {
       makespan: this.makespan,
       totalDistance: this.totalDistance,
       totalCost: this.totalCost,
-      totalCO2: this.totalCO2,
+      totalCo2: this.totalCo2,
       nodeTimes: { ...this.nodeTimes },
       resourceReadyTimes: { ...this.resourceReadyTimes },
     };
@@ -722,7 +722,7 @@ export class VrpSolution {
     solution.makespan = data.makespan;
     solution.totalDistance = data.totalDistance;
     solution.totalCost = data.totalCost;
-    solution.totalCO2 = data.totalCO2;
+    solution.totalCo2 = data.totalCo2;
     solution.nodeTimes = { ...data.nodeTimes };
     solution.resourceReadyTimes = { ...data.resourceReadyTimes };
     return solution;
@@ -745,7 +745,7 @@ export interface SerializedSolution {
   makespan: number;
   totalDistance: number;
   totalCost: number;
-  totalCO2: number;
+  totalCo2: number;
   nodeTimes: Record<number | string, number>;
   resourceReadyTimes: Record<number, number>;
 }

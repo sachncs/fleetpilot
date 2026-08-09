@@ -43,7 +43,7 @@ describe('Security S1 - KML XML escaping', () => {
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const kml = exporter.toKML();
+    const kml = exporter.toKml();
 
     // The content between <name> and </name> should not contain unescaped < or >
     const nameMatches = kml.match(/<name>(.*?)<\/name>/g);
@@ -131,7 +131,7 @@ describe('Security S2 - CSV escaping', () => {
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
-    const csv = exporter.toCSV();
+    const csv = exporter.toCsv();
 
     const lines = csv.split('\n').filter(l => l.trim().length > 0);
     for (const line of lines) {

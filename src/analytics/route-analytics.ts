@@ -42,7 +42,7 @@ export interface RouteComparison {
   makespan: number;
   totalDistance: number;
   totalCost: number;
-  totalCO2: number;
+  totalCo2: number;
   efficiency: number;
 }
 
@@ -231,7 +231,7 @@ export class RouteAnalytics {
         makespan: routeMakespan,
         totalDistance: routeDistance,
         totalCost: routeCost,
-        totalCO2: routeCO2,
+        totalCo2: routeCO2,
         efficiency,
       });
     }
@@ -248,7 +248,7 @@ export class RouteAnalytics {
     avgUtilization: number;
     totalDistance: number;
     totalCost: number;
-    totalCO2: number;
+    totalCo2: number;
     makespan: number;
     totalWaitTime: number;
   } {
@@ -264,7 +264,7 @@ export class RouteAnalytics {
           : 0,
       totalDistance: this.solution.totalDistance,
       totalCost: this.solution.totalCost,
-      totalCO2: this.solution.totalCO2,
+      totalCo2: this.solution.totalCo2,
       makespan: this.solution.makespan,
       totalWaitTime: waitTimes.reduce((sum, w) => sum + w.waitTime, 0),
     };
