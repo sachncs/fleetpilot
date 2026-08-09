@@ -190,14 +190,6 @@ export class Decoder {
     type: 'delivery' | 'pickup',
     preferredIndex: number,
   ): number {
-    const preferredLoad = loads[preferredIndex];
-    if (
-      preferredLoad &&
-      canAddOperation(preferredLoad, this.vehicleCapacity(preferredIndex), type)
-    ) {
-      return preferredIndex;
-    }
-
     for (let i = 0; i < routes.length; i++) {
       if (i === preferredIndex) continue;
       const load = loads[i];
