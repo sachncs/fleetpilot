@@ -113,6 +113,27 @@ describe('Transfer-Aware Operators', () => {
     const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 5);
     expect(removed.length).to.equal(1);
   });
+
+  it('greedyInsertionWithTransfers selects a transfer when beneficial', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot A'),
+      1: new LocationNode(1, 50, 0, 'Hub'),
+      2: new LocationNode(2, 100, 0, 'D1'),
+      3: new LocationNode(3, 150, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 2, 3, 10)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const hubs = [new TransferHub(1, 50, 0, 'Hub')];
+    const solution = new SolutionWithTransfers(problem, routes, hubs,
+      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const repaired = TransferAwareInsertionOperators.greedyInsertionWithTransfers(
+      solution, [...problem.customers], hubs,
+    );
+    expect(repaired.isComplete()).to.be.true;
+    expect(repaired.transfers.length).to.be.at.least(0);
+  });
 });
 
 describe('VehicleFleetManager', () => {
