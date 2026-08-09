@@ -2,6 +2,9 @@ import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 import { isCustomerWithTimeWindows } from '../core/solution.js';
 
+/**
+ *
+ */
 export interface VehicleUtilization {
   vehicleId: number;
   capacity: number;
@@ -12,6 +15,9 @@ export interface VehicleUtilization {
   customerCount: number;
 }
 
+/**
+ *
+ */
 export interface WaitTimeAnalysis {
   nodeId: number;
   arrivalTime: number;
@@ -19,11 +25,17 @@ export interface WaitTimeAnalysis {
   reason: 'resource' | 'timeWindow' | 'none';
 }
 
+/**
+ *
+ */
 export interface LoadOverTime {
   time: number;
   load: number;
 }
 
+/**
+ *
+ */
 export interface RouteComparison {
   routeId: number;
   vehicleId: number;

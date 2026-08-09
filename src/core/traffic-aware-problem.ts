@@ -21,11 +21,17 @@ export class TrafficModel {
   private readonly timeFactors: Map<string, Array<{ startTime: number; factor: number }>> =
     new Map();
 
+  /**
+   *
+   */
   setSegment(segment: TrafficSegment): void {
     const key = this.makeKey(segment.fromId, segment.toId);
     this.segments.set(key, segment);
   }
 
+  /**
+   *
+   */
   setTimeFactors(
     fromId: number,
     toId: number,
@@ -131,6 +137,9 @@ export class TrafficModel {
     return segment.currentTravelTime;
   }
 
+  /**
+   *
+   */
   getCongestionLevel(
     fromId: number,
     toId: number,
@@ -184,6 +193,9 @@ export class TrafficAwareProblem extends VrpProblem {
     super(nodes, customers, vehicles, depotNodeId);
   }
 
+  /**
+   *
+   */
   override getTravelTime(fromId: number, toId: number, departureTime: number = 0): number {
     if (!this.trafficModel.hasSegment(fromId, toId)) {
       const distance = this.getDistance(fromId, toId);
@@ -192,6 +204,9 @@ export class TrafficAwareProblem extends VrpProblem {
     return this.trafficModel.getTravelTime(fromId, toId, departureTime);
   }
 
+  /**
+   *
+   */
   initializeTrafficFromDistances(): void {
     const nodeIds = Object.keys(this.nodes).map(Number);
     for (const fromId of nodeIds) {

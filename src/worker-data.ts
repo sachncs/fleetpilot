@@ -17,6 +17,9 @@ import type {
   WorkerVehicleData,
 } from './worker-validation.js';
 
+/**
+ *
+ */
 export interface WorkerMeta {
   type: 'ALNS' | 'BRKGA' | 'island-brkga';
   options: object;

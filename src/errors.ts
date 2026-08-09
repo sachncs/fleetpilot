@@ -1,5 +1,8 @@
 /** Base error for all VRP-RPD library errors. */
 export class VrpError extends Error {
+  /**
+   *
+   */
   constructor(message: string) {
     super(message);
     this.name = 'VrpError';
@@ -9,6 +12,9 @@ export class VrpError extends Error {
 
 /** Thrown when problem or solver options fail validation. */
 export class ValidationError extends VrpError {
+  /**
+   *
+   */
   constructor(message: string) {
     super(message);
     this.name = 'ValidationError';
@@ -18,6 +24,9 @@ export class ValidationError extends VrpError {
 
 /** Thrown when a solution violates hard constraints. */
 export class InfeasibleSolutionError extends VrpError {
+  /**
+   *
+   */
   constructor(message: string) {
     super(message);
     this.name = 'InfeasibleSolutionError';
@@ -27,6 +36,9 @@ export class InfeasibleSolutionError extends VrpError {
 
 /** Thrown when an algorithm fails to converge. */
 export class AlgorithmConvergenceError extends VrpError {
+  /**
+   *
+   */
   constructor(message: string) {
     super(message);
     this.name = 'AlgorithmConvergenceError';

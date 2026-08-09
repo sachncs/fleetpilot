@@ -94,6 +94,7 @@
     "chai": "6.2.2",
     "eslint": "9.39.4",
     "eslint-plugin-import": "2.32.0",
+    "eslint-plugin-jsdoc": "^64.0.2",
     "mocha": "11.7.6",
     "rollup": "4.62.0",
     "rollup-plugin-dts": "6.4.1",

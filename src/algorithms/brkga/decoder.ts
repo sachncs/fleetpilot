@@ -58,8 +58,14 @@ function updateLoad(
  * Uses α genes for tie-breaking in priority sort.
  */
 export class Decoder {
+  /**
+   *
+   */
   constructor(private readonly problem: VrpProblem) {}
 
+  /**
+   *
+   */
   decode(chromosome: Chromosome): VrpSolution {
     const numCustomers = this.problem.customers.length;
     const numVehicles = this.problem.vehicles.length;

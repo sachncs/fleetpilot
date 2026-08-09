@@ -85,12 +85,18 @@ export class VehicleFleetManager {
   private readonly vehicles: Map<number, VehicleWithCapabilities> = new Map();
   private readonly states: Map<number, VehicleState> = new Map();
 
+  /**
+   *
+   */
   constructor(vehicles: VehicleWithCapabilities[] = []) {
     for (const vehicle of vehicles) {
       this.addVehicle(vehicle);
     }
   }
 
+  /**
+   *
+   */
   addVehicle(vehicle: VehicleWithCapabilities): void {
     this.vehicles.set(vehicle.id, vehicle);
     this.states.set(vehicle.id, {
@@ -105,10 +111,16 @@ export class VehicleFleetManager {
     });
   }
 
+  /**
+   *
+   */
   getVehicle(vehicleId: number): VehicleWithCapabilities | undefined {
     return this.vehicles.get(vehicleId);
   }
 
+  /**
+   *
+   */
   getVehicleState(vehicleId: number): VehicleState | undefined {
     return this.states.get(vehicleId);
   }
@@ -248,6 +260,9 @@ export class VehicleFleetManager {
     return stats;
   }
 
+  /**
+   *
+   */
   resetAllStates(): void {
     for (const [id] of this.vehicles.entries()) {
       this.states.set(id, {
@@ -263,6 +278,9 @@ export class VehicleFleetManager {
     }
   }
 
+  /**
+   *
+   */
   getAllVehicles(): readonly VehicleWithCapabilities[] {
     return Array.from(this.vehicles.values());
   }

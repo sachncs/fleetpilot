@@ -25,10 +25,16 @@ export class Route {
     this.nodes = [...nodes];
   }
 
+  /**
+   *
+   */
   addNode(nodeId: number): void {
     this.nodes.push(nodeId);
   }
 
+  /**
+   *
+   */
   removeNode(nodeId: number): void {
     const index = this.nodes.indexOf(nodeId);
     if (index !== -1) {
@@ -36,10 +42,16 @@ export class Route {
     }
   }
 
+  /**
+   *
+   */
   hasNode(nodeId: number): boolean {
     return this.nodes.includes(nodeId);
   }
 
+  /**
+   *
+   */
   clone(): Route {
     return new Route(this.vehicleId, [...this.nodes]);
   }
@@ -511,11 +523,17 @@ export class VrpSolution {
   }
 }
 
+/**
+ *
+ */
 export interface SerializedRoute {
   vehicleId: number;
   nodes: number[];
 }
 
+/**
+ *
+ */
 export interface SerializedSolution {
   routes: SerializedRoute[];
   makespan: number;

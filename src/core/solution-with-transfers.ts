@@ -232,6 +232,9 @@ export class SolutionWithTransfers extends VrpSolution {
     return tempManager.scheduleTransfer(transfer);
   }
 
+  /**
+   *
+   */
   override isFeasible(): boolean {
     const baseFeasible = super.isFeasible();
     const transfersValid = this.validateTransfers();
@@ -273,6 +276,9 @@ export class SolutionWithTransfers extends VrpSolution {
     };
   }
 
+  /**
+   *
+   */
   override clone(): SolutionWithTransfers {
     const cloned = new SolutionWithTransfers(
       this.problem,
@@ -314,10 +320,16 @@ export class ProblemWithTransfers extends VrpProblem {
     super(nodes, customers, vehicles, depotNodeId);
   }
 
+  /**
+   *
+   */
   isTransferHub(nodeId: number): boolean {
     return this.transferHubs.some(h => h.id === nodeId);
   }
 
+  /**
+   *
+   */
   getTransferHub(nodeId: number): TransferHub | undefined {
     return this.transferHubs.find(h => h.id === nodeId);
   }

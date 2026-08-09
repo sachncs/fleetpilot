@@ -12,6 +12,9 @@ export interface WireIndividual {
   fitness: number | null;
 }
 
+/**
+ *
+ */
 export interface IslandCheckpointMessage {
   type: 'checkpoint';
   islandId: number;
@@ -19,28 +22,46 @@ export interface IslandCheckpointMessage {
   population: WireIndividual[];
 }
 
+/**
+ *
+ */
 export interface IslandFinishMessage {
   type: 'finish';
   islandId: number;
   bestIndividual: WireIndividual | null;
 }
 
+/**
+ *
+ */
 export type IslandWorkerMessage = IslandCheckpointMessage | IslandFinishMessage;
 
+/**
+ *
+ */
 export interface EvolveCommand {
   type: 'evolve';
   generations: number;
 }
 
+/**
+ *
+ */
 export interface InjectCommand {
   type: 'inject';
   migrants: Chromosome[];
 }
 
+/**
+ *
+ */
 export interface FinishCommand {
   type: 'finish';
 }
 
+/**
+ *
+ */
 export type IslandCommand = EvolveCommand | InjectCommand | FinishCommand;
 
 function isIslandWorkerMessage(msg: unknown): msg is IslandWorkerMessage {

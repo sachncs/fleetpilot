@@ -96,6 +96,9 @@ function isWorkerResult(msg: object): msg is WorkerResult {
   return 'makespan' in msg && 'routes' in msg && 'type' in msg;
 }
 
+/**
+ *
+ */
 export interface SolveOptions {
   alnsIterations?: number;
   populationSize?: number;
@@ -113,6 +116,9 @@ export interface SolveOptions {
   onProgress?: (progress: SolverProgress) => void;
 }
 
+/**
+ *
+ */
 export interface SolverProgress {
   stage: 'ALNS' | 'BRKGA' | 'parallel';
   iteration: number;
@@ -121,6 +127,9 @@ export interface SolverProgress {
   elapsedMs: number;
 }
 
+/**
+ *
+ */
 export interface WorkerResult {
   makespan: number;
   routes: Array<{ vehicleId: number; nodes: number[] }>;

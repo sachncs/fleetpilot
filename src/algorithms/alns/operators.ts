@@ -451,12 +451,24 @@ function regretInsertion(
   return newVrpSolution;
 }
 
+/**
+ *
+ */
 export type RemovalOperatorKey = keyof typeof RemovalOperators;
+/**
+ *
+ */
 export type InsertionOperatorKey = keyof typeof InsertionOperators;
 
-export const REMOVAL_OPERATOR_KEYS: RemovalOperatorKey[] = [
+export /**
+ *
+ */
+const REMOVAL_OPERATOR_KEYS: RemovalOperatorKey[] = [
   'random', 'worst', 'shaw', 'cluster', 'proximity', 'temporal',
 ];
-export const INSERTION_OPERATOR_KEYS: InsertionOperatorKey[] = [
+export /**
+ *
+ */
+const INSERTION_OPERATOR_KEYS: InsertionOperatorKey[] = [
   'greedyInsertion', 'regret2Insertion', 'regret3Insertion', 'regret4Insertion',
 ];

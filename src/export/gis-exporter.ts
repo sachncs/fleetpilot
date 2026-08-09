@@ -1,6 +1,9 @@
 import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 
+/**
+ *
+ */
 export interface GeoJSONFeature {
   type: 'Feature';
   geometry: {
@@ -10,11 +13,17 @@ export interface GeoJSONFeature {
   properties: Record<string, unknown>;
 }
 
+/**
+ *
+ */
 export interface GeoJSON {
   type: 'FeatureCollection';
   features: GeoJSONFeature[];
 }
 
+/**
+ *
+ */
 export interface KMLPlacemark {
   name: string;
   description: string;

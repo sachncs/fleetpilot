@@ -3,6 +3,9 @@ import type { VrpSolution } from '../core/solution.js';
 
 import { RouteAnalytics } from './route-analytics.js';
 
+/**
+ *
+ */
 export interface SolutionMetrics {
   makespan: number;
   totalDistance: number;
@@ -13,6 +16,9 @@ export interface SolutionMetrics {
   feasibilityScore: number;
 }
 
+/**
+ *
+ */
 export interface ComparisonResult {
   metric: string;
   values: Array<{ solutionIndex: number; value: number; rank: number }>;
@@ -21,6 +27,9 @@ export interface ComparisonResult {
   improvement: number;
 }
 
+/**
+ *
+ */
 export interface ParetoFront {
   solutions: number[];
   objectives: Array<{ makespan: number; distance: number; cost: number; co2: number }>;

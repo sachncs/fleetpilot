@@ -1,3 +1,6 @@
+/**
+ *
+ */
 export interface WorkerNodeData {
   id: number;
   x: number;
@@ -5,6 +8,9 @@ export interface WorkerNodeData {
   name: string;
 }
 
+/**
+ *
+ */
 export interface WorkerCustomerData {
   id: number;
   deliveryNodeId: number;
@@ -16,6 +22,9 @@ export interface WorkerCustomerData {
   latestPickupTime?: number;
 }
 
+/**
+ *
+ */
 export interface WorkerVehicleData {
   id: number;
   capacity: number;
@@ -25,6 +34,9 @@ export interface WorkerVehicleData {
   co2PerKm?: number;
 }
 
+/**
+ *
+ */
 export interface WorkerTrafficSegmentData {
   fromId: number;
   toId: number;
@@ -33,11 +45,17 @@ export interface WorkerTrafficSegmentData {
   congestionLevel: 'low' | 'medium' | 'high' | 'severe';
 }
 
+/**
+ *
+ */
 export interface WorkerTimeFactorData {
   startTime: number;
   factor: number;
 }
 
+/**
+ *
+ */
 export interface WorkerData {
   nodes: Record<number, WorkerNodeData>;
   customers: WorkerCustomerData[];
@@ -56,12 +74,18 @@ export interface WorkerData {
   islandId?: number;
 }
 
+/**
+ *
+ */
 export interface WorkerResult {
   makespan: number;
   routes: Array<{ vehicleId: number; nodes: number[] }>;
   type: string;
 }
 
+/**
+ *
+ */
 export function isWorkerData(value: unknown): value is WorkerData {
   if (typeof value !== 'object' || value === null) return false;
   return (
@@ -77,6 +101,9 @@ export function isWorkerData(value: unknown): value is WorkerData {
   );
 }
 
+/**
+ *
+ */
 export function validateWorkerData(data: WorkerData): string | null {
   const nodeIds = Object.keys(data.nodes).map(Number);
   if (nodeIds.length === 0) return 'nodes cannot be empty';

@@ -13,6 +13,9 @@ import {
   type InsertionOperatorKey,
 } from './operators.js';
 
+/**
+ *
+ */
 export interface ALNSProgress {
   iteration: number;
   maxIterations: number;
@@ -21,6 +24,9 @@ export interface ALNSProgress {
   temperature: number;
 }
 
+/**
+ *
+ */
 export interface ALNSOptions {
   maxIterations?: number;
   initialTemp?: number;

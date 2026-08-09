@@ -13,6 +13,9 @@ export function mulberry32(seed: number): () => number {
   };
 }
 
+/**
+ *
+ */
 export interface RandomSource {
   /** Returns a float in [0, 1). */
   next(): number;
@@ -22,6 +25,9 @@ export interface RandomSource {
   chance(p: number): boolean;
 }
 
+/**
+ *
+ */
 export function asRandomSource(next: () => number): RandomSource {
   return {
     next,
@@ -34,6 +40,9 @@ export function asRandomSource(next: () => number): RandomSource {
   };
 }
 
+/**
+ *
+ */
 export function fromSeed(seed: number): RandomSource {
   return asRandomSource(mulberry32(seed));
 }

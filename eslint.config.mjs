@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname } from 'node:path';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
+import jsdocPlugin from 'eslint-plugin-jsdoc';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -18,6 +19,7 @@ export default tseslint.config(
     },
     plugins: {
       import: importPlugin,
+      jsdoc: jsdocPlugin,
     },
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error',
@@ -26,6 +28,29 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
       '@typescript-eslint/restrict-plus-operands': 'error',
+
+      'jsdoc/require-jsdoc': [
+        'error',
+        {
+          publicOnly: true,
+          require: {
+            FunctionDeclaration: true,
+            MethodDefinition: true,
+            ClassDeclaration: true,
+            ArrowFunctionExpression: false,
+            FunctionExpression: false,
+          },
+          contexts: [
+            'TSInterfaceDeclaration',
+            'TSTypeAliasDeclaration',
+            'ExportNamedDeclaration > FunctionDeclaration',
+            'ExportNamedDeclaration > VariableDeclaration',
+            'ExportDefaultDeclaration',
+          ],
+        },
+      ],
+      'jsdoc/require-param-description': 'off',
+      'jsdoc/require-returns-description': 'off',
 
       'import/order': [
         'error',
@@ -54,6 +79,7 @@ export default tseslint.config(
     files: ['tests/**/*.ts'],
     rules: {
       '@typescript-eslint/no-unused-expressions': 'off',
+      'jsdoc/require-jsdoc': 'off',
     },
   },
 );

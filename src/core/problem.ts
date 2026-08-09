@@ -208,6 +208,9 @@ export function validateProblemBase(
 export class VrpProblem {
   readonly distanceMatrix: Readonly<Record<number, Readonly<Record<number, number>>>>;
 
+  /**
+   *
+   */
   constructor(
     public readonly nodes: Readonly<Record<number, LocationNode>>,
     public readonly customers: ReadonlyArray<Customer>,

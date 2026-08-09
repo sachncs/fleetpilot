@@ -12,6 +12,9 @@ import { getWorkerPath } from '../../worker-path.js';
 import { Decoder, type Chromosome } from './decoder.js';
 import { sendCommand, type WireIndividual } from './island-messenger.js';
 
+/**
+ *
+ */
 export interface BRKGAProgress {
   generation: number;
   maxGenerations: number;
@@ -19,6 +22,9 @@ export interface BRKGAProgress {
   populationSize: number;
 }
 
+/**
+ *
+ */
 export interface BRKGAOptions {
   populationSize?: number;
   eliteFraction?: number;
@@ -53,6 +59,9 @@ export interface BRKGAOptions {
   random?: () => number;
 }
 
+/**
+ *
+ */
 export interface Individual {
   chromosome: Chromosome;
   fitness: number | null;
@@ -177,6 +186,9 @@ export class BRKGA {
     return this.runSingleIsland(startTime);
   }
 
+  /**
+   *
+   */
   initializePopulation(): Individual[] {
     const population: Individual[] = [];
 

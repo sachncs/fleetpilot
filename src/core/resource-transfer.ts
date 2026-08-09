@@ -51,10 +51,16 @@ export class TransferManager {
     Array<{ startTime: number; endTime: number; hubId: number }>
   > = new Map();
 
+  /**
+   *
+   */
   registerHub(hub: TransferHub): void {
     this.hubs.set(hub.id, hub);
   }
 
+  /**
+   *
+   */
   getHub(hubId: number): TransferHub | undefined {
     return this.hubs.get(hubId);
   }
@@ -120,10 +126,16 @@ export class TransferManager {
     return true;
   }
 
+  /**
+   *
+   */
   getTransfersForHub(hubId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(t => t.hubNodeId === hubId);
   }
 
+  /**
+   *
+   */
   getTransfersForVehicle(vehicleId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(
       t => t.fromVehicleId === vehicleId || t.toVehicleId === vehicleId,
@@ -149,20 +161,32 @@ export class TransferManager {
     return balance;
   }
 
+  /**
+   *
+   */
   isVehicleAtHub(vehicleId: number, hubId: number, time: number): boolean {
     const schedule = this.vehicleSchedules.get(vehicleId) || [];
     return schedule.some(s => s.hubId === hubId && s.startTime <= time && s.endTime >= time);
   }
 
+  /**
+   *
+   */
   clearAll(): void {
     this.transfers.clear();
     this.vehicleSchedules.clear();
   }
 
+  /**
+   *
+   */
   getAllTransfers(): readonly ResourceTransfer[] {
     return Array.from(this.transfers.values());
   }
 
+  /**
+   *
+   */
   getAllHubs(): readonly TransferHub[] {
     return Array.from(this.hubs.values());
   }
