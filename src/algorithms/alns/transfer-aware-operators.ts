@@ -39,8 +39,7 @@ export const TransferAwareInsertionOperators = {
 
       // Try direct assignment (same vehicle for D and P)
       for (let rIdx = 0; rIdx < newSolution.routes.length; rIdx++) {
-        const route = newSolution.routes[rIdx];
-        if (!route) continue;
+        const route = newSolution.routes[rIdx]!;
 
         for (let dPos = 0; dPos <= route.nodes.length; dPos++) {
           for (let pPos = dPos; pPos <= route.nodes.length; pPos++) {
@@ -73,9 +72,8 @@ export const TransferAwareInsertionOperators = {
             for (let pRouteIdx = 0; pRouteIdx < newSolution.routes.length; pRouteIdx++) {
               if (dRouteIdx === pRouteIdx) continue; // Skip same vehicle (already tried)
 
-              const deliveryRoute = newSolution.routes[dRouteIdx];
-              const pickupRoute = newSolution.routes[pRouteIdx];
-              if (!deliveryRoute || !pickupRoute) continue;
+              const deliveryRoute = newSolution.routes[dRouteIdx]!;
+              const pickupRoute = newSolution.routes[pRouteIdx]!;
 
               // Geographic pruning: skip hub if it is unreasonably far
               const directDist = solution.problem.getDistance(
@@ -135,34 +133,30 @@ export const TransferAwareInsertionOperators = {
       // Apply best configuration
       if (bestConfig) {
         if (bestConfig.useTransfer && bestConfig.hubId !== undefined) {
-          const deliveryRoute = newSolution.routes[bestConfig.deliveryRouteIndex];
-          const pickupRoute = newSolution.routes[bestConfig.pickupRouteIndex];
-          if (deliveryRoute && pickupRoute) {
-            deliveryRoute.nodes.splice(
-              bestConfig.deliveryPos,
-              0,
-              customer.deliveryNodeId,
-              bestConfig.hubId,
-            );
-            pickupRoute.nodes.splice(
-              bestConfig.pickupPos,
-              0,
-              bestConfig.hubId,
-              customer.pickupNodeId,
-            );
-            pendingTransfers.push({
-              hubId: bestConfig.hubId,
-              fromVehicleId: deliveryRoute.vehicleId,
-              toVehicleId: pickupRoute.vehicleId,
-              amount: 1,
-            });
-          }
+          const deliveryRoute = newSolution.routes[bestConfig.deliveryRouteIndex]!;
+          const pickupRoute = newSolution.routes[bestConfig.pickupRouteIndex]!;
+          deliveryRoute.nodes.splice(
+            bestConfig.deliveryPos,
+            0,
+            customer.deliveryNodeId,
+            bestConfig.hubId,
+          );
+          pickupRoute.nodes.splice(
+            bestConfig.pickupPos,
+            0,
+            bestConfig.hubId,
+            customer.pickupNodeId,
+          );
+          pendingTransfers.push({
+            hubId: bestConfig.hubId,
+            fromVehicleId: deliveryRoute.vehicleId,
+            toVehicleId: pickupRoute.vehicleId,
+            amount: 1,
+          });
         } else {
-          const route = newSolution.routes[bestConfig.deliveryRouteIndex];
-          if (route) {
-            route.nodes.splice(bestConfig.deliveryPos, 0, customer.deliveryNodeId);
-            route.nodes.splice(bestConfig.pickupPos + 1, 0, customer.pickupNodeId);
-          }
+          const route = newSolution.routes[bestConfig.deliveryRouteIndex]!;
+          route.nodes.splice(bestConfig.deliveryPos, 0, customer.deliveryNodeId);
+          route.nodes.splice(bestConfig.pickupPos + 1, 0, customer.pickupNodeId);
         }
       }
     }
