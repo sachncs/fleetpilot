@@ -20,9 +20,9 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 
 - [x] **2.1** Traffic fallback to Euclidean distance when segment unconfigured; fix the buggy assertion — `src/core/traffic-aware-problem.ts:54`, `tests/comprehensive.test.ts:233` — Verify: test now expects ~10, not 0.
 - [x] **2.2** BRKGA feasible-only hall-of-fame — `src/algorithms/brkga/brkga.ts` — Verify: test with infeasible candidates; returned solution `isFeasible()`.
-- [ ] **2.3** Feasibility gate in `VrpRpdSolver.solve` → throw `InfeasibleSolutionError` — `src/index.ts:222` — Verify: impossible-problem test throws typed error.
-- [ ] **2.4** Route pickups on the actual delivering vehicle — `src/algorithms/brkga/decoder.ts:139` — Verify: test asserts pickup shares route with its delivery.
-- [ ] **2.5** Decoder throws (not drops) when a customer can't be placed — `decoder.ts` — Verify: over-capacity test throws `ValidationError`.
+- [x] **2.3** Feasibility gate in `VrpRpdSolver.solve` → throw `InfeasibleSolutionError` — `src/index.ts:222` — Verify: impossible-problem test throws typed error.
+- [x] **2.4** Route pickups on the actual delivering vehicle — `src/algorithms/brkga/decoder.ts:139` — Verify: test asserts pickup shares route with its delivery.
+- [x] **2.5** Decoder throws (not drops) when a customer can't be placed — `decoder.ts` — Verify: over-capacity test throws `ValidationError`.
 - [ ] **2.6** β-gene honesty: implement transfer-aware decode OR shrink to 2.5n + document — `decoder.ts`, `brkga.ts` — gated on decision D1 — Verify: no dead genes; chrom length matches docs.
 - [ ] **2.7** `VrpProblem` validation: shared node ownership, TW ordering, integer ids — `src/core/problem.ts` — Verify: new validation tests.
 - [ ] **2.8** `MultiDepotProblem` validation parity — `src/core/multi-depot-problem.ts` — Verify: tests.
