@@ -18,8 +18,8 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 
 ## WS-2 · Correctness (findings #3, #5, #6, #7, #8, #9)
 
-- [ ] **2.1** Traffic fallback to Euclidean distance when segment unconfigured; fix the buggy assertion — `src/core/traffic-aware-problem.ts:54`, `tests/comprehensive.test.ts:233` — Verify: test now expects ~10, not 0.
-- [ ] **2.2** BRKGA feasible-only hall-of-fame — `src/algorithms/brkga/brkga.ts` — Verify: test with infeasible candidates; returned solution `isFeasible()`.
+- [x] **2.1** Traffic fallback to Euclidean distance when segment unconfigured; fix the buggy assertion — `src/core/traffic-aware-problem.ts:54`, `tests/comprehensive.test.ts:233` — Verify: test now expects ~10, not 0.
+- [x] **2.2** BRKGA feasible-only hall-of-fame — `src/algorithms/brkga/brkga.ts` — Verify: test with infeasible candidates; returned solution `isFeasible()`.
 - [ ] **2.3** Feasibility gate in `VrpRpdSolver.solve` → throw `InfeasibleSolutionError` — `src/index.ts:222` — Verify: impossible-problem test throws typed error.
 - [ ] **2.4** Route pickups on the actual delivering vehicle — `src/algorithms/brkga/decoder.ts:139` — Verify: test asserts pickup shares route with its delivery.
 - [ ] **2.5** Decoder throws (not drops) when a customer can't be placed — `decoder.ts` — Verify: over-capacity test throws `ValidationError`.
