@@ -26,7 +26,7 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 - [ ] **2.6** β-gene honesty: implement transfer-aware decode OR shrink to 2.5n + document — `decoder.ts`, `brkga.ts` — gated on decision D1 — Verify: no dead genes; chrom length matches docs.
 - [x] **2.7** `VrpProblem` validation: shared node ownership, TW ordering, integer ids — `src/core/problem.ts` — Verify: new validation tests.
 - [x] **2.8** `MultiDepotProblem` validation parity — `src/core/multi-depot-problem.ts` — Verify: tests.
-- [ ] **2.9** CLI NaN guards — `src/cli.ts:233` — Verify: CLI test errors cleanly on `NaN`.
+- [x] **2.9** CLI NaN guards — `src/cli.ts:233` — Verify: CLI test errors cleanly on `NaN`.
 
 ## WS-3 · Performance (findings #10, #11, #12)
 
