@@ -5,6 +5,7 @@ import type { VrpSolution } from '../../core/solution.js';
 import { AlgorithmConvergenceError, ValidationError } from '../../errors.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
+import { fromSeed } from '../../utils/rng.js';
 import { serializeProblem } from '../../worker-data.js';
 import { getWorkerPath } from '../../worker-path.js';
 
@@ -37,6 +38,19 @@ export interface BRKGAOptions {
   migrationInterval?: number;
   /** Fraction of each island that emigrates (default: 0.05) */
   migrantFraction?: number;
+  /**
+   * Optional RNG seed. When set, the solver uses a deterministic mulberry32
+   * generator seeded with this value, so two runs with the same seed
+   * produce identical results. If omitted, defaults to a fixed seed (1)
+   * so test runs are deterministic. Ignored if `random` is provided.
+   */
+  seed?: number;
+  /**
+   * Optional injectable random source (returns float in [0, 1)).
+   * Overrides `seed` for fine-grained test control. Defaults to a
+   * mulberry32 seeded with `seed ?? 1`.
+   */
+  random?: () => number;
 }
 
 export interface Individual {
@@ -75,6 +89,7 @@ export class BRKGA {
   protected readonly islands: number;
   protected readonly migrationInterval: number;
   protected readonly migrantFraction: number;
+  protected readonly random: () => number;
 
   /**
    * @param problem - VRP-RPD problem instance to solve
@@ -143,6 +158,8 @@ export class BRKGA {
     this.islands = options.islands ?? 1;
     this.migrationInterval = options.migrationInterval ?? 50;
     this.migrantFraction = options.migrantFraction ?? 0.05;
+    const rng = fromSeed(options.seed ?? 1);
+    this.random = options.random ?? ((): number => rng.next());
 
     this.decoder = new Decoder(problem);
     this.chromosomeSize = problem.customers.length;
@@ -192,10 +209,10 @@ export class BRKGA {
     const n = this.chromosomeSize;
     return {
       chromosome: {
-        priorities: Array.from({ length: n }, () => Math.random()),
-        assignments: Array.from({ length: n }, () => Math.random()),
-        dependencies: Array.from({ length: n }, () => Math.random()),
-        transfers: Array.from({ length: n }, () => Math.random()),
+        priorities: Array.from({ length: n }, () => this.random()),
+        assignments: Array.from({ length: n }, () => this.random()),
+        dependencies: Array.from({ length: n }, () => this.random()),
+        transfers: Array.from({ length: n }, () => this.random()),
       },
       fitness: null,
       solution: null,
@@ -216,7 +233,7 @@ export class BRKGA {
     };
 
     for (let i = 0; i < n; i++) {
-      if (Math.random() < this.crossoverProb) {
+      if (this.random() < this.crossoverProb) {
         // Inherit from elite
         child.chromosome.priorities[i] = elite.chromosome.priorities[i]!;
         child.chromosome.assignments[i] = elite.chromosome.assignments[i]!;
@@ -272,10 +289,10 @@ export class BRKGA {
     // Crossover (biased: always one elite parent)
     const crossoverCount = this.populationSize - nextPopulation.length;
     for (let i = 0; i < crossoverCount; i++) {
-      const eliteParent = population[Math.floor(Math.random() * eliteCount)];
+      const eliteParent = population[Math.floor(this.random() * eliteCount)];
       const nonEliteParent =
         population[
-          eliteCount + Math.floor(Math.random() * (this.populationSize - eliteCount))
+          eliteCount + Math.floor(this.random() * (this.populationSize - eliteCount))
         ];
       if (eliteParent && nonEliteParent) {
         nextPopulation.push(this.crossover(eliteParent, nonEliteParent));
@@ -488,7 +505,7 @@ export class BRKGA {
         }
 
         for (let i = allMigrants.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
+          const j = Math.floor(this.random() * (i + 1));
           const temp = allMigrants[i]!;
           allMigrants[i] = allMigrants[j]!;
           allMigrants[j] = temp;
@@ -562,17 +579,17 @@ export class BRKGA {
     };
 
     for (let i = 0; i < n; i++) {
-      if (Math.random() < rate) {
-        mutated.priorities[i] = Math.random();
+      if (this.random() < rate) {
+        mutated.priorities[i] = this.random();
       }
-      if (Math.random() < rate) {
-        mutated.assignments[i] = Math.random();
+      if (this.random() < rate) {
+        mutated.assignments[i] = this.random();
       }
-      if (Math.random() < rate) {
-        mutated.dependencies[i] = Math.random();
+      if (this.random() < rate) {
+        mutated.dependencies[i] = this.random();
       }
-      if (Math.random() < rate) {
-        mutated.transfers[i] = Math.random();
+      if (this.random() < rate) {
+        mutated.transfers[i] = this.random();
       }
     }
 

@@ -6,7 +6,12 @@ import { createBasicProblem, createSeededRng } from '../helpers.js';
 describe('BRKGA Evolution', () => {
   it('crossover with prob=1 inherits all elite genes', () => {
     const problem = createBasicProblem();
-    const brkga = new BRKGA(problem, { populationSize: 10, maxGenerations: 1 });
+    const rng = createSeededRng(42);
+    const brkga = new BRKGA(problem, {
+      populationSize: 10,
+      maxGenerations: 1,
+      random: rng,
+    });
 
     const n = problem.customers.length;
     const elite: Individual = {
@@ -30,22 +35,14 @@ describe('BRKGA Evolution', () => {
       solution: null,
     };
 
-    const rng = createSeededRng(42);
-    const origRandom = Math.random;
-    Math.random = rng;
+    // Access protected method for testing
+    // @ts-expect-error - accessing protected method for test
+    const child = brkga.crossover(elite, nonElite);
 
-    try {
-      // Access protected method for testing
-      // @ts-expect-error - accessing protected method for test
-      const child = brkga.crossover(elite, nonElite);
-
-      expect(child.chromosome.priorities.every(v => v === 0.1)).to.be.true;
-      expect(child.chromosome.assignments.every(v => v === 0.2)).to.be.true;
-      expect(child.chromosome.dependencies.every(v => v === 0.3)).to.be.true;
-      expect(child.chromosome.transfers.every(v => v === 0.4)).to.be.true;
-    } finally {
-      Math.random = origRandom;
-    }
+    expect(child.chromosome.priorities.every(v => v === 0.1)).to.be.true;
+    expect(child.chromosome.assignments.every(v => v === 0.2)).to.be.true;
+    expect(child.chromosome.dependencies.every(v => v === 0.3)).to.be.true;
+    expect(child.chromosome.transfers.every(v => v === 0.4)).to.be.true;
   });
 
   it('evolvePopulation preserves correct elite/mutant/crossover counts', () => {
@@ -140,7 +137,14 @@ describe('BRKGA Evolution', () => {
 
   it('evolvePopulation with stagnationRatio injects diversity through elite mutation', () => {
     const problem = createBasicProblem();
-    const brkga = new BRKGA(problem, { populationSize: 100, maxGenerations: 1 });
+    // Inject a random source that always returns a small value so the
+    // mutation gate (random < 0.05) is guaranteed to fire for every gene.
+    const alwaysTiny = () => 0.01;
+    const brkga = new BRKGA(problem, {
+      populationSize: 100,
+      maxGenerations: 1,
+      random: alwaysTiny,
+    });
 
     const pop: Individual[] = [];
     for (let i = 0; i < 100; i++) {
@@ -158,31 +162,29 @@ describe('BRKGA Evolution', () => {
 
     const eliteCount = Math.floor(100 * 0.15);
 
-    const origRandom = Math.random;
-    Math.random = () => 0.01; // Ensure Math.random < 0.05 for mutations
+    const stagnantPop = brkga.evolvePopulation(pop, 1.0);
 
-    try {
-      const stagnantPop = brkga.evolvePopulation(pop, 1.0);
-
-      // With eliteMutationRate = 0.05 at stagnation=1, and Math.random always 0.01,
-      // every gene in every elite should be mutated
-      const allMutated = stagnantPop
-        .slice(0, eliteCount)
-        .every(e =>
-          e.chromosome.priorities.every(g => g !== 0.25) &&
-          e.chromosome.assignments.every(g => g !== 0.25) &&
-          e.chromosome.dependencies.every(g => g !== 0.25) &&
-          e.chromosome.transfers.every(g => g !== 0.25),
-        );
-      expect(allMutated).to.be.true;
-    } finally {
-      Math.random = origRandom;
-    }
+    // With eliteMutationRate = 0.05 at stagnation=1, and the injected
+    // random source always returning 0.01, every gene in every elite
+    // should be mutated.
+    const allMutated = stagnantPop
+      .slice(0, eliteCount)
+      .every(e =>
+        e.chromosome.priorities.every(g => g !== 0.25) &&
+        e.chromosome.assignments.every(g => g !== 0.25) &&
+        e.chromosome.dependencies.every(g => g !== 0.25) &&
+        e.chromosome.transfers.every(g => g !== 0.25),
+      );
+    expect(allMutated).to.be.true;
   });
 
   it('evolvePopulation with stagnationRatio > 0 mutates elite chromosomes for diversity', () => {
     const problem = createBasicProblem();
-    const brkga = new BRKGA(problem, { populationSize: 20, maxGenerations: 1 });
+    const brkga = new BRKGA(problem, {
+      populationSize: 20,
+      maxGenerations: 1,
+      random: () => 0.01,
+    });
 
     const eliteCount = Math.floor(20 * 0.15);
 
@@ -202,40 +204,49 @@ describe('BRKGA Evolution', () => {
       });
     }
 
-    const rng = createSeededRng(99);
-    const origRandom = Math.random;
-    Math.random = rng;
+    const evolved = brkga.evolvePopulation(pop, 1.0);
 
-    try {
-      // With high stagnation, elite chromosomes should be mutated (not exact copies)
-      const evolved = brkga.evolvePopulation(pop, 1.0);
+    for (let i = 0; i < eliteCount; i++) {
+      const e = evolved[i]!;
+      const someGeneChanged =
+        e.chromosome.priorities.some(g => g !== 0.25) ||
+        e.chromosome.assignments.some(g => g !== 0.25) ||
+        e.chromosome.dependencies.some(g => g !== 0.25) ||
+        e.chromosome.transfers.some(g => g !== 0.25);
 
-      for (let i = 0; i < eliteCount; i++) {
-        const e = evolved[i]!;
-        const someGeneChanged =
-          e.chromosome.priorities.some(g => g !== 0.25) ||
-          e.chromosome.assignments.some(g => g !== 0.25) ||
-          e.chromosome.dependencies.some(g => g !== 0.25) ||
-          e.chromosome.transfers.some(g => g !== 0.25);
-
-        // With eliteMutationRate = 0.05 and 4*2=8 genes, at least some elites
-        // should have mutations (probability of 0 is negligible)
-        if (someGeneChanged) {
-          return; // test passes
-        }
+      // With eliteMutationRate = 0.05 and 4*2=8 genes, at least some elites
+      // should have mutations (probability of 0 is negligible)
+      if (someGeneChanged) {
+        return; // test passes
       }
-      // If we get here, no elite had mutations — check again with more aggressive check
-      const allUnchanged = evolved
-        .slice(0, eliteCount)
-        .every(e =>
-          e.chromosome.priorities.every(g => g === 0.25) &&
-          e.chromosome.assignments.every(g => g === 0.25) &&
-          e.chromosome.dependencies.every(g => g === 0.25) &&
-          e.chromosome.transfers.every(g => g === 0.25),
-        );
-      expect(allUnchanged).to.be.false;
-    } finally {
-      Math.random = origRandom;
     }
+    // If we get here, no elite had mutations — check again with more aggressive check
+    const allUnchanged = evolved
+      .slice(0, eliteCount)
+      .every(e =>
+        e.chromosome.priorities.every(g => g === 0.25) &&
+        e.chromosome.assignments.every(g => g === 0.25) &&
+        e.chromosome.dependencies.every(g => g === 0.25) &&
+        e.chromosome.transfers.every(g => g === 0.25),
+      );
+    expect(allUnchanged).to.be.false;
+  });
+
+  it('two runs with the same seed produce identical solutions', async () => {
+    const problem = createBasicProblem();
+    const brkga1 = new BRKGA(problem, {
+      populationSize: 30,
+      maxGenerations: 20,
+      seed: 42,
+    });
+    const brkga2 = new BRKGA(problem, {
+      populationSize: 30,
+      maxGenerations: 20,
+      seed: 42,
+    });
+    const sol1 = await brkga1.solve();
+    const sol2 = await brkga2.solve();
+    expect(sol1.makespan).to.equal(sol2.makespan);
+    expect(sol1.serialize()).to.deep.equal(sol2.serialize());
   });
 });
