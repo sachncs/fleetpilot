@@ -10,7 +10,7 @@ import {
   Vehicle,
 } from '../src/core/problem.js';
 import { TrafficAwareProblem, TrafficModel } from '../src/core/traffic-aware-problem.js';
-import { AlgorithmConvergenceError } from '../src/errors.js';
+import { AlgorithmConvergenceError } from '../src/errors/index.js';
 import { VrpRpdSolver } from '../src/index.js';
 import { deserializeProblem, serializeProblem } from '../src/worker-data.js';
 

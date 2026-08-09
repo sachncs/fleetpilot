@@ -1,4 +1,4 @@
-import { ValidationError } from '../errors.js';
+import { ValidationError } from '../errors/index.js';
 
 /**
  * Represents a coordinate or location in the VRP problem.

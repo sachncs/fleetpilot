@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
-import { ValidationError } from '../src/errors.js';
+import { ValidationError } from '../src/errors/index.js';
 
 describe('Edge Cases', () => {
   it('rejects empty nodes', () => {

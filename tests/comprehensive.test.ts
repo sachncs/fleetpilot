@@ -26,7 +26,7 @@ import {
   TrafficModel,
 } from '../src/core/traffic-aware-problem.js';
 import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.js';
-import { ValidationError } from '../src/errors.js';
+import { ValidationError } from '../src/errors/index.js';
 import { GISExporter } from '../src/export/gis-exporter.js';
 
 import { createBasicProblem, createSeededRng } from './helpers.js';

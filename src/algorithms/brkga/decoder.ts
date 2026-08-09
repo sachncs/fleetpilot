@@ -1,6 +1,6 @@
 import type { VrpProblem, Customer, Vehicle } from '../../core/problem.js';
 import { VrpSolution, Route } from '../../core/solution.js';
-import { ValidationError } from '../../errors.js';
+import { ValidationError } from '../../errors/index.js';
 
 /**
  * Chromosome structure (3n genes):

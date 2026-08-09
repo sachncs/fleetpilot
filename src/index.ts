@@ -15,7 +15,7 @@ export {
   ValidationError,
   InfeasibleSolutionError,
   AlgorithmConvergenceError,
-} from './errors.js';
+} from './errors/index.js';
 
 // Logger
 export { defaultLogger, type Logger } from './logger.js';
@@ -86,7 +86,7 @@ import { BRKGA } from './algorithms/brkga/brkga.js';
 import type { BRKGAOptions, BRKGAProgress } from './algorithms/brkga/brkga.js';
 import type { VrpProblem } from './core/problem.js';
 import { VrpSolution, Route } from './core/solution.js';
-import { AlgorithmConvergenceError, InfeasibleSolutionError } from './errors.js';
+import { AlgorithmConvergenceError, InfeasibleSolutionError } from './errors/index.js';
 import type { Logger } from './logger.js';
 import { defaultLogger } from './logger.js';
 import { serializeProblem } from './worker-data.js';

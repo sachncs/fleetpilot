@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { ALNS } from '../../src/algorithms/alns/alns.js';
 import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../../src/core/problem.js';
-import { ValidationError } from '../../src/errors.js';
+import { ValidationError } from '../../src/errors/index.js';
 import { createBasicProblem, createSingleCustomerProblem } from '../helpers.js';
 
 function makeProblemWithTwCustomers(): VrpProblem {

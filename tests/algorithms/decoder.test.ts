@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { Decoder, type Chromosome } from '../../src/algorithms/brkga/decoder.js';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
 import { VrpSolution, Route } from '../../src/core/solution.js';
-import { ValidationError } from '../../src/errors.js';
+import { ValidationError } from '../../src/errors/index.js';
 import { createBasicProblem, createSingleCustomerProblem, assertFeasible } from '../helpers.js';
 
 describe('BRKGA Decoder', () => {

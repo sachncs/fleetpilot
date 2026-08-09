@@ -1,4 +1,4 @@
-import { ValidationError } from '../errors.js';
+import { ValidationError } from '../errors/index.js';
 
 import type { LocationNode, Customer, Vehicle } from './problem.js';
 import { validateProblemBase } from './problem.js';

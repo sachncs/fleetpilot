@@ -2,7 +2,7 @@ import { Worker } from 'worker_threads';
 
 import type { VrpProblem } from '../../core/problem.js';
 import type { VrpSolution } from '../../core/solution.js';
-import { AlgorithmConvergenceError, ValidationError } from '../../errors.js';
+import { AlgorithmConvergenceError, ValidationError } from '../../errors/index.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
 import { fromSeed } from '../../utils/rng.js';

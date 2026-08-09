@@ -1,6 +1,6 @@
 import type { VrpProblem } from '../../core/problem.js';
 import { VrpSolution, Route } from '../../core/solution.js';
-import { ValidationError } from '../../errors.js';
+import { ValidationError } from '../../errors/index.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
 
