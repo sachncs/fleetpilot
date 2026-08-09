@@ -34,11 +34,13 @@ describe('Dist smoke test', () => {
     const nodes = {
       0: new DistLocationNode(0, 0, 0, 'Depot'),
       1: new DistLocationNode(1, 10, 0, 'D1'),
-      2: new DistLocationNode(2, 0, 10, 'D2'),
+      2: new DistLocationNode(2, 20, 0, 'P1'),
+      3: new DistLocationNode(3, 0, 10, 'D2'),
+      4: new DistLocationNode(4, 0, 20, 'P2'),
     };
     const problem = new DistProblem(
       nodes,
-      [new DistCustomer(1, 1, 2, 5), new DistCustomer(2, 2, 1, 5)],
+      [new DistCustomer(1, 1, 2, 5), new DistCustomer(2, 3, 4, 5)],
       [new DistVehicle(1, 10)],
     );
     const solution = await new DistSolver(problem).solve({

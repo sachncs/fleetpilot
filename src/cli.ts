@@ -151,6 +151,15 @@ Examples:
 `);
 }
 
+function parseNumericArg(value: string | boolean | undefined, flag: string): number | undefined {
+  if (value === undefined) return undefined;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) {
+    throw new ValidationError(`--${flag} must be a finite number, got: ${String(value)}`);
+  }
+  return parsed;
+}
+
 function parseArgs(): Record<string, string | boolean> {
   const args: Record<string, string | boolean> = {};
   for (let i = 2; i < process.argv.length; i++) {
@@ -230,11 +239,11 @@ async function main(): Promise<void> {
   const solver = new VrpRpdSolver(problem);
 
   const options: Parameters<typeof solver.solve>[0] = {
-    alnsIterations: args['alnsiterations'] ? Number(args['alnsiterations']) : undefined,
-    populationSize: args['populationsize'] ? Number(args['populationsize']) : undefined,
-    maxGenerations: args['maxgenerations'] ? Number(args['maxgenerations']) : undefined,
-    maxTimeMs: args['maxtime'] ? Number(args['maxtime']) : undefined,
-    targetMakespan: args['targetmakespan'] ? Number(args['targetmakespan']) : undefined,
+    alnsIterations: parseNumericArg(args['alnsiterations'], 'alns-iterations'),
+    populationSize: parseNumericArg(args['populationsize'], 'population-size'),
+    maxGenerations: parseNumericArg(args['maxgenerations'], 'max-generations'),
+    maxTimeMs: parseNumericArg(args['maxtime'], 'max-time'),
+    targetMakespan: parseNumericArg(args['targetmakespan'], 'target-makespan'),
     parallel: args['parallel'] === true,
     warmStart: args['warmstart'] !== false,
     onProgress:
