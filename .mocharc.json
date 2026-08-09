@@ -1,7 +1,7 @@
 {
   "extension": ["ts"],
   "spec": "tests/**/*.test.ts",
-  "require": "tsx",
+  "require": ["tsx", "tests/hooks.ts"],
   "watch-files": ["src/**/*.ts", "tests/**/*.ts"],
   "timeout": 60000
 }
