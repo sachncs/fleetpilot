@@ -118,6 +118,7 @@ export class Decoder {
       if (canAddOperation(load, this.vehicleCapacity(targetV), 'delivery')) {
         route.nodes.push(customer.deliveryNodeId);
         updateLoad(load, 'delivery');
+        solution.updateRouteAfterAppend(targetV);
         deliveryScheduled.add(idx);
         deliveryVehicle[idx] = targetV;
       } else {
@@ -128,6 +129,7 @@ export class Decoder {
           if (altRoute && altLoad) {
             altRoute.nodes.push(customer.deliveryNodeId);
             updateLoad(altLoad, 'delivery');
+            solution.updateRouteAfterAppend(alt);
             deliveryScheduled.add(idx);
             deliveryVehicle[idx] = alt;
           }
@@ -138,9 +140,6 @@ export class Decoder {
         }
       }
     }
-
-    // Single schedule calculation gives all delivery nodeTimes
-    solution.calculateSchedule();
 
     // Pass 2: Schedule pickups in a single pass
     for (const idx of customerOrder) {
@@ -161,6 +160,7 @@ export class Decoder {
       if (canAddOperation(load, this.vehicleCapacity(targetV), 'pickup')) {
         route.nodes.push(customer.pickupNodeId);
         updateLoad(load, 'pickup');
+        solution.updateRouteAfterAppend(targetV);
         pickupScheduled.add(idx);
       } else {
         const alt = this.findCapableVehicleFast(routeLoads, routes, customer, 'pickup', targetV);
@@ -170,6 +170,7 @@ export class Decoder {
           if (altRoute && altLoad) {
             altRoute.nodes.push(customer.pickupNodeId);
             updateLoad(altLoad, 'pickup');
+            solution.updateRouteAfterAppend(alt);
             pickupScheduled.add(idx);
           }
         } else {
@@ -180,7 +181,6 @@ export class Decoder {
       }
     }
 
-    solution.calculateSchedule();
     return solution;
   }
 

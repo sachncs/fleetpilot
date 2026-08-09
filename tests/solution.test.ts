@@ -103,6 +103,30 @@ describe('Solution evaluation methods', () => {
     expect(result.returnTime).to.equal(0);
   });
 
+  it('updateRouteAfterAppend matches full calculateSchedule for append-only routes', () => {
+    const problem = createBasicProblem();
+    const c1 = problem.customers[0]!;
+    const c2 = problem.customers[1]!;
+
+    // Incremental: append one node at a time, updating after each.
+    const solution = new VrpSolution(problem, problem.vehicles.map(v => new Route(v.id, [])));
+    const route = solution.routes[0]!;
+    for (const nodeId of [c1.deliveryNodeId, c1.pickupNodeId, c2.deliveryNodeId, c2.pickupNodeId]) {
+      route.nodes.push(nodeId);
+      solution.updateRouteAfterAppend(0);
+    }
+    const incrementalMakespan = solution.makespan;
+
+    // Full recalculation on a fresh solution with same routes.
+    const solution2 = new VrpSolution(problem, [
+      new Route(1, [c1.deliveryNodeId, c1.pickupNodeId, c2.deliveryNodeId, c2.pickupNodeId]),
+    ]);
+    solution2.calculateSchedule();
+    const fullMakespan = solution2.makespan;
+
+    expect(incrementalMakespan).to.equal(fullMakespan);
+  });
+
   it('calculateRouteDistance returns Euclidean distance', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map(v => new Route(v.id, []));

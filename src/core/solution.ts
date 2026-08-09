@@ -198,6 +198,85 @@ export class VrpSolution {
   }
 
   /**
+   * Incrementally update the schedule after appending a single node to the
+   * end of `routeIndex`. Avoids the O(routes * nodes) full schedule
+   * recompute when only the trailing node changed.
+   *
+   * Assumes `routes[routeIndex]` was just `push`-ed: the new last node is
+   * the only node whose time needs recomputing. Updates that node's
+   * arrival, the route's depot-return time, the makespan, and (for
+   * deliveries) the resource ready time used by downstream pickups.
+   *
+   * @param routeIndex - Index of the route that was just appended to
+   * @returns The updated makespan
+   */
+  updateRouteAfterAppend(routeIndex: number): number {
+    const route = this.routes[routeIndex];
+    if (!route || route.nodes.length === 0) {
+      return this.makespan;
+    }
+    const lastIdx = route.nodes.length - 1;
+    const newNode = route.nodes[lastIdx]!;
+
+    const vehicle = this.problem.vehicleMap.get(route.vehicleId);
+    const startDepot = vehicle?.startDepotId ?? this.problem.depotNodeId;
+    const endDepot = vehicle?.endDepotId ?? this.problem.depotNodeId;
+
+    let prevNode: number;
+    let currentTime: number;
+    if (lastIdx === 0) {
+      prevNode = startDepot;
+      currentTime = 0;
+    } else {
+      prevNode = route.nodes[lastIdx - 1]!;
+      currentTime = this.nodeTimes[prevNode] ?? 0;
+    }
+
+    const travelTime = this.problem.getTravelTime(prevNode, newNode);
+    let arrivalTime = currentTime + travelTime;
+
+    const pickupCustomer = this.problem.pickupNodeMap.get(newNode);
+    if (pickupCustomer) {
+      const readyTime = this.resourceReadyTimes[pickupCustomer.id] ?? 0;
+      if (readyTime > arrivalTime) arrivalTime = readyTime;
+      if (isCustomerWithTimeWindows(pickupCustomer)) {
+        if (arrivalTime < pickupCustomer.earliestPickupTime) {
+          arrivalTime = pickupCustomer.earliestPickupTime;
+        }
+      }
+    }
+
+    const deliveryCustomer = this.problem.deliveryNodeMap.get(newNode);
+    if (deliveryCustomer && isCustomerWithTimeWindows(deliveryCustomer)) {
+      if (arrivalTime < deliveryCustomer.earliestDeliveryTime) {
+        arrivalTime = deliveryCustomer.earliestDeliveryTime;
+      }
+    }
+
+    this.nodeTimes[newNode] = arrivalTime;
+    if (deliveryCustomer) {
+      this.resourceReadyTimes[deliveryCustomer.id] =
+        arrivalTime + deliveryCustomer.processingTime;
+    }
+
+    const returnTime = arrivalTime + this.problem.getTravelTime(newNode, endDepot);
+    const routeKey = `depot_return_${routeIndex}`;
+    this.nodeTimes[routeKey] = returnTime;
+
+    // Recompute makespan from all depot-return keys. Empty routes contribute
+    // 0 (vehicle starts and ends at depot with no stops).
+    let maxReturn = 0;
+    for (let v = 0; v < this.routes.length; v++) {
+      const k = `depot_return_${v}`;
+      const t = this.nodeTimes[k];
+      if (typeof t === 'number' && t > maxReturn) maxReturn = t;
+    }
+    this.makespan = maxReturn;
+
+    return this.makespan;
+  }
+
+  /**
    * @param route - Route to measure
    * @returns Total distance for the route including return to depot
    */
