@@ -1,14 +1,15 @@
-import { resolve } from 'path';
 import { Worker } from 'worker_threads';
 
 import type { VrpProblem } from '../../core/problem.js';
 import type { VrpSolution } from '../../core/solution.js';
-import { ValidationError } from '../../errors.js';
+import { AlgorithmConvergenceError, ValidationError } from '../../errors.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
+import { serializeProblem } from '../../worker-data.js';
+import { getWorkerPath } from '../../worker-path.js';
 
 import { Decoder, type Chromosome } from './decoder.js';
-import { sendCommand } from './island-messenger.js';
+import { sendCommand, type WireIndividual } from './island-messenger.js';
 
 export interface BRKGAProgress {
   generation: number;
@@ -391,12 +392,12 @@ export class BRKGA {
             warmStartProportion: this.warmStartProportion,
             maxTimeMs: this.maxTimeMs,
           },
-        },
+        }),
       });
       workers.push(worker);
     }
 
-    let globalBest: Individual | null = null;
+    let globalBest: WireIndividual | null = null;
     let generation = 0;
 
     try {
@@ -416,7 +417,7 @@ export class BRKGA {
           ),
         );
 
-        const populations: Individual[][] = [];
+        const populations: WireIndividual[][] = [];
         for (const result of evolveResults) {
           if (result.type === 'checkpoint') {
             populations.push(result.population);
@@ -437,7 +438,6 @@ export class BRKGA {
                   transfers: [...islandBest.chromosome.transfers],
                 },
                 fitness: islandBest.fitness,
-                solution: islandBest.solution?.clone() ?? null,
               };
             }
           }
@@ -520,7 +520,9 @@ export class BRKGA {
     }
 
     return (
-      globalBest?.solution ?? this.decoder.decode(this.randomIndividual().chromosome)
+      globalBest
+        ? this.decoder.decode(globalBest.chromosome)
+        : this.decoder.decode(this.randomIndividual().chromosome)
     );
   }
 

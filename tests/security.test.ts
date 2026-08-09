@@ -316,6 +316,7 @@ describe('Security S4 - Worker data validation', () => {
         customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
         vehicles: [{ id: 1, capacity: 10 }],
         depotNodeId: 0,
+        problemKind: 'base',
         type: 'ALNS',
         options: {},
       }),
@@ -328,6 +329,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -340,6 +342,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -352,6 +355,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -364,6 +368,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 999, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -376,6 +381,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -391,6 +397,7 @@ describe('Security S4 - Worker data validation', () => {
       ],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -403,6 +410,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 10 }, { id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -415,6 +423,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 0 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -427,6 +436,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 999,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });
@@ -439,6 +449,7 @@ describe('Security S4 - Worker data validation', () => {
       customers: [{ id: 1, deliveryNodeId: 0, pickupNodeId: 0, processingTime: 0 }],
       vehicles: [{ id: 1, capacity: 10 }],
       depotNodeId: 0,
+      problemKind: 'base',
       type: 'ALNS',
       options: {},
     });

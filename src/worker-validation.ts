@@ -1,13 +1,56 @@
+export interface WorkerNodeData {
+  id: number;
+  x: number;
+  y: number;
+  name: string;
+}
+
+export interface WorkerCustomerData {
+  id: number;
+  deliveryNodeId: number;
+  pickupNodeId: number;
+  processingTime: number;
+  earliestDeliveryTime?: number;
+  latestDeliveryTime?: number;
+  earliestPickupTime?: number;
+  latestPickupTime?: number;
+}
+
+export interface WorkerVehicleData {
+  id: number;
+  capacity: number;
+  startDepotId?: number;
+  endDepotId?: number;
+  costPerKm?: number;
+  co2PerKm?: number;
+}
+
+export interface WorkerTrafficSegmentData {
+  fromId: number;
+  toId: number;
+  baseTravelTime: number;
+  currentTravelTime: number;
+  congestionLevel: 'low' | 'medium' | 'high' | 'severe';
+}
+
+export interface WorkerTimeFactorData {
+  startTime: number;
+  factor: number;
+}
+
 export interface WorkerData {
-  nodes: Record<number, { id: number; x: number; y: number; name: string }>;
-  customers: Array<{
-    id: number;
-    deliveryNodeId: number;
-    pickupNodeId: number;
-    processingTime: number;
-  }>;
-  vehicles: Array<{ id: number; capacity: number }>;
+  nodes: Record<number, WorkerNodeData>;
+  customers: WorkerCustomerData[];
+  vehicles: WorkerVehicleData[];
   depotNodeId: number;
+  problemKind: 'base' | 'traffic';
+  trafficSegments?: WorkerTrafficSegmentData[];
+  trafficTimeFactors?: Array<{
+    fromId: number;
+    toId: number;
+    factors: WorkerTimeFactorData[];
+  }>;
+  defaultSpeed?: number;
   type: 'ALNS' | 'BRKGA' | 'island-brkga';
   options: Record<string, unknown>;
   islandId?: number;
@@ -26,6 +69,8 @@ export function isWorkerData(value: unknown): value is WorkerData {
     'customers' in value && Array.isArray(value.customers) &&
     'vehicles' in value && Array.isArray(value.vehicles) &&
     'depotNodeId' in value && typeof value.depotNodeId === 'number' &&
+    'problemKind' in value &&
+    (value.problemKind === 'base' || value.problemKind === 'traffic') &&
     'type' in value && typeof value.type === 'string' &&
     (value.type === 'ALNS' || value.type === 'BRKGA' || value.type === 'island-brkga') &&
     'options' in value && typeof value.options === 'object' && value.options !== null
@@ -62,6 +107,27 @@ export function validateWorkerData(data: WorkerData): string | null {
     if (typeof c.processingTime !== 'number' || c.processingTime < 0) {
       return `customer ${c.id}: processingTime must be >= 0`;
     }
+    const twFields: Array<[string, number | undefined]> = [
+      ['earliestDeliveryTime', c.earliestDeliveryTime],
+      ['latestDeliveryTime', c.latestDeliveryTime],
+      ['earliestPickupTime', c.earliestPickupTime],
+      ['latestPickupTime', c.latestPickupTime],
+    ];
+    const hasTw = twFields.some(([, v]) => v !== undefined);
+    if (hasTw) {
+      for (const [name, v] of twFields) {
+        if (v === undefined) {
+          return `customer ${c.id}: ${name} must be provided when time windows are used`;
+        }
+        if (!Number.isFinite(v)) return `customer ${c.id}: ${name} must be finite`;
+      }
+      if (
+        c.earliestDeliveryTime! > c.latestDeliveryTime! ||
+        c.earliestPickupTime! > c.latestPickupTime!
+      ) {
+        return `customer ${c.id}: time window start must not exceed its end`;
+      }
+    }
   }
 
   if (data.vehicles.length === 0) return 'vehicles cannot be empty';
@@ -72,9 +138,35 @@ export function validateWorkerData(data: WorkerData): string | null {
     if (typeof v.capacity !== 'number' || v.capacity <= 0) {
       return `vehicle ${v.id}: capacity must be > 0`;
     }
+    if (v.startDepotId !== undefined && !data.nodes[v.startDepotId]) {
+      return `vehicle ${v.id}: startDepotId ${v.startDepotId} not found in nodes`;
+    }
+    if (v.endDepotId !== undefined && !data.nodes[v.endDepotId]) {
+      return `vehicle ${v.id}: endDepotId ${v.endDepotId} not found in nodes`;
+    }
+    if (v.costPerKm !== undefined && v.costPerKm < 0) {
+      return `vehicle ${v.id}: costPerKm must be >= 0`;
+    }
+    if (v.co2PerKm !== undefined && v.co2PerKm < 0) {
+      return `vehicle ${v.id}: co2PerKm must be >= 0`;
+    }
   }
 
   if (!data.nodes[data.depotNodeId]) return `depotNodeId ${data.depotNodeId} not found in nodes`;
+
+  if (data.problemKind === 'traffic') {
+    for (const segment of data.trafficSegments ?? []) {
+      if (!data.nodes[segment.fromId] || !data.nodes[segment.toId]) {
+        return `traffic segment ${segment.fromId}->${segment.toId} references missing nodes`;
+      }
+      if (!Number.isFinite(segment.baseTravelTime) || segment.baseTravelTime < 0) {
+        return `traffic segment ${segment.fromId}->${segment.toId}: baseTravelTime must be >= 0`;
+      }
+      if (!Number.isFinite(segment.currentTravelTime) || segment.currentTravelTime < 0) {
+        return `traffic segment ${segment.fromId}->${segment.toId}: currentTravelTime must be >= 0`;
+      }
+    }
+  }
 
   if (data.type === 'island-brkga') {
     if (

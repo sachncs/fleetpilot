@@ -1,19 +1,28 @@
 import type { Worker } from 'worker_threads';
 
-import type { Individual } from './brkga.js';
 import type { Chromosome } from './decoder.js';
+
+/**
+ * Individual as transferred over the wire. Solutions are not included: they
+ * do not survive structured clone, and the orchestrator rebuilds them from
+ * the chromosome through its own decoder.
+ */
+export interface WireIndividual {
+  chromosome: Chromosome;
+  fitness: number | null;
+}
 
 export interface IslandCheckpointMessage {
   type: 'checkpoint';
   islandId: number;
   generation: number;
-  population: Individual[];
+  population: WireIndividual[];
 }
 
 export interface IslandFinishMessage {
   type: 'finish';
   islandId: number;
-  bestIndividual: Individual | null;
+  bestIndividual: WireIndividual | null;
 }
 
 export type IslandWorkerMessage = IslandCheckpointMessage | IslandFinishMessage;

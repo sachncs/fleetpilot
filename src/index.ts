@@ -78,7 +78,6 @@ export { GISExporter } from './export/gis-exporter.js';
 export type { GeoJSON, GeoJSONFeature, KMLPlacemark } from './export/gis-exporter.js';
 
 // Main solver class
-import { resolve } from 'path';
 import { Worker } from 'worker_threads';
 
 import type { ALNSOptions, ALNSProgress } from './algorithms/alns/alns.js';
@@ -90,15 +89,12 @@ import { VrpSolution, Route } from './core/solution.js';
 import { AlgorithmConvergenceError } from './errors.js';
 import type { Logger } from './logger.js';
 import { defaultLogger } from './logger.js';
+import { serializeProblem } from './worker-data.js';
+import { getWorkerPath } from './worker-path.js';
 
 function isWorkerResult(msg: object): msg is WorkerResult {
   return 'makespan' in msg && 'routes' in msg && 'type' in msg;
 }
-
-// Worker path resolution
-const getWorkerPath = (): string => {
-  return resolve(process.cwd(), 'dist', 'worker.js');
-};
 
 export interface SolveOptions {
   alnsIterations?: number;
@@ -265,14 +261,7 @@ export class VrpRpdSolver {
   ): Promise<WorkerResult> {
     return new Promise((resolveResult, reject) => {
       const worker = new Worker(getWorkerPath(), {
-        workerData: {
-          nodes: this.problem.nodes,
-          customers: this.problem.customers,
-          vehicles: this.problem.vehicles,
-          depotNodeId: this.problem.depotNodeId,
-          type,
-          options,
-        },
+        workerData: serializeProblem(this.problem, { type, options }),
       });
 
       let settled = false;

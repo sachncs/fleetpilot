@@ -42,6 +42,69 @@ export class TrafficModel {
   /**
    * @param fromId - Origin node ID
    * @param toId - Destination node ID
+   * @returns Whether a traffic segment is configured for this road
+   */
+  hasSegment(fromId: number, toId: number): boolean {
+    return this.segments.has(this.makeKey(fromId, toId));
+  }
+
+  /**
+   * @returns All configured traffic segments
+   */
+  getAllSegments(): readonly TrafficSegment[] {
+    return [...this.segments.values()];
+  }
+
+  /**
+   * @returns All time-dependent factors, grouped by road segment
+   */
+  getAllTimeFactors(): ReadonlyArray<{
+    fromId: number;
+    toId: number;
+    factors: ReadonlyArray<{ startTime: number; factor: number }>;
+  }> {
+    const result: Array<{
+      fromId: number;
+      toId: number;
+      factors: Array<{ startTime: number; factor: number }>;
+    }> = [];
+    for (const [key, factors] of this.timeFactors) {
+      const [fromId, toId] = key.split('-').map(Number);
+      if (fromId === undefined || toId === undefined) continue;
+      result.push({ fromId, toId, factors: [...factors] });
+    }
+    return result;
+  }
+
+  /**
+   * Rebuilds a traffic model from a previously serialized model.
+   * @param segments - Traffic segments to restore
+   * @param timeFactors - Time-dependent factors to restore
+   * @returns A traffic model reproducing the serialized state
+   */
+  static fromSerialized(
+    segments: readonly TrafficSegment[] = [],
+    timeFactors: ReadonlyArray<{
+      fromId: number;
+      toId: number;
+      factors: ReadonlyArray<{ startTime: number; factor: number }>;
+    }> = [],
+  ): TrafficModel {
+    const model = new TrafficModel();
+    for (const segment of segments) model.setSegment({ ...segment });
+    for (const entry of timeFactors) {
+      model.setTimeFactors(
+        entry.fromId,
+        entry.toId,
+        entry.factors.map(f => ({ ...f })),
+      );
+    }
+    return model;
+  }
+
+  /**
+   * @param fromId - Origin node ID
+   * @param toId - Destination node ID
    * @param departureTime - Time of departure
    * @returns Travel time adjusted for traffic conditions
    */
