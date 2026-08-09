@@ -412,7 +412,7 @@ npm run clean              # rm -rf dist docs/api docs/md
 ```bash
 npm test                   # mocha (330+ tests)
 npm run test:watch
-npm run test:coverage      # c8 with text / lcov / html reports and 80/80/80/80 thresholds
+npm run test:coverage      # c8 with text / lcov / html reports and 85/85/70/85 thresholds
 ```
 
 ## Build
