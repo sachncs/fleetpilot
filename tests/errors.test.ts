@@ -1,6 +1,8 @@
 import { expect } from 'chai';
 
+import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
 import { VrpError, ValidationError, InfeasibleSolutionError, AlgorithmConvergenceError } from '../src/errors.js';
+import { VrpRpdSolver } from '../src/index.js';
 
 describe('Typed Errors', () => {
   it('VrpError is an Error', () => {
@@ -38,5 +40,28 @@ describe('Typed Errors', () => {
         expect(e.message).to.equal('test');
       }
     }
+  });
+
+  it('solver throws InfeasibleSolutionError when no feasible solution exists', async () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 0, 10, 'P1'),
+    };
+    const customers = [new CustomerWithTimeWindows(1, 1, 2, 5, 0, 0, 0, 1000)];
+    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+
+    let threw: unknown = null;
+    try {
+      await new VrpRpdSolver(problem).solve({
+        alnsIterations: 20,
+        populationSize: 20,
+        maxGenerations: 10,
+        maxTimeMs: 2000,
+      });
+    } catch (err) {
+      threw = err;
+    }
+    expect(threw).to.be.instanceOf(InfeasibleSolutionError);
   });
 });

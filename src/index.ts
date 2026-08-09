@@ -86,7 +86,7 @@ import { BRKGA } from './algorithms/brkga/brkga.js';
 import type { BRKGAOptions, BRKGAProgress } from './algorithms/brkga/brkga.js';
 import type { VrpProblem } from './core/problem.js';
 import { VrpSolution, Route } from './core/solution.js';
-import { AlgorithmConvergenceError } from './errors.js';
+import { AlgorithmConvergenceError, InfeasibleSolutionError } from './errors.js';
 import type { Logger } from './logger.js';
 import { defaultLogger } from './logger.js';
 import { serializeProblem } from './worker-data.js';
@@ -185,6 +185,9 @@ export class VrpRpdSolver {
 
     // Early stop if target reached
     if (targetMakespan > 0 && alnsSolution.makespan <= targetMakespan) {
+      if (!alnsSolution.isFeasible()) {
+        throw new InfeasibleSolutionError('ALNS reached target but solution is infeasible');
+      }
       this.logger.log(`Target makespan ${targetMakespan.toFixed(2)} reached after ALNS.`);
       return alnsSolution;
     }
@@ -215,7 +218,13 @@ export class VrpRpdSolver {
     this.logger.log(`BRKGA completed. Best makespan: ${brkgaSolution.makespan.toFixed(2)}`);
 
     // Return best of both stages
-    return alnsSolution.makespan < brkgaSolution.makespan ? alnsSolution : brkgaSolution;
+    const best = alnsSolution.makespan < brkgaSolution.makespan ? alnsSolution : brkgaSolution;
+    if (!best.isFeasible()) {
+      throw new InfeasibleSolutionError(
+        `No feasible solution found (best makespan ${best.makespan.toFixed(2)} is infeasible)`,
+      );
+    }
+    return best;
   }
 
   protected async solveParallel(options: SolveOptions = {}): Promise<VrpSolution> {
@@ -252,6 +261,11 @@ export class VrpRpdSolver {
       best.routes.map(r => new Route(r.vehicleId, r.nodes)),
     );
     solution.calculateSchedule();
+    if (!solution.isFeasible()) {
+      throw new InfeasibleSolutionError(
+        `No feasible solution found in parallel workers (best makespan ${solution.makespan.toFixed(2)} is infeasible)`,
+      );
+    }
     return solution;
   }
 
