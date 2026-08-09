@@ -116,32 +116,23 @@ console.log(`Distance: ${solution.totalDistance.toFixed(2)} km`);
 ```typescript
 interface SolveOptions {
   alnsIterations?: number;       // Default: 500
-  populationSize?: number;       // Default: 30000
-  maxGenerations?: number;       // Default: 20000
+  populationSize?: number;       // Default: 100 (practical) / 30000 (paper)
+  maxGenerations?: number;       // Default: 100 (practical) / 20000 (paper)
   initialTemp?: number;          // Default: 100
   coolingRate?: number;          // Default: 0.9998
   parallel?: boolean;            // Default: false
   warmStart?: boolean;           // Default: true
   maxTimeMs?: number;            // Default: 0 (unlimited)
   targetMakespan?: number;       // Default: 0 (disabled)
-  islands?: number;              // Default: 1
-  migrationInterval?: number;    // Default: 50
-  migrantFraction?: number;      // Default: 0.05
   logger?: Logger;
   onProgress?: (p: SolverProgress) => void;
 }
 ```
 
-Island-model BRKGA (multi-core):
-
-```typescript
-const solution = await solver.solve({
-  islands: 4,              // 4 parallel populations
-  migrationInterval: 50,   // exchange elites every 50 generations
-  populationSize: 30000,
-  maxGenerations: 20000,
-});
-```
+Island-model BRKGA options (`islands`, `migrationInterval`, `migrantFraction`)
+are passed via `BRKGAOptions` when constructing a `BRKGA` instance directly
+— they are not part of `SolveOptions` today. Track item 5.2 to expose
+them on the high-level solver.
 
 ## Configuration
 
@@ -158,9 +149,11 @@ No environment variables are required for core usage. Defaults are tuned for pap
 | `warmStart` | `true` | Seed 15% of BRKGA from ALNS solution |
 | `maxTimeMs` | `0` | Wall-clock cap (`0` = unlimited) |
 | `targetMakespan` | `0` | Early-stop on reaching target |
-| `islands` | `1` | BRKGA island count |
-| `migrationInterval` | `50` | Generations between elite migrations |
-| `migrantFraction` | `0.05` | Fraction of migrants per migration |
+
+The island-model BRKGA options (`islands`, `migrationInterval`,
+`migrantFraction`) live on `BRKGAOptions` and are used when constructing
+a `BRKGA` instance directly. They are not yet wired into `SolveOptions`
+(track 5.2).
 
 ## API
 
@@ -201,11 +194,19 @@ const customer = new CustomerWithTimeWindows(
 import { TrafficAwareProblem, TrafficModel } from 'vehicle-routing';
 
 const traffic = new TrafficModel();
-traffic.addSegment(depotNode, customerNode, {
+traffic.setSegment({
+  fromId: depotNodeId,
+  toId: customerNodeId,
   baseTravelTime: 30,
-  timeDependentFactors: { 8: 1.5, 9: 2.0, 17: 1.8, 18: 1.6 }, // rush hour
-  congestionLevel: 1.5,
+  currentTravelTime: 30,
+  congestionLevel: 'low',
 });
+traffic.setTimeFactors(depotNodeId, customerNodeId, [
+  { startTime: 8, factor: 1.5 },   // 8am rush hour
+  { startTime: 9, factor: 2.0 },
+  { startTime: 17, factor: 1.8 },
+  { startTime: 18, factor: 1.6 },
+]);
 
 const problem = new TrafficAwareProblem(nodes, customers, vehicles, 0, traffic);
 ```
@@ -387,7 +388,7 @@ Time-dependent travel speed: if `departureTime ≥ latest-matching factor.startT
 - **Quick test:** `alnsIterations: 100, populationSize: 1000, maxGenerations: 500`
 - **Production:** `alnsIterations: 500, populationSize: 30000, maxGenerations: 20000` (paper defaults)
 - **Time-constrained:** Set `maxTimeMs` to stop early with a feasible solution
-- **Multi-core:** Enable `parallel: true` (ALNS + BRKGA concurrently) or `islands: 4` (parallel BRKGA populations with elite migration)
+- **Multi-core:** Enable `parallel: true` (ALNS + BRKGA concurrently). For island-model BRKGA, construct a `BRKGA` instance directly with `BRKGAOptions` and pass it via `warmStartSolution`.
 - **Stagnation resistance:** The ALNS multi-restart and BRKGA adaptive-mutation / immigrant-injection mechanisms automatically handle most convergence issues
 
 ## Development
@@ -396,7 +397,7 @@ Time-dependent travel speed: if `departureTime ≥ latest-matching factor.startT
 npm install
 npm run build              # rollup ESM + CJS bundles
 npm run dev                # rollup --watch
-npm test                   # 212 tests
+npm test                   # 330+ tests
 npm run test:coverage      # c8 text + lcov + html
 npm run lint               # eslint src tests
 npm run lint:fix
@@ -409,9 +410,9 @@ npm run clean              # rm -rf dist docs/api docs/md
 ## Testing
 
 ```bash
-npm test                   # mocha (212 tests)
+npm test                   # mocha (330+ tests)
 npm run test:watch
-npm run test:coverage      # c8 with text / lcov / html reports and 70/74/72/70 thresholds
+npm run test:coverage      # c8 with text / lcov / html reports and 80/80/80/80 thresholds
 ```
 
 ## Build
