@@ -500,19 +500,25 @@ export class BRKGA {
             globalBest === null ||
             (ind.fitness !== null && ind.fitness < (globalBest.fitness ?? Infinity))
           ) {
-            globalBest = ind;
+            globalBest = {
+              chromosome: {
+                priorities: [...ind.chromosome.priorities],
+                assignments: [...ind.chromosome.assignments],
+                dependencies: [...ind.chromosome.dependencies],
+                transfers: [...ind.chromosome.transfers],
+              },
+              fitness: ind.fitness,
+            };
           }
         }
       }
     } catch (err) {
-      this.logger.log(
-        `Island BRKGA worker failed: ${err instanceof Error ? err.message : String(err)}. ` +
-        `Falling back to single-island.`,
-      );
       for (const w of workers) {
         void w.terminate();
       }
-      return this.runSingleIsland(startTime);
+      throw new AlgorithmConvergenceError(
+        `Island BRKGA worker failed: ${err instanceof Error ? err.message : String(err)}`,
+      );
     }
 
     for (const w of workers) {
