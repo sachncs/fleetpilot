@@ -1,4 +1,4 @@
-import type { Customer, LocationNode } from '../../core/problem.js';
+import type { Customer, VrpProblem } from '../../core/problem.js';
 import type { VrpSolution } from '../../core/solution.js';
 import { isCustomerWithTimeWindows } from '../../core/solution.js';
 
@@ -115,7 +115,7 @@ export const RemovalOperators = {
         const relatedness = calculateRelatedness(
           seed,
           customer,
-          solution.problem.nodes,
+          solution.problem,
           solution.nodeTimes,
         );
 
@@ -149,16 +149,12 @@ export const RemovalOperators = {
     if (!seed) {
       return { solution: newVrpSolution, removed };
     }
-    const seedNode = solution.problem.nodes[seed.deliveryNodeId]!;
 
-    // Sort customers by distance to seed
-    const sortedCustomers = [...solution.problem.customers].sort((a, b) => {
-      const aNode = solution.problem.nodes[a.deliveryNodeId]!;
-      const bNode = solution.problem.nodes[b.deliveryNodeId]!;
-      const distA = Math.hypot(aNode.x - seedNode.x, aNode.y - seedNode.y);
-      const distB = Math.hypot(bNode.x - seedNode.x, bNode.y - seedNode.y);
-      return distA - distB;
-    });
+    // Sort customers by distance to seed via the precomputed distance matrix
+    const sortedCustomers = [...solution.problem.customers].sort((a, b) =>
+      solution.problem.getDistance(a.deliveryNodeId, seed.deliveryNodeId) -
+      solution.problem.getDistance(b.deliveryNodeId, seed.deliveryNodeId),
+    );
 
     // Remove k closest customers
     for (let i = 0; i < k && i < sortedCustomers.length; i++) {
@@ -187,15 +183,12 @@ export const RemovalOperators = {
     // Pick random seed
     const seedIndex = Math.floor(Math.random() * solution.problem.customers.length);
     const seed = solution.problem.customers[seedIndex]!;
-    const seedNode = solution.problem.nodes[seed.deliveryNodeId]!;
 
-    // Sort by pure distance
-    const sortedCustomers = [...solution.problem.customers].sort((a, b) => {
-      const aNode = solution.problem.nodes[a.deliveryNodeId]!;
-      const bNode = solution.problem.nodes[b.deliveryNodeId]!;
-      return Math.hypot(aNode.x - seedNode.x, aNode.y - seedNode.y) -
-        Math.hypot(bNode.x - seedNode.x, bNode.y - seedNode.y);
-    });
+    // Sort by pure distance via the precomputed distance matrix
+    const sortedCustomers = [...solution.problem.customers].sort((a, b) =>
+      solution.problem.getDistance(a.deliveryNodeId, seed.deliveryNodeId) -
+      solution.problem.getDistance(b.deliveryNodeId, seed.deliveryNodeId),
+    );
 
     for (let i = 0; i < k && i < sortedCustomers.length; i++) {
       const customer = sortedCustomers[i]!;
@@ -263,14 +256,12 @@ export const RemovalOperators = {
 function calculateRelatedness(
   c1: Customer,
   c2: Customer,
-  nodes: Record<number, LocationNode>,
+  problem: VrpProblem,
   nodeTimes: Record<number, number>,
 ): number {
-  const d1 = nodes[c1.deliveryNodeId]!;
-  const d2 = nodes[c2.deliveryNodeId]!;
-
-  // Spatial component
-  const dist = Math.hypot(d1.x - d2.x, d1.y - d2.y);
+  // Spatial component: use the precomputed distance matrix instead of
+  // recomputing Euclidean distance inline.
+  const dist = problem.getDistance(c1.deliveryNodeId, c2.deliveryNodeId);
 
   // Temporal component
   const t1 = nodeTimes[c1.deliveryNodeId] ?? 0;
