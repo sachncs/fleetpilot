@@ -277,6 +277,133 @@ export class VrpSolution {
   }
 
   /**
+   * O(n²) per-(customer, route) evaluation of inserting a pickup-and-delivery
+   * pair at every (dPos, pPos). Avoids the O(n) clone + re-evaluate per
+   * (dPos, pPos) pair that the naive implementation does.
+   *
+   * For each route, computes prefixArrivals[i] (arrival at original nodes[i])
+   * in O(n) once. Then for any (dPos, pPos), the resulting depot-return time
+   * is derived in O(1) from the prefix array plus a constant delta for the
+   * dPos column.
+   *
+   * @param routeIndex - Index of the route to consider
+   * @param deliveryNodeId - Delivery node ID of the customer
+   * @param pickupNodeId - Pickup node ID of the customer
+   * @param processingTime - Customer's processing time (delivery arrival to pickup ready)
+   * @returns Array of depot-return times indexed by `[dPos][pPos-dPos]`
+   */
+  evaluateInsertionCosts(
+    routeIndex: number,
+    deliveryNodeId: number,
+    pickupNodeId: number,
+    processingTime: number,
+  ): number[][] {
+    const route = this.routes[routeIndex];
+    if (!route) return [];
+    const n = route.nodes.length;
+    const vehicle = this.problem.vehicleMap.get(route.vehicleId);
+    const startDepot = vehicle?.startDepotId ?? this.problem.depotNodeId;
+    const endDepot = vehicle?.endDepotId ?? this.problem.depotNodeId;
+
+    // Pre-compute prefix arrivals at original positions 0..n (where prefix[n]
+    // is the depot-return time of the unmodified route).
+    const prefix: number[] = Array.from<number>({ length: n + 1 });
+    prefix[0] = 0;
+    let currentTime = 0;
+    let prevNode = startDepot;
+    const updatedReady = { ...this.resourceReadyTimes };
+    const nodeArrivals: Record<number, number> = {};
+    for (let i = 0; i < n; i++) {
+      const nodeId = route.nodes[i]!;
+      const travel = this.problem.getTravelTime(prevNode, nodeId);
+      let arrival = currentTime + travel;
+      const pickupCust = this.problem.pickupNodeMap.get(nodeId);
+      if (pickupCust) {
+        const ready = updatedReady[pickupCust.id] ?? 0;
+        if (ready > arrival) arrival = ready;
+        if (isCustomerWithTimeWindows(pickupCust)) {
+          if (arrival < pickupCust.earliestPickupTime) arrival = pickupCust.earliestPickupTime;
+        }
+      }
+      const deliveryCust = this.problem.deliveryNodeMap.get(nodeId);
+      if (deliveryCust && isCustomerWithTimeWindows(deliveryCust)) {
+        if (arrival < deliveryCust.earliestDeliveryTime) arrival = deliveryCust.earliestDeliveryTime;
+      }
+      nodeArrivals[nodeId] = arrival;
+      if (deliveryCust) {
+        updatedReady[deliveryCust.id] = arrival + deliveryCust.processingTime;
+      }
+      currentTime = arrival;
+      prevNode = nodeId;
+    }
+    for (let i = 0; i < n; i++) {
+      prefix[i] = nodeArrivals[route.nodes[i]!] ?? 0;
+    }
+    prefix[n] = currentTime + this.problem.getTravelTime(prevNode, endDepot);
+
+    const result: number[][] = Array.from<number[]>({ length: n + 1 });
+    for (let dPos = 0; dPos <= n; dPos++) {
+      const row: number[] = Array.from<number>({ length: n - dPos + 1 });
+      // Compute delivery's arrival at dPos.
+      const prevNodeAtDPos = dPos === 0 ? startDepot : route.nodes[dPos - 1]!;
+      const arrivalAtPrevDPos = dPos === 0 ? 0 : prefix[dPos - 1]!;
+      const deliveryArrival =
+        arrivalAtPrevDPos + this.problem.getTravelTime(prevNodeAtDPos, deliveryNodeId);
+      const deliveryReady = deliveryArrival + processingTime;
+
+      // Delta from original arrival at dPos:
+      // In the modified route, every node at original index >= dPos has its
+      // arrival shifted by:
+      //   delta = (deliveryArrival + travel(delivery, original[dPos])) - prefix[dPos]
+      // For dPos == n (insertion at end) prefix[dPos] is the depot-return; use 0 for shift.
+      let delta = 0;
+      if (dPos < n) {
+        const travelAfterDelivery = this.problem.getTravelTime(
+          deliveryNodeId,
+          route.nodes[dPos]!,
+        );
+        delta = deliveryArrival + travelAfterDelivery - prefix[dPos]!;
+      }
+
+      for (let pPos = dPos; pPos <= n; pPos++) {
+        // Pickup is inserted at modified position pPos+1. Its arrival is:
+        //   max(deliveryReady, prefixArrival at original position pPos + delta)
+        // For pPos == n, the pickup is at the end: arrival = deliveryReady,
+        // then depot-return = arrival + travel(pickup, endDepot).
+        let pickupArrival: number;
+        if (pPos < n) {
+          pickupArrival = Math.max(deliveryReady, prefix[pPos]! + delta);
+        } else {
+          pickupArrival = deliveryReady;
+        }
+        const depotReturn =
+          pickupArrival + this.problem.getTravelTime(pickupNodeId, endDepot);
+        row[pPos - dPos] = depotReturn;
+      }
+      result[dPos] = row;
+    }
+
+    // The makespan after insertion is the max of this route's new depot-return
+    // time and all other routes' current depot-return times.
+    const otherReturns: number[] = [];
+    for (let v = 0; v < this.routes.length; v++) {
+      if (v === routeIndex) continue;
+      const k = `depot_return_${v}`;
+      const t = this.nodeTimes[k];
+      if (typeof t === 'number') otherReturns.push(t);
+    }
+    const otherMax = otherReturns.length > 0 ? Math.max(...otherReturns) : 0;
+    for (let dPos = 0; dPos <= n; dPos++) {
+      const row = result[dPos]!;
+      for (let j = 0; j < row.length; j++) {
+        row[j] = Math.max(row[j]!, otherMax);
+      }
+    }
+
+    return result;
+  }
+
+  /**
    * @param route - Route to measure
    * @returns Total distance for the route including return to depot
    */

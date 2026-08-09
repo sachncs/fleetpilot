@@ -291,22 +291,21 @@ export const InsertionOperators = {
 
       // Try inserting in each route
       for (let rIdx = 0; rIdx < newVrpSolution.routes.length; rIdx++) {
-        const route = newVrpSolution.routes[rIdx]!;
-
-        // Try all positions for delivery
-        for (let dPos = 0; dPos <= route.nodes.length; dPos++) {
-          // Try all positions for pickup (must be after delivery)
-          for (let pPos = dPos; pPos <= route.nodes.length; pPos++) {
-            const testRoute = route.clone();
-            testRoute.nodes.splice(dPos, 0, customer.deliveryNodeId);
-            testRoute.nodes.splice(pPos + (dPos <= pPos ? 1 : 0), 0, customer.pickupNodeId);
-
-            const testMakespan = newVrpSolution.evaluateMakespanWithRoute(rIdx, testRoute);
-            if (testMakespan < bestCost) {
-              bestCost = testMakespan;
+        const costs = newVrpSolution.evaluateInsertionCosts(
+          rIdx,
+          customer.deliveryNodeId,
+          customer.pickupNodeId,
+          customer.processingTime,
+        );
+        for (let dPos = 0; dPos < costs.length; dPos++) {
+          const row = costs[dPos]!;
+          for (let p = 0; p < row.length; p++) {
+            const makespan = row[p]!;
+            if (makespan < bestCost) {
+              bestCost = makespan;
               bestRouteIndex = rIdx;
               bestDeliveryPos = dPos;
-              bestPickupPos = pPos;
+              bestPickupPos = dPos + p;
             }
           }
         }
