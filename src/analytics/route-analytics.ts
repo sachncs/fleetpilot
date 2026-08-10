@@ -21,7 +21,10 @@ export class RouteAnalytics {
    * @param solution - Solution to analyze
    * @param problem - Problem instance the solution solves
    */
-  constructor(private readonly solution: VrpSolution, private readonly problem: VrpProblem) {}
+  constructor(
+    private readonly solution: VrpSolution,
+    private readonly problem: VrpProblem,
+  ) {}
 
   /**
    * @returns Per-route vehicle utilization metrics
@@ -33,7 +36,7 @@ export class RouteAnalytics {
       const route = this.solution.routes[i];
       if (!route) continue;
 
-      const vehicle = this.problem.vehicles.find(v => v.id === route.vehicleId);
+      const vehicle = this.problem.vehicles.find((v) => v.id === route.vehicleId);
       if (!vehicle) continue;
 
       let maxLoadNeeded = 0;
@@ -41,8 +44,8 @@ export class RouteAnalytics {
       let customerCount = 0;
 
       for (const nodeId of route.nodes) {
-        const isDelivery = this.problem.customers.some(c => c.deliveryNodeId === nodeId);
-        const isPickup = this.problem.customers.some(c => c.pickupNodeId === nodeId);
+        const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
+        const isPickup = this.problem.customers.some((c) => c.pickupNodeId === nodeId);
 
         if (isDelivery) {
           currentLoad--;
@@ -87,7 +90,7 @@ export class RouteAnalytics {
       if (Number.isNaN(nodeId)) continue;
 
       const customer = this.problem.customers.find(
-        c => c.deliveryNodeId === nodeId || c.pickupNodeId === nodeId,
+        (c) => c.deliveryNodeId === nodeId || c.pickupNodeId === nodeId,
       );
 
       if (!customer) continue;
@@ -135,8 +138,8 @@ export class RouteAnalytics {
     // Calculate initial load needed
     let minLoadNeeded = 0;
     for (const nodeId of route.nodes) {
-      const isDelivery = this.problem.customers.some(c => c.deliveryNodeId === nodeId);
-      const isPickup = this.problem.customers.some(c => c.pickupNodeId === nodeId);
+      const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
+      const isPickup = this.problem.customers.some((c) => c.pickupNodeId === nodeId);
       if (isDelivery) currentLoad--;
       if (isPickup) currentLoad++;
       if (currentLoad < minLoadNeeded) minLoadNeeded = currentLoad;
@@ -150,8 +153,8 @@ export class RouteAnalytics {
       const travelTime = this.problem.getDistance(prevNode, nodeId);
       currentTime += travelTime;
 
-      const isDelivery = this.problem.customers.some(c => c.deliveryNodeId === nodeId);
-      const isPickup = this.problem.customers.some(c => c.pickupNodeId === nodeId);
+      const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
+      const isPickup = this.problem.customers.some((c) => c.pickupNodeId === nodeId);
 
       if (isDelivery) currentLoad--;
       if (isPickup) currentLoad++;
@@ -178,7 +181,7 @@ export class RouteAnalytics {
       const route = this.solution.routes[i];
       if (!route) continue;
 
-      const vehicle = this.problem.vehicles.find(v => v.id === route.vehicleId);
+      const vehicle = this.problem.vehicles.find((v) => v.id === route.vehicleId);
       if (!vehicle) continue;
 
       const routeDistance = this.solution.calculateRouteDistance(route);
