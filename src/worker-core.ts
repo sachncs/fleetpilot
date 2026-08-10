@@ -70,16 +70,21 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
       function isChromosome(value: unknown): value is Chromosome {
         if (typeof value !== 'object' || value === null) return false;
         return (
-          'priorities' in value && Array.isArray(value.priorities) &&
-          'assignments' in value && Array.isArray(value.assignments) &&
-          'dependencies' in value && Array.isArray(value.dependencies)
+          'priorities' in value &&
+          Array.isArray(value.priorities) &&
+          'assignments' in value &&
+          Array.isArray(value.assignments) &&
+          'dependencies' in value &&
+          Array.isArray(value.dependencies)
         );
       }
 
       const messageHandler = (msg: unknown) => {
         if (
-          typeof msg !== 'object' || msg === null ||
-          !('type' in msg) || typeof msg.type !== 'string'
+          typeof msg !== 'object' ||
+          msg === null ||
+          !('type' in msg) ||
+          typeof msg.type !== 'string'
         ) {
           return;
         }
@@ -107,7 +112,8 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
             if (i >= migrants.length) continue;
             const migrantRaw: unknown = migrants[i];
             if (
-              typeof migrantRaw !== 'object' || migrantRaw === null ||
+              typeof migrantRaw !== 'object' ||
+              migrantRaw === null ||
               !isChromosome(migrantRaw)
             ) {
               continue;
@@ -160,7 +166,7 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
 
     const result: WorkerResult = {
       makespan: solution.makespan,
-      routes: solution.routes.map(r => ({ vehicleId: r.vehicleId, nodes: r.nodes })),
+      routes: solution.routes.map((r) => ({ vehicleId: r.vehicleId, nodes: r.nodes })),
       type: data.type,
     };
 
