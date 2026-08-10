@@ -1,4 +1,10 @@
-import { VrpProblem, LocationNode, Customer, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
+import {
+  VrpProblem,
+  LocationNode,
+  Customer,
+  CustomerWithTimeWindows,
+  Vehicle,
+} from '../src/core/problem.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
 
 export function createBasicProblem(): VrpProblem {
@@ -9,10 +15,7 @@ export function createBasicProblem(): VrpProblem {
     3: new LocationNode(3, 0, 10, 'D2'),
     4: new LocationNode(4, 0, 20, 'P2'),
   };
-  const customers = [
-    new Customer(1, 1, 2, 50),
-    new Customer(2, 3, 4, 50),
-  ];
+  const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
   const vehicles = [new Vehicle(1, 10)];
   return new VrpProblem(nodes, customers, vehicles, 0);
 }
@@ -25,14 +28,8 @@ export function createTwoVehicleProblem(): VrpProblem {
     3: new LocationNode(3, 100, 0, 'D2'),
     4: new LocationNode(4, 200, 0, 'P2'),
   };
-  const customers = [
-    new Customer(1, 1, 2, 10),
-    new Customer(2, 3, 4, 10),
-  ];
-  const vehicles = [
-    new Vehicle(1, 10, 0, 0, 1, 1),
-    new Vehicle(2, 10, 0, 0, 2, 2),
-  ];
+  const customers = [new Customer(1, 1, 2, 10), new Customer(2, 3, 4, 10)];
+  const vehicles = [new Vehicle(1, 10, 0, 0, 1, 1), new Vehicle(2, 10, 0, 0, 2, 2)];
   return new VrpProblem(nodes, customers, vehicles, 0);
 }
 
@@ -83,7 +80,7 @@ export function createSingleCustomerProblem(): VrpProblem {
 }
 
 export function createKnownSolution(problem: VrpProblem): VrpSolution {
-  const routes = problem.vehicles.map(v => new Route(v.id, []));
+  const routes = problem.vehicles.map((v) => new Route(v.id, []));
   const solution = new VrpSolution(problem, routes);
   for (const c of problem.customers) {
     const route = solution.routes[0];
