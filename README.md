@@ -401,7 +401,7 @@ Time-dependent travel speed: if `departureTime ≥ latest-matching factor.startT
 npm install
 npm run build              # rollup ESM + CJS bundles
 npm run dev                # rollup --watch
-npm test                   # 370+ tests
+npm test                   # 350+ tests
 npm run test:coverage      # c8 text + lcov + html
 npm run lint               # eslint src tests
 npm run lint:fix
@@ -414,7 +414,7 @@ npm run clean              # rm -rf dist docs/api docs/md
 ## Testing
 
 ```bash
-npm test                   # mocha (370+ tests)
+npm test                   # mocha (350+ tests)
 npm run test:watch
 npm run test:coverage      # c8 with text / lcov / html reports and 85/85/70/85 thresholds
 ```
