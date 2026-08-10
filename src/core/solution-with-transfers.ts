@@ -30,11 +30,12 @@ export class SolutionWithTransfers extends VrpSolution {
     super(problem, routes);
 
     this.transferManager = new TransferManager();
-    const fleetVehicles = vehicles.length > 0
-      ? vehicles
-      : problem.vehicles.filter(
-          (v): v is VehicleWithCapabilities => v instanceof VehicleWithCapabilities,
-        );
+    const fleetVehicles =
+      vehicles.length > 0
+        ? vehicles
+        : problem.vehicles.filter(
+            (v): v is VehicleWithCapabilities => v instanceof VehicleWithCapabilities,
+          );
     this.fleetManager = new VehicleFleetManager(fleetVehicles);
 
     // Register transfer hubs
@@ -113,7 +114,7 @@ export class SolutionWithTransfers extends VrpSolution {
         if (!fromVehicle.canTransferWith(toVehicle)) {
           errors.push(
             `Transfer ${transfer.id}: Vehicles ` +
-            `${transfer.fromVehicleId} and ${transfer.toVehicleId} cannot transfer`,
+              `${transfer.fromVehicleId} and ${transfer.toVehicleId} cannot transfer`,
           );
         }
       }
@@ -125,7 +126,7 @@ export class SolutionWithTransfers extends VrpSolution {
       ) {
         errors.push(
           `Transfer ${transfer.id}: Amount ${transfer.amount} ` +
-          `exceeds max transfer ${fromVehicle.maxTransferAmount}`,
+            `exceeds max transfer ${fromVehicle.maxTransferAmount}`,
         );
       }
     }
@@ -284,7 +285,7 @@ export class SolutionWithTransfers extends VrpSolution {
   override clone(): SolutionWithTransfers {
     const cloned = new SolutionWithTransfers(
       this.problem,
-      this.routes.map(r => r.clone()),
+      this.routes.map((r) => r.clone()),
       [...this.transferManager.getAllHubs()],
       [...this.fleetManager.getAllVehicles()],
     );
@@ -327,7 +328,7 @@ export class ProblemWithTransfers extends VrpProblem {
    * @returns True if `nodeId` is registered as a transfer hub on this problem
    */
   isTransferHub(nodeId: number): boolean {
-    return this.transferHubs.some(h => h.id === nodeId);
+    return this.transferHubs.some((h) => h.id === nodeId);
   }
 
   /**
@@ -335,6 +336,6 @@ export class ProblemWithTransfers extends VrpProblem {
    * @returns The hub, or undefined if not registered
    */
   getTransferHub(nodeId: number): TransferHub | undefined {
-    return this.transferHubs.find(h => h.id === nodeId);
+    return this.transferHubs.find((h) => h.id === nodeId);
   }
 }
