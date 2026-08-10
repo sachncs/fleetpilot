@@ -7,14 +7,18 @@ function makeMockWorker(opts: { exitCode?: number; emit?: string; errorMessage?:
   const handlers: { name: string; fn: Handler }[] = [];
   return {
     posted: [] as unknown[],
-    on(name: string, fn: Handler) { handlers.push({ name, fn }); },
+    on(name: string, fn: Handler) {
+      handlers.push({ name, fn });
+    },
     off(name: string, fn: Handler) {
-      const idx = handlers.findIndex(h => h.name === name && h.fn === fn);
+      const idx = handlers.findIndex((h) => h.name === name && h.fn === fn);
       if (idx >= 0) handlers.splice(idx, 1);
     },
-    postMessage(msg: unknown) { this.posted.push(msg); },
+    postMessage(msg: unknown) {
+      this.posted.push(msg);
+    },
     trigger(name: 'message' | 'error' | 'exit', payload: unknown) {
-      for (const h of handlers.filter(h => h.name === name)) {
+      for (const h of handlers.filter((h) => h.name === name)) {
         (h.fn as (p: unknown) => void)(payload);
       }
     },
@@ -30,7 +34,9 @@ describe('island-messenger sendCommand', () => {
       type: 'checkpoint',
       islandId: 0,
       generation: 1,
-      population: [{ chromosome: { priorities: [0.5], assignments: [0.5], dependencies: [0.5] }, fitness: 0 }],
+      population: [
+        { chromosome: { priorities: [0.5], assignments: [0.5], dependencies: [0.5] }, fitness: 0 },
+      ],
     });
     const result = await promise;
     expect(result.type).to.equal('checkpoint');
