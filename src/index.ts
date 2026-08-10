@@ -74,8 +74,8 @@ export type {
 } from './analytics/solution-comparator.js';
 
 // Export
-export { GISExporter } from './export/gis-exporter.js';
-export type { GeoJson, GeoJsonFeature, KmlPlacemark } from './export/gis-exporter.js';
+export { GISExporter } from './export/index.js';
+export type { GeoJson, GeoJsonFeature, KmlPlacemark } from './export/index.js';
 
 // Main solver class
 import { Worker } from 'worker_threads';

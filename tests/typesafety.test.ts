@@ -9,7 +9,7 @@ import { TransferHub } from '../src/core/resource-transfer.js';
 import { ProblemWithTransfers } from '../src/core/solution-with-transfers.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
 import { VehicleWithCapabilities, VehicleFleetManager } from '../src/core/vehicle-with-capabilities.js';
-import { GISExporter } from '../src/export/gis-exporter.js';
+import { GISExporter } from '../src/export/index.js';
 
 // ============================================================
 // T1: ResourceType is a closed union

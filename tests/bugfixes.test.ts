@@ -14,7 +14,7 @@ import {
 import { VrpSolution, Route } from '../src/core/solution.js';
 import { TrafficAwareProblem, TrafficModel } from '../src/core/traffic-aware-problem.js';
 import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.js';
-import { GISExporter } from '../src/export/gis-exporter.js';
+import { GISExporter } from '../src/export/index.js';
 
 // ============================================================
 // C1: totalCost / totalCo2 must be per-route, per-vehicle

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
-import { GISExporter } from '../src/export/gis-exporter.js';
+import { GISExporter } from '../src/export/index.js';
 import { isWorkerData, validateWorkerData } from '../src/worker-validation.js';
 
 describe('Security S1 - KML XML escaping', () => {

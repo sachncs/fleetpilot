@@ -1,39 +1,11 @@
 import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 
-/**
- * A single GeoJSON Feature — either a LineString (route) or a Point (depot / stop).
- */
-export interface GeoJsonFeature {
-  type: 'Feature';
-  geometry: {
-    type: 'LineString' | 'Point';
-    coordinates: [number, number][] | [number, number];
-  };
-  properties: Record<string, unknown>;
-}
+import type { GeoJsonFeature } from './geo-json-feature.js';
+import type { GeoJson } from './geo-json.js';
+import type { KmlPlacemark } from './kml-placemark.js';
 
-/**
- * A GeoJSON FeatureCollection as emitted by `GISExporter.toGeoJson()`.
- */
-export interface GeoJson {
-  type: 'FeatureCollection';
-  features: GeoJsonFeature[];
-}
-
-/**
- * A KML Placemark as emitted by `GISExporter.toKml()`.
- */
-export interface KmlPlacemark {
-  name: string;
-  description: string;
-  coordinates: [number, number][] | [number, number];
-  style: {
-    strokeColor?: string;
-    strokeWidth?: number;
-    fillColor?: string;
-  };
-}
+export type { GeoJson, GeoJsonFeature, KmlPlacemark };
 
 /**
  * Exports VRP-RPD solutions to GIS formats (GeoJson, KML).
