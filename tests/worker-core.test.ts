@@ -1,10 +1,6 @@
 import { expect } from 'chai';
 
-import {
-  VrpProblem,
-  LocationNode,
-  Customer,
-} from '../src/core/problem.js';
+import { VrpProblem, LocationNode, Customer } from '../src/core/problem.js';
 import { runWorkerTask, type WorkerIO } from '../src/worker-core.js';
 import { serializeProblem } from '../src/worker-data.js';
 
@@ -17,7 +13,9 @@ function makeProblem(): VrpProblem {
     4: new LocationNode(4, 0, 20, 'P2'),
   };
   const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
-  const vehicles = [{ id: 1, capacity: 10, startDepotId: 0, endDepotId: 0, costPerKm: 1, co2PerKm: 1 }];
+  const vehicles = [
+    { id: 1, capacity: 10, startDepotId: 0, endDepotId: 0, costPerKm: 1, co2PerKm: 1 },
+  ];
   return new VrpProblem(nodes, customers, vehicles, 0);
 }
 
@@ -30,12 +28,20 @@ function makeIO(): {
   let handler: ((msg: unknown) => void) | null = null;
   return {
     io: {
-      postMessage: (msg: unknown) => { posted.push(msg); },
-      onMessage: (h: (msg: unknown) => void) => { handler = h; },
-      offMessage: () => { handler = null; },
+      postMessage: (msg: unknown) => {
+        posted.push(msg);
+      },
+      onMessage: (h: (msg: unknown) => void) => {
+        handler = h;
+      },
+      offMessage: () => {
+        handler = null;
+      },
     },
     posted,
-    emit: (msg: unknown) => { if (handler) handler(msg); },
+    emit: (msg: unknown) => {
+      if (handler) handler(msg);
+    },
   };
 }
 
@@ -44,7 +50,10 @@ describe('runWorkerTask (in-process)', () => {
     const problem = makeProblem();
     const { io, posted } = makeIO();
     await runWorkerTask(
-      serializeProblem(problem, { type: 'BRKGA', options: { populationSize: 20, maxGenerations: 10 } }),
+      serializeProblem(problem, {
+        type: 'BRKGA',
+        options: { populationSize: 20, maxGenerations: 10 },
+      }),
       io,
     );
     expect(posted).to.have.lengthOf(1);
@@ -84,9 +93,10 @@ describe('runWorkerTask (in-process)', () => {
     expect(first.type).to.equal('checkpoint');
 
     emit({ type: 'evolve', generations: 3 });
-    emit({ type: 'inject', migrants: [
-      { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5] },
-    ] });
+    emit({
+      type: 'inject',
+      migrants: [{ priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5] }],
+    });
     emit({ type: 'finish' });
     emit({ type: 'unknown-msg-type' });
 
@@ -100,15 +110,23 @@ describe('runWorkerTask (in-process)', () => {
     const data = serializeProblem(problem, {
       type: 'island-brkga',
       islandId: 0,
-      options: { populationSize: 10, maxGenerations: 10, islandMaxGenerations: 10, migrationInterval: 5 },
+      options: {
+        populationSize: 10,
+        maxGenerations: 10,
+        islandMaxGenerations: 10,
+        migrationInterval: 5,
+      },
     });
     await runWorkerTask(data, io);
 
-    emit({ type: 'inject', migrants: [
-      null,
-      { priorities: 'not-an-array' },
-      { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5] },
-    ] });
+    emit({
+      type: 'inject',
+      migrants: [
+        null,
+        { priorities: 'not-an-array' },
+        { priorities: [0.1, 0.2], assignments: [0.5, 0.5], dependencies: [0.5, 0.5] },
+      ],
+    });
     emit({ type: 'finish' });
 
     const finish = posted[posted.length - 1] as { type?: string };
