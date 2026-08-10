@@ -26,11 +26,7 @@ describe('Benchmarks', () => {
       customers.push(new Customer(c, deliveryNodeId, pickupNodeId, 5 + Math.random() * 10));
     }
 
-    const vehicles = [
-      new Vehicle(1, size * 2),
-      new Vehicle(2, size * 2),
-      new Vehicle(3, size * 2),
-    ];
+    const vehicles = [new Vehicle(1, size * 2), new Vehicle(2, size * 2), new Vehicle(3, size * 2)];
 
     return new VrpProblem(nodes, customers, vehicles, 0);
   }
