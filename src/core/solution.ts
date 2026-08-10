@@ -77,7 +77,7 @@ export class VrpSolution {
     public readonly problem: VrpProblem,
     routes: Route[] = [],
   ) {
-    this.routes = routes.length > 0 ? routes : problem.vehicles.map(v => new Route(v.id, []));
+    this.routes = routes.length > 0 ? routes : problem.vehicles.map((v) => new Route(v.id, []));
     this.makespan = Infinity;
     this.nodeTimes = {};
     this.resourceReadyTimes = {};
@@ -158,8 +158,7 @@ export class VrpSolution {
         }
 
         // Return to depot
-        const returnTime =
-          currentTime + this.problem.getTravelTime(prevNode, endDepot);
+        const returnTime = currentTime + this.problem.getTravelTime(prevNode, endDepot);
         const routeKey = `depot_return_${vIdx}`;
         if (nodeTimes[routeKey] !== returnTime) {
           nodeTimes[routeKey] = returnTime;
@@ -174,9 +173,7 @@ export class VrpSolution {
     this.resourceReadyTimes = resourceReadyTimes;
 
     // Makespan is the max return time to depot
-    const depotReturns = this.routes.map((_, vIdx) =>
-      nodeTimes[`depot_return_${vIdx}`] ?? 0,
-    );
+    const depotReturns = this.routes.map((_, vIdx) => nodeTimes[`depot_return_${vIdx}`] ?? 0);
     this.makespan = Math.max(...depotReturns);
 
     // Calculate total distance
@@ -255,8 +252,7 @@ export class VrpSolution {
 
     this.nodeTimes[newNode] = arrivalTime;
     if (deliveryCustomer) {
-      this.resourceReadyTimes[deliveryCustomer.id] =
-        arrivalTime + deliveryCustomer.processingTime;
+      this.resourceReadyTimes[deliveryCustomer.id] = arrivalTime + deliveryCustomer.processingTime;
     }
 
     const returnTime = arrivalTime + this.problem.getTravelTime(newNode, endDepot);
@@ -327,7 +323,8 @@ export class VrpSolution {
       }
       const deliveryCust = this.problem.deliveryNodeMap.get(nodeId);
       if (deliveryCust && isCustomerWithTimeWindows(deliveryCust)) {
-        if (arrival < deliveryCust.earliestDeliveryTime) arrival = deliveryCust.earliestDeliveryTime;
+        if (arrival < deliveryCust.earliestDeliveryTime)
+          arrival = deliveryCust.earliestDeliveryTime;
       }
       nodeArrivals[nodeId] = arrival;
       if (deliveryCust) {
@@ -358,10 +355,7 @@ export class VrpSolution {
       // For dPos == n (insertion at end) prefix[dPos] is the depot-return; use 0 for shift.
       let delta = 0;
       if (dPos < n) {
-        const travelAfterDelivery = this.problem.getTravelTime(
-          deliveryNodeId,
-          route.nodes[dPos]!,
-        );
+        const travelAfterDelivery = this.problem.getTravelTime(deliveryNodeId, route.nodes[dPos]!);
         delta = deliveryArrival + travelAfterDelivery - prefix[dPos]!;
       }
 
@@ -376,8 +370,7 @@ export class VrpSolution {
         } else {
           pickupArrival = deliveryReady;
         }
-        const depotReturn =
-          pickupArrival + this.problem.getTravelTime(pickupNodeId, endDepot);
+        const depotReturn = pickupArrival + this.problem.getTravelTime(pickupNodeId, endDepot);
         row[pPos - dPos] = depotReturn;
       }
       result[dPos] = row;
@@ -531,10 +524,7 @@ export class VrpSolution {
       returnTime: returnA,
       nodeArrivalTimes,
       updatedReadyTimes: readyA,
-    } = this.evaluateRouteReturnTime(
-      newRouteA,
-      this.resourceReadyTimes,
-    );
+    } = this.evaluateRouteReturnTime(newRouteA, this.resourceReadyTimes);
 
     const hubReadyTime = nodeArrivalTimes[hubNodeId] ?? 0;
 
@@ -670,7 +660,10 @@ export class VrpSolution {
    * @returns Deep copy of this solution
    */
   clone(): VrpSolution {
-    const cloned = new VrpSolution(this.problem, this.routes.map(r => r.clone()));
+    const cloned = new VrpSolution(
+      this.problem,
+      this.routes.map((r) => r.clone()),
+    );
     cloned.makespan = this.makespan;
     cloned.nodeTimes = { ...this.nodeTimes };
     cloned.resourceReadyTimes = { ...this.resourceReadyTimes };
@@ -703,7 +696,7 @@ export class VrpSolution {
    */
   serialize(): SerializedSolution {
     return {
-      routes: this.routes.map(r => ({ vehicleId: r.vehicleId, nodes: [...r.nodes] })),
+      routes: this.routes.map((r) => ({ vehicleId: r.vehicleId, nodes: [...r.nodes] })),
       makespan: this.makespan,
       totalDistance: this.totalDistance,
       totalCost: this.totalCost,
@@ -717,7 +710,7 @@ export class VrpSolution {
    * Reconstructs a VrpSolution from a serialized object and a problem instance.
    */
   static deserialize(data: SerializedSolution, problem: VrpProblem): VrpSolution {
-    const routes = data.routes.map(r => new Route(r.vehicleId, [...r.nodes]));
+    const routes = data.routes.map((r) => new Route(r.vehicleId, [...r.nodes]));
     const solution = new VrpSolution(problem, routes);
     solution.makespan = data.makespan;
     solution.totalDistance = data.totalDistance;
@@ -751,5 +744,3 @@ export interface SerializedSolution {
   nodeTimes: Record<number | string, number>;
   resourceReadyTimes: Record<number, number>;
 }
-
-
