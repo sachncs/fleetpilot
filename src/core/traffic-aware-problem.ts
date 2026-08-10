@@ -107,7 +107,7 @@ export class TrafficModel {
       model.setTimeFactors(
         entry.fromId,
         entry.toId,
-        entry.factors.map(f => ({ ...f })),
+        entry.factors.map((f) => ({ ...f })),
       );
     }
     return model;
