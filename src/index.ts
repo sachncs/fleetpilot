@@ -15,6 +15,7 @@ export {
   ValidationError,
   InfeasibleSolutionError,
   AlgorithmConvergenceError,
+  AbortError,
 } from './errors/index.js';
 
 // Logger

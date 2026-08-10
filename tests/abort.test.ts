@@ -2,7 +2,10 @@ import { expect } from 'chai';
 
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { AbortError, VrpError } from '../src/errors/index.js';
+import * as rootExports from '../src/index.js';
 import { VrpRpdSolver } from '../src/index.js';
+
+const { AbortError: RootAbortError, VrpError: RootVrpError } = rootExports;
 
 function buildProblem(): VrpProblem {
   const nodes = {
@@ -29,6 +32,16 @@ describe('AbortError', () => {
 
   it('has a descriptive default message', () => {
     expect(new AbortError().message).to.equal('Operation aborted');
+  });
+
+  it('is re-exported from the package root', () => {
+    expect(RootAbortError).to.be.a('function');
+    expect(RootAbortError.name).to.equal('AbortError');
+    const instance = new RootAbortError('custom');
+    expect(instance.message).to.equal('custom');
+    expect(instance).to.be.instanceOf(AbortError);
+    expect(instance).to.be.instanceOf(VrpError);
+    expect(instance).to.be.instanceOf(RootVrpError);
   });
 });
 
