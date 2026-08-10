@@ -44,9 +44,15 @@ describe('Island-Model BRKGA', () => {
   it('validates invalid island options', () => {
     const problem = makeProblem();
     expect(() => new BRKGA(problem, { islands: 0 })).to.throw('islands must be a positive integer');
-    expect(() => new BRKGA(problem, { islands: -1 })).to.throw('islands must be a positive integer');
-    expect(() => new BRKGA(problem, { migrationInterval: 0 })).to.throw('migrationInterval must be a positive integer');
-    expect(() => new BRKGA(problem, { migrantFraction: 1.0 })).to.throw('migrantFraction must be between 0 and 1');
+    expect(() => new BRKGA(problem, { islands: -1 })).to.throw(
+      'islands must be a positive integer',
+    );
+    expect(() => new BRKGA(problem, { migrationInterval: 0 })).to.throw(
+      'migrationInterval must be a positive integer',
+    );
+    expect(() => new BRKGA(problem, { migrantFraction: 1.0 })).to.throw(
+      'migrantFraction must be between 0 and 1',
+    );
   });
 
   it('respects maxTimeMs with islands', async () => {
