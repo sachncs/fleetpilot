@@ -1,8 +1,9 @@
-import type { VrpProblem } from '../../core/problem.js';
+import type { Customer, VrpProblem } from '../../core/problem.js';
 import { VrpSolution, Route } from '../../core/solution.js';
-import { ValidationError } from '../../errors/index.js';
+import { AbortError, ValidationError } from '../../errors/index.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
+import { fromSeed } from '../../utils/rng.js';
 
 import {
   RemovalOperators,
@@ -13,10 +14,14 @@ import {
   type InsertionOperatorKey,
 } from './operators.js';
 
-/** Progress event reported via the `onProgress` callback. */
+/**
+ * Progress event reported via the `onProgress` callback.
+ * `bestMakespan` is `Infinity` until the first feasible solution is decoded.
+ * JSON consumers should treat `Infinity` as "no feasible yet".
+ */
 export interface ALNSProgress {
   iteration: number;
-  maxIterations: number;
+  maxGenerations: number;
   bestMakespan: number;
   currentMakespan: number;
   temperature: number;
@@ -37,6 +42,21 @@ export interface ALNSOptions {
   maxTimeMs?: number;
   /** Called every 10 iterations with progress */
   onProgress?: (progress: ALNSProgress) => void;
+  /**
+   * Optional RNG seed. When set, the solver uses a deterministic mulberry32
+   * generator seeded with this value, so two runs with the same seed
+   * produce identical results. If omitted, defaults to a fixed seed (1)
+   * so test runs are deterministic. Ignored if `random` is provided.
+   */
+  seed?: number;
+  /**
+   * Optional injectable random source (returns float in [0, 1)).
+   * Overrides `seed` for fine-grained test control. Defaults to a
+   * mulberry32 seeded with `seed ?? 1`.
+   */
+  random?: () => number;
+  /** Optional AbortSignal; throws `AbortError` when triggered. */
+  signal?: AbortSignal;
 }
 
 /**
@@ -71,6 +91,8 @@ export class ALNS {
   protected readonly logger: Logger;
   protected readonly maxTimeMs: number;
   protected readonly onProgress: ((progress: ALNSProgress) => void) | null;
+  protected readonly random: () => number;
+  protected readonly signal: AbortSignal | undefined;
 
   protected temp: number;
 
@@ -101,13 +123,13 @@ export class ALNS {
     // Paper defaults: cooling rate 0.9998, scores (33, 9, 13)
     this.maxIterations = options.maxIterations ?? 500;
     this.initialTemp = options.initialTemp ?? 100;
-    this.coolingRate = options.coolingRate ?? 0.9998;  // Paper spec
+    this.coolingRate = options.coolingRate ?? 0.9998; // Paper spec
     this.segmentSize = options.segmentSize ?? 50;
 
     // Paper operator scores
-    this.scoreNewBest = options.scoreNewBest ?? 33;    // Paper spec
-    this.scoreBetter = options.scoreBetter ?? 9;       // Paper spec
-    this.scoreAccepted = options.scoreAccepted ?? 13;  // Paper spec
+    this.scoreNewBest = options.scoreNewBest ?? 33; // Paper spec
+    this.scoreBetter = options.scoreBetter ?? 9; // Paper spec
+    this.scoreAccepted = options.scoreAccepted ?? 13; // Paper spec
 
     // 6 destroy operators from paper
     this.removalOps = [...REMOVAL_OPERATOR_KEYS];
@@ -129,6 +151,10 @@ export class ALNS {
     this.logger = options.logger ?? defaultLogger;
     this.maxTimeMs = options.maxTimeMs ?? 0;
     this.onProgress = options.onProgress ?? null;
+    this.signal = options.signal;
+
+    const rng = fromSeed(options.seed ?? 1);
+    this.random = options.random ?? ((): number => rng.next());
 
     this.temp = this.initialTemp;
   }
@@ -137,7 +163,7 @@ export class ALNS {
    * @returns Initial feasible solution built with greedy insertion
    */
   generateInitialSolution(): VrpSolution {
-    const routes = this.problem.vehicles.map(v => new Route(v.id, []));
+    const routes = this.problem.vehicles.map((v) => new Route(v.id, []));
     const emptySolution = new VrpSolution(this.problem, routes);
     return InsertionOperators.greedyInsertion(emptySolution, this.problem.customers);
   }
@@ -160,6 +186,9 @@ export class ALNS {
     const baseCooling = this.coolingRate;
 
     for (let i = 0; i < this.maxIterations; i++) {
+      if (this.signal?.aborted) {
+        throw new AbortError(`ALNS aborted at iteration ${i}`);
+      }
       if (this.maxTimeMs > 0 && Date.now() - startTime >= this.maxTimeMs) {
         this.logger.log(`ALNS stopped early after ${i} iterations (timeout)`);
         break;
@@ -171,8 +200,13 @@ export class ALNS {
       const removalOpKey = this.removalOps[rIdx];
       const insertionOpKey = this.insertionOps[iIdx];
       if (!removalOpKey || !insertionOpKey) continue;
-      const removalOp = RemovalOperators[removalOpKey];
-      const insertionOp = InsertionOperators[insertionOpKey];
+      const removalOp: (
+        s: VrpSolution,
+        k: number,
+        random: () => number,
+      ) => { solution: VrpSolution; removed: Customer[] } = RemovalOperators[removalOpKey];
+      const insertionOp: (s: VrpSolution, c: readonly Customer[]) => VrpSolution =
+        InsertionOperators[insertionOpKey];
 
       this.usage.removal[rIdx] = (this.usage.removal[rIdx] ?? 0) + 1;
       this.usage.insertion[iIdx] = (this.usage.insertion[iIdx] ?? 0) + 1;
@@ -180,11 +214,8 @@ export class ALNS {
       // Adaptive removal size: grow when stagnant, shrink when improving
       const stagnationRatio = Math.min(1, iterationsSinceImprovement / maxStagnation);
       const removalFraction = 0.1 + stagnationRatio * 0.35;
-      const k = Math.max(
-        1,
-        Math.floor(this.problem.customers.length * removalFraction),
-      );
-      const { solution: removedSolution, removed } = removalOp(currentSolution, k);
+      const k = Math.max(1, Math.floor(this.problem.customers.length * removalFraction));
+      const { solution: removedSolution, removed } = removalOp(currentSolution, k, this.random);
       const newSolution = insertionOp(removedSolution, removed);
 
       const newCost = newSolution.calculateSchedule();
@@ -243,7 +274,7 @@ export class ALNS {
       if (this.onProgress && i % 10 === 0) {
         this.onProgress({
           iteration: i,
-          maxIterations: this.maxIterations,
+          maxGenerations: this.maxIterations,
           bestMakespan: bestCost,
           currentMakespan: currentCost,
           temperature: this.temp,
@@ -254,18 +285,16 @@ export class ALNS {
     return bestSolution;
   }
 
-  private updateSingleWeights(
-    weights: number[],
-    scores: number[],
-    usage: number[],
-  ): void {
+  private updateSingleWeights(weights: number[], scores: number[], usage: number[]): void {
     for (let i = 0; i < weights.length; i++) {
       const usageVal = usage[i];
       const scoreVal = scores[i];
       const weightVal = weights[i];
       if (
-        usageVal === undefined || usageVal <= 0 ||
-        scoreVal === undefined || weightVal === undefined
+        usageVal === undefined ||
+        usageVal <= 0 ||
+        scoreVal === undefined ||
+        weightVal === undefined
       ) {
         continue;
       }
@@ -284,10 +313,10 @@ export class ALNS {
   protected selectOperator(weights: number[]): number {
     const sum = weights.reduce((a, b) => a + b, 0);
     if (sum <= 0 || !Number.isFinite(sum)) {
-      return Math.floor(Math.random() * weights.length);
+      return Math.floor(this.random() * weights.length);
     }
 
-    const r = Math.random() * sum;
+    const r = this.random() * sum;
     let cumulative = 0;
     for (let i = 0; i < weights.length; i++) {
       cumulative += weights[i] ?? 0;
@@ -299,7 +328,7 @@ export class ALNS {
   protected accept(currentCost: number, newCost: number): boolean {
     if (newCost < currentCost) return true;
     const p = Math.exp((currentCost - newCost) / this.temp);
-    return Math.random() < p;
+    return this.random() < p;
   }
 
   /**
