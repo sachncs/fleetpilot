@@ -225,10 +225,7 @@ describe('BRKGA', () => {
       3: new LocationNode(3, 30, 0, 'Pickup2'),
       4: new LocationNode(4, 40, 0, 'Delivery2'),
     };
-    const customers = [
-      new Customer(1, 1, 2, 50),
-      new Customer(2, 3, 4, 50),
-    ];
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 200)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
@@ -301,8 +298,8 @@ describe('VrpRpdSolver', () => {
     });
 
     expect(progressCalls.length).to.be.greaterThan(0);
-    expect(progressCalls.some(p => p.stage === 'ALNS')).to.be.true;
-    expect(progressCalls.some(p => p.stage === 'BRKGA')).to.be.true;
+    expect(progressCalls.some((p) => p.stage === 'ALNS')).to.be.true;
+    expect(progressCalls.some((p) => p.stage === 'BRKGA')).to.be.true;
   });
 });
 
