@@ -187,5 +187,3 @@ export class VrpProblem {
     return this.getDistance(fromId, toId) / speed;
   }
 }
-
-
