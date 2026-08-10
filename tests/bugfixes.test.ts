@@ -4,7 +4,13 @@ import { ALNS } from '../src/algorithms/alns/alns.js';
 import { InsertionOperators } from '../src/algorithms/alns/operators.js';
 import { TransferAwareInsertionOperators } from '../src/algorithms/alns/transfer-aware-operators.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
-import { VrpProblem, LocationNode, Customer, Vehicle, CustomerWithTimeWindows } from '../src/core/problem.js';
+import {
+  VrpProblem,
+  LocationNode,
+  Customer,
+  Vehicle,
+  CustomerWithTimeWindows,
+} from '../src/core/problem.js';
 import type { ResourceTransfer } from '../src/core/resource-transfer-types.js';
 import {
   SolutionWithTransfers,
@@ -29,15 +35,9 @@ describe('C1 - Cost and CO2 per-route correctness', () => {
       3: new LocationNode(3, 0, 10, 'D2'),
       4: new LocationNode(4, 0, 20, 'P2'),
     };
-    const customers = [
-      new Customer(1, 1, 2, 50),
-      new Customer(2, 3, 4, 50),
-    ];
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     // Vehicle 1 costs 2x per km, Vehicle 2 costs 3x per km
-    const vehicles = [
-      new Vehicle(1, 10, 0, 0, 2, 2),
-      new Vehicle(2, 10, 0, 0, 3, 3),
-    ];
+    const vehicles = [new Vehicle(1, 10, 0, 0, 2, 2), new Vehicle(2, 10, 0, 0, 3, 3)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
     // Route 1: depot->1->2->depot = 10 + 10 + 20 = 40
@@ -87,9 +87,7 @@ describe('C2 - Delivery time window enforcement', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const customers = [
-      new CustomerWithTimeWindows(1, 1, 2, 50, 100, 200, 160, 300),
-    ];
+    const customers = [new CustomerWithTimeWindows(1, 1, 2, 50, 100, 200, 160, 300)];
     const vehicles = [new Vehicle(1, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
@@ -112,9 +110,7 @@ describe('C2 - Delivery time window enforcement', () => {
       1: new LocationNode(1, 1000, 0, 'FarD'),
       2: new LocationNode(2, 2000, 0, 'FarP'),
     };
-    const customers = [
-      new CustomerWithTimeWindows(1, 1, 2, 50, 0, 1, 0, 5000),
-    ];
+    const customers = [new CustomerWithTimeWindows(1, 1, 2, 50, 0, 1, 0, 5000)];
     const vehicles = [new Vehicle(1, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
@@ -148,13 +144,7 @@ describe('C3 - TrafficAwareProblem distance contract', () => {
       congestionLevel: 'low',
     });
 
-    const problem = new TrafficAwareProblem(
-      nodes,
-      customers,
-      vehicles,
-      0,
-      trafficModel,
-    );
+    const problem = new TrafficAwareProblem(nodes, customers, vehicles, 0, trafficModel);
 
     // Euclidean distance = 5
     expect(problem.getDistance(0, 1)).to.be.closeTo(5, 0.000005);
@@ -211,10 +201,7 @@ describe('C5 - BRKGA best-solution immutability', () => {
       3: new LocationNode(3, 0, 10, 'D2'),
       4: new LocationNode(4, 0, 20, 'P2'),
     };
-    const customers = [
-      new Customer(1, 1, 2, 50),
-      new Customer(2, 3, 4, 50),
-    ];
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
@@ -227,11 +214,11 @@ describe('C5 - BRKGA best-solution immutability', () => {
     expect(solution.makespan).to.be.greaterThan(0);
 
     // Verify route arrays are independent (not shared with internal state)
-    const routesCopy = solution.routes.map(r => [...r.nodes]);
+    const routesCopy = solution.routes.map((r) => [...r.nodes]);
     // Run solve again; previous solution should be unaffected
     const solution2 = await brkga.solve();
     expect(solution2.routes).to.not.equal(solution.routes);
-    expect(solution.routes.map(r => [...r.nodes])).to.deep.equal(routesCopy);
+    expect(solution.routes.map((r) => [...r.nodes])).to.deep.equal(routesCopy);
   });
 });
 
@@ -248,10 +235,7 @@ describe('C6 - Transfer-aware insertion registers transfers', () => {
       4: new LocationNode(4, 0, 20, 'P2'),
       5: new LocationNode(5, 10, 10, 'Hub'),
     };
-    const customers = [
-      new Customer(1, 1, 2, 50),
-      new Customer(2, 3, 4, 50),
-    ];
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [
       new VehicleWithCapabilities(0, 10, ['standard'], true, true, 10),
       new VehicleWithCapabilities(1, 10, ['standard'], true, true, 10),
@@ -259,10 +243,12 @@ describe('C6 - Transfer-aware insertion registers transfers', () => {
     const hubs = [new TransferHub(5, 10, 10, 'Hub', 2, 1)];
 
     const problem = new ProblemWithTransfers(nodes, customers, vehicles, 0, hubs);
-    const solution = new SolutionWithTransfers(problem, [
-      new Route(0, []),
-      new Route(1, []),
-    ], hubs, vehicles);
+    const solution = new SolutionWithTransfers(
+      problem,
+      [new Route(0, []), new Route(1, [])],
+      hubs,
+      vehicles,
+    );
 
     const result = TransferAwareInsertionOperators.greedyInsertionWithTransfers(
       solution,
@@ -349,9 +335,30 @@ describe('C7 - TransferManager hub concurrency limit', () => {
     const hub = new TransferHub(1, 0, 0, 'Hub', 3, 1);
     manager.registerHub(hub);
 
-    const t1 = { id: 't1', hubNodeId: 1, transferTime: 10, fromVehicleId: 0, toVehicleId: 1, amount: 1 };
-    const t2 = { id: 't2', hubNodeId: 1, transferTime: 10, fromVehicleId: 2, toVehicleId: 3, amount: 1 };
-    const t3 = { id: 't3', hubNodeId: 1, transferTime: 10, fromVehicleId: 4, toVehicleId: 5, amount: 1 };
+    const t1 = {
+      id: 't1',
+      hubNodeId: 1,
+      transferTime: 10,
+      fromVehicleId: 0,
+      toVehicleId: 1,
+      amount: 1,
+    };
+    const t2 = {
+      id: 't2',
+      hubNodeId: 1,
+      transferTime: 10,
+      fromVehicleId: 2,
+      toVehicleId: 3,
+      amount: 1,
+    };
+    const t3 = {
+      id: 't3',
+      hubNodeId: 1,
+      transferTime: 10,
+      fromVehicleId: 4,
+      toVehicleId: 5,
+      amount: 1,
+    };
 
     expect(manager.scheduleTransfer(t1)).to.be.true;
     expect(manager.scheduleTransfer(t2)).to.be.true;
@@ -468,7 +475,7 @@ describe('Security - GISExporter escaping', () => {
     const csv = exporter.toCsv();
 
     // CSV lines should have consistent column count
-    const lines = csv.split('\n').filter(l => l.trim().length > 0);
+    const lines = csv.split('\n').filter((l) => l.trim().length > 0);
     for (const line of lines) {
       const cols = line.split(',');
       // Expect 8 columns: Route,Vehicle,NodeId,NodeType,X,Y,ArrivalTime,Sequence
@@ -496,10 +503,12 @@ describe('SolutionWithTransfers validation', () => {
     const hubs = [new TransferHub(5, 10, 10, 'Hub', 2, 1)];
 
     const problem = new ProblemWithTransfers(nodes, customers, vehicles, 0, hubs);
-    const solution = new SolutionWithTransfers(problem, [
-      new Route(0, [1, 5]),
-      new Route(1, [5, 2]),
-    ], hubs, vehicles);
+    const solution = new SolutionWithTransfers(
+      problem,
+      [new Route(0, [1, 5]), new Route(1, [5, 2])],
+      hubs,
+      vehicles,
+    );
 
     solution.scheduleTransfer(5, 0, 1, 1, 10);
     const validation = solution.validateTransfers();
@@ -522,15 +531,17 @@ describe('SolutionWithTransfers validation', () => {
     const hubs = [new TransferHub(5, 10, 10, 'Hub', 2, 1)];
 
     const problem = new ProblemWithTransfers(nodes, customers, vehicles, 0, hubs);
-    const solution = new SolutionWithTransfers(problem, [
-      new Route(0, [1, 5]),
-      new Route(1, [5, 2]),
-    ], hubs, vehicles);
+    const solution = new SolutionWithTransfers(
+      problem,
+      [new Route(0, [1, 5]), new Route(1, [5, 2])],
+      hubs,
+      vehicles,
+    );
 
     solution.scheduleTransfer(5, 0, 1, 5, 10); // amount 5 > max 1
     const validation = solution.validateTransfers();
     expect(validation.valid).to.be.false;
-    expect(validation.errors.some(e => e.includes('exceeds max transfer'))).to.be.true;
+    expect(validation.errors.some((e) => e.includes('exceeds max transfer'))).to.be.true;
   });
 });
 
@@ -544,12 +555,7 @@ describe('Regret insertion infinite-loop guard', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(
-      nodes,
-      [new Customer(1, 1, 2, 50)],
-      [new Vehicle(1, 10)],
-      0,
-    );
+    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
     const solution = InsertionOperators.regret2Insertion(empty, problem.customers);
@@ -565,12 +571,7 @@ describe('Regret insertion infinite-loop guard', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(
-      nodes,
-      [new Customer(1, 1, 2, 50)],
-      [new Vehicle(1, 10)],
-      0,
-    );
+    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
     const solution = InsertionOperators.regret3Insertion(empty, problem.customers);
@@ -584,12 +585,7 @@ describe('Regret insertion infinite-loop guard', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(
-      nodes,
-      [new Customer(1, 1, 2, 50)],
-      [new Vehicle(1, 10)],
-      0,
-    );
+    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
     const solution = InsertionOperators.regret4Insertion(empty, problem.customers);
