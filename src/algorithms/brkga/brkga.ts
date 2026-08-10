@@ -1,18 +1,19 @@
-import { Worker } from 'worker_threads';
-
 import type { VrpProblem } from '../../core/problem.js';
 import type { VrpSolution } from '../../core/solution.js';
-import { AlgorithmConvergenceError, ValidationError } from '../../errors/index.js';
+import { AbortError, AlgorithmConvergenceError, ValidationError } from '../../errors/index.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
 import { fromSeed } from '../../utils/rng.js';
 import { serializeProblem } from '../../worker-data.js';
-import { getWorkerPath } from '../../worker-path.js';
 
 import { Decoder, type Chromosome } from './decoder.js';
 import { sendCommand, type WireIndividual } from './island-messenger.js';
 
-/** Progress event reported via the `onProgress` callback. */
+/**
+ * Progress event reported via the `onProgress` callback.
+ * `bestMakespan` is `Infinity` until the first feasible solution is decoded.
+ * JSON consumers should treat `Infinity` as "no feasible yet".
+ */
 export interface BRKGAProgress {
   generation: number;
   maxGenerations: number;
@@ -53,6 +54,10 @@ export interface BRKGAOptions {
    * mulberry32 seeded with `seed ?? 1`.
    */
   random?: () => number;
+  /** Target makespan for early stopping (0 disables). */
+  targetMakespan?: number;
+  /** Optional AbortSignal; throws `AbortError` when triggered. */
+  signal?: AbortSignal;
 }
 
 /** One member of the BRKGA population. `fitness === null` means not yet evaluated. */
@@ -93,6 +98,8 @@ export class BRKGA {
   protected readonly migrationInterval: number;
   protected readonly migrantFraction: number;
   protected readonly random: () => number;
+  protected readonly targetMakespan: number;
+  protected readonly signal: AbortSignal | undefined;
 
   /**
    * @param problem - VRP-RPD problem instance to solve
@@ -147,10 +154,10 @@ export class BRKGA {
 
     // Practical library defaults (paper spec: 30,000 pop / 20,000 gen)
     this.populationSize = options.populationSize ?? 100;
-    this.eliteFraction = options.eliteFraction ?? 0.15;     // Paper spec
-    this.mutantFraction = options.mutantFraction ?? 0.10;   // Paper spec
+    this.eliteFraction = options.eliteFraction ?? 0.15; // Paper spec
+    this.mutantFraction = options.mutantFraction ?? 0.1; // Paper spec
     this.crossoverProb = options.crossoverProb ?? 0.7;
-    this.maxGenerations = options.maxGenerations ?? 100;    // Practical default
+    this.maxGenerations = options.maxGenerations ?? 100; // Practical default
 
     // Warm-start from ALNS
     this.warmStartSolution = options.warmStartSolution ?? null;
@@ -163,6 +170,8 @@ export class BRKGA {
     this.migrantFraction = options.migrantFraction ?? 0.05;
     const rng = fromSeed(options.seed ?? 1);
     this.random = options.random ?? ((): number => rng.next());
+    this.targetMakespan = options.targetMakespan ?? 0;
+    this.signal = options.signal;
 
     this.decoder = new Decoder(problem);
     this.chromosomeSize = problem.customers.length;
@@ -295,9 +304,7 @@ export class BRKGA {
     for (let i = 0; i < crossoverCount; i++) {
       const eliteParent = population[Math.floor(this.random() * eliteCount)];
       const nonEliteParent =
-        population[
-          eliteCount + Math.floor(this.random() * (this.populationSize - eliteCount))
-        ];
+        population[eliteCount + Math.floor(this.random() * (this.populationSize - eliteCount))];
       if (eliteParent && nonEliteParent) {
         nextPopulation.push(this.crossover(eliteParent, nonEliteParent));
       }
@@ -313,6 +320,9 @@ export class BRKGA {
     const maxStagnantGenerations = Math.floor(this.maxGenerations * 0.1);
 
     for (let g = 0; g < this.maxGenerations; g++) {
+      if (this.signal?.aborted) {
+        throw new AbortError(`BRKGA aborted at generation ${g}`);
+      }
       if (this.maxTimeMs > 0 && Date.now() - startTime >= this.maxTimeMs) {
         this.logger.log(`BRKGA stopped early after ${g} generations (timeout)`);
         break;
@@ -358,6 +368,17 @@ export class BRKGA {
         generationsWithoutImprovement++;
       }
 
+      if (
+        this.targetMakespan > 0 &&
+        hallOfFame !== null &&
+        hallOfFame.fitness !== null &&
+        hallOfFame.fitness !== Infinity &&
+        hallOfFame.fitness <= this.targetMakespan
+      ) {
+        this.logger.log(`BRKGA reached target makespan ${this.targetMakespan} at generation ${g}`);
+        break;
+      }
+
       if (generationsWithoutImprovement >= maxStagnantGenerations) {
         // Inject fresh random individuals before giving up
         const injectionCount = Math.floor(this.populationSize * 0.2);
@@ -387,9 +408,7 @@ export class BRKGA {
       }
     }
 
-    return (
-      hallOfFame?.solution ?? this.decodeFeasibleRandom()
-    );
+    return hallOfFame?.solution ?? this.decodeFeasibleRandom();
   }
 
   private decodeFeasibleRandom(): VrpSolution {
@@ -405,40 +424,65 @@ export class BRKGA {
   protected async solveIslands(startTime: number): Promise<VrpSolution> {
     const islandPopulationSize = Math.max(10, Math.floor(this.populationSize / this.islands));
     const islandMaxGenerations = this.maxGenerations;
-    const workerPath = getWorkerPath();
 
-    const workers: Worker[] = [];
+    // Lazy-import Node-only modules so the static graph stays browser-friendly.
+    const { Worker: NodeWorker } = await import('worker_threads');
+    const { getWorkerPath } = await import('../../worker-path.js');
+    const workerPath = getWorkerPath();
+    const workers: Array<InstanceType<typeof NodeWorker>> = [];
 
     for (let i = 0; i < this.islands; i++) {
-      const worker = new Worker(workerPath, {
-        workerData: serializeProblem(this.problem, {
-          type: 'island-brkga',
-          islandId: i,
-          options: {
-            populationSize: islandPopulationSize,
-            eliteFraction: this.eliteFraction,
-            mutantFraction: this.mutantFraction,
-            crossoverProb: this.crossoverProb,
-            maxGenerations: islandMaxGenerations,
-            islandPopulationSize,
-            islandMaxGenerations,
-            migrationInterval: this.migrationInterval,
-            warmStartSolution: this.warmStartSolution,
-            warmStartProportion: this.warmStartProportion,
-            maxTimeMs: this.maxTimeMs,
-          },
-        }),
-      });
+      const worker = new NodeWorker(workerPath);
       workers.push(worker);
     }
+
+    const payloads = workers.map((_, i) =>
+      serializeProblem(this.problem, {
+        type: 'island-brkga',
+        islandId: i,
+        options: {
+          populationSize: islandPopulationSize,
+          eliteFraction: this.eliteFraction,
+          mutantFraction: this.mutantFraction,
+          crossoverProb: this.crossoverProb,
+          maxGenerations: islandMaxGenerations,
+          islandPopulationSize,
+          islandMaxGenerations,
+          migrationInterval: this.migrationInterval,
+          warmStartolution: this.warmStartSolution,
+          warmStartProportion: this.warmStartProportion,
+          maxTimeMs: this.maxTimeMs,
+        },
+      }),
+    );
+
+    // Handshake: wait for each worker to emit `ready`, then post the payload.
+    await Promise.all(
+      workers.map(
+        (w, i) =>
+          new Promise<void>((resolveReady) => {
+            const onMessage = (msg: unknown): void => {
+              if (
+                typeof msg === 'object' &&
+                msg !== null &&
+                'type' in msg &&
+                msg.type === 'ready'
+              ) {
+                w.off('message', onMessage);
+                resolveReady();
+              }
+            };
+            w.on('message', onMessage);
+            w.postMessage(payloads[i]);
+          }),
+      ),
+    );
 
     let globalBest: WireIndividual | null = null;
     let generation = 0;
 
     try {
-      await Promise.all(
-        workers.map(w => sendCommand(w, { type: 'evolve', generations: 0 })),
-      );
+      await Promise.all(workers.map((w) => sendCommand(w, { type: 'evolve', generations: 0 })));
 
       while (generation < this.maxGenerations) {
         if (this.maxTimeMs > 0 && Date.now() - startTime >= this.maxTimeMs) {
@@ -447,7 +491,7 @@ export class BRKGA {
         }
 
         const evolveResults = await Promise.all(
-          workers.map(w =>
+          workers.map((w) =>
             sendCommand(w, { type: 'evolve', generations: this.migrationInterval }),
           ),
         );
@@ -460,10 +504,8 @@ export class BRKGA {
             if (
               islandBest &&
               (globalBest === null ||
-                (
-                islandBest.fitness !== null &&
-                islandBest.fitness < (globalBest.fitness ?? Infinity)
-              ))
+                (islandBest.fitness !== null &&
+                  islandBest.fitness < (globalBest.fitness ?? Infinity)))
             ) {
               globalBest = {
                 chromosome: {
@@ -523,7 +565,7 @@ export class BRKGA {
       }
 
       const finishResults = await Promise.all(
-        workers.map(w => sendCommand(w, { type: 'finish' })),
+        workers.map((w) => sendCommand(w, { type: 'finish' })),
       );
 
       for (const result of finishResults) {
@@ -557,11 +599,9 @@ export class BRKGA {
       void w.terminate();
     }
 
-    return (
-      globalBest
-        ? this.decoder.decode(globalBest.chromosome)
-        : this.decoder.decode(this.randomIndividual().chromosome)
-    );
+    return globalBest
+      ? this.decoder.decode(globalBest.chromosome)
+      : this.decoder.decode(this.randomIndividual().chromosome);
   }
 
   /**
