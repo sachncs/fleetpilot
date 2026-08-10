@@ -1,6 +1,6 @@
 import { ValidationError } from '../errors/index.js';
 
-import type { LocationNode, Customer, Vehicle } from './problem.js';
+import { VrpProblem, type LocationNode, type Customer, type Vehicle } from './problem.js';
 import { validateProblemBase } from './validate-problem-base.js';
 
 /**
@@ -68,12 +68,10 @@ export class MultiDepotProblem {
       }
     }
 
-    const vehicleIds = new Set(vehicles.map(v => v.id));
+    const vehicleIds = new Set(vehicles.map((v) => v.id));
     for (const [vehicleId, depotId] of vehicleDepotAssignments) {
       if (!vehicleIds.has(vehicleId)) {
-        throw new ValidationError(
-          `Vehicle ${vehicleId} in depot assignments does not exist`,
-        );
+        throw new ValidationError(`Vehicle ${vehicleId} in depot assignments does not exist`);
       }
       if (!depotIds.has(depotId)) {
         throw new ValidationError(
@@ -122,14 +120,26 @@ export class MultiDepotProblem {
   getDepotForVehicle(vehicleId: number): Depot | undefined {
     const depotId = this.vehicleDepotAssignments.get(vehicleId);
     if (depotId === undefined) return undefined;
-    return this.depots.find(d => d.id === depotId);
+    return this.depots.find((d) => d.id === depotId);
   }
 
   /**
-   * @param depotId - Depot to look up
+   * @param depotId - Depot ID to look up
    * @returns Depot with the given ID
    */
   getDepotById(depotId: number): Depot | undefined {
-    return this.depots.find(d => d.id === depotId);
+    return this.depots.find((d) => d.id === depotId);
+  }
+
+  /**
+   * Converts this multi-depot problem to a single-depot problem for solvers
+   * that do not natively support multi-depot. The first depot's ID is used
+   * as the default; vehicles retain their `startDepotId` / `endDepotId`.
+   * @param depotNodeId - Optional override depot ID (default: first depot)
+   * @returns A `VrpProblem` with the same nodes / customers / vehicles
+   */
+  toVrpProblem(depotNodeId?: number): VrpProblem {
+    const defaultDepot = depotNodeId ?? this.depots[0]?.id ?? 0;
+    return new VrpProblem(this.nodes, this.customers, this.vehicles, defaultDepot);
   }
 }
