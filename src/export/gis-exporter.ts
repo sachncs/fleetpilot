@@ -198,16 +198,10 @@ export class GISExporter {
 
       const depotNode = this.getDepotNode();
       if (depotNode) {
-        csv += [
-          i,
-          route.vehicleId,
-          depotNode.id,
-          'depot',
-          depotNode.x,
-          depotNode.y,
-          0,
-          0,
-        ].map(v => this.escapeCsv(v)).join(',') + '\n';
+        csv +=
+          [i, route.vehicleId, depotNode.id, 'depot', depotNode.x, depotNode.y, 0, 0]
+            .map((v) => this.escapeCsv(v))
+            .join(',') + '\n';
       }
 
       for (let seq = 0; seq < route.nodes.length; seq++) {
@@ -216,36 +210,33 @@ export class GISExporter {
         const node = this.problem.nodes[nodeId];
         if (!node) continue;
 
-        const isDelivery = this.problem.customers.some(c => c.deliveryNodeId === nodeId);
+        const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
         const nodeType = isDelivery ? 'delivery' : 'pickup';
         const arrivalTime = this.solution.nodeTimes[nodeId] ?? 0;
 
-        csv += [
-          i,
-          route.vehicleId,
-          nodeId,
-          nodeType,
-          node.x,
-          node.y,
-          arrivalTime,
-          seq + 1,
-        ].map(v => this.escapeCsv(v)).join(',') + '\n';
+        csv +=
+          [i, route.vehicleId, nodeId, nodeType, node.x, node.y, arrivalTime, seq + 1]
+            .map((v) => this.escapeCsv(v))
+            .join(',') + '\n';
       }
 
       // Return to depot
       if (depotNode) {
         const returnKey = `depot_return_${i}`;
         const returnTime = this.solution.nodeTimes[returnKey] ?? 0;
-        csv += [
-          i,
-          route.vehicleId,
-          depotNode.id,
-          'depot_return',
-          depotNode.x,
-          depotNode.y,
-          returnTime,
-          route.nodes.length + 1,
-        ].map(v => this.escapeCsv(v)).join(',') + '\n';
+        csv +=
+          [
+            i,
+            route.vehicleId,
+            depotNode.id,
+            'depot_return',
+            depotNode.x,
+            depotNode.y,
+            returnTime,
+            route.nodes.length + 1,
+          ]
+            .map((v) => this.escapeCsv(v))
+            .join(',') + '\n';
       }
     }
 
