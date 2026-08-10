@@ -37,13 +37,17 @@ export const RemovalOperators = {
   /**
    * Random removal - removes k random customers from the solution.
    */
-  random(solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } {
+  random: (
+    solution: VrpSolution,
+    k: number,
+    random: () => number,
+  ): { solution: VrpSolution; removed: Customer[] } => {
     const newVrpSolution = solution.clone();
     const removed: Customer[] = [];
     const allCustomers = [...solution.problem.customers];
 
     for (let i = 0; i < k && allCustomers.length > 0; i++) {
-      const randomIndex = Math.floor(Math.random() * allCustomers.length);
+      const randomIndex = Math.floor(random() * allCustomers.length);
       const customer = allCustomers.splice(randomIndex, 1)[0]!;
 
       if (removeCustomerFromRoutes(newVrpSolution, customer)) {
@@ -58,7 +62,7 @@ export const RemovalOperators = {
    * Worst removal (Critical Path) - removes k customers that contribute most to the makespan.
    * Also known as Critical Path Removal in the paper.
    */
-  worst(solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } {
+  worst: (solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } => {
     const newVrpSolution = solution.clone();
     const removed: Customer[] = [];
 
@@ -88,7 +92,11 @@ export const RemovalOperators = {
    * Shaw removal - removes k customers that are related (close in distance and time).
    * Uses a relatedness measure combining spatial and temporal proximity.
    */
-  shaw(solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } {
+  shaw: (
+    solution: VrpSolution,
+    k: number,
+    random: () => number,
+  ): { solution: VrpSolution; removed: Customer[] } => {
     const newVrpSolution = solution.clone();
     const removed: Customer[] = [];
 
@@ -97,7 +105,7 @@ export const RemovalOperators = {
     }
 
     // Start with a random customer
-    const seedIndex = Math.floor(Math.random() * solution.problem.customers.length);
+    const seedIndex = Math.floor(random() * solution.problem.customers.length);
     const seed = solution.problem.customers[seedIndex]!;
     const removedSet = new Set<number>([seed.id]);
     removed.push(seed);
@@ -139,21 +147,26 @@ export const RemovalOperators = {
   /**
    * Cluster removal - removes k customers that are geographically close.
    */
-  cluster(solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } {
+  cluster: (
+    solution: VrpSolution,
+    k: number,
+    random: () => number,
+  ): { solution: VrpSolution; removed: Customer[] } => {
     const newVrpSolution = solution.clone();
     const removed: Customer[] = [];
 
     // Pick a random seed customer
-    const seedIndex = Math.floor(Math.random() * solution.problem.customers.length);
+    const seedIndex = Math.floor(random() * solution.problem.customers.length);
     const seed = solution.problem.customers[seedIndex];
     if (!seed) {
       return { solution: newVrpSolution, removed };
     }
 
     // Sort customers by distance to seed via the precomputed distance matrix
-    const sortedCustomers = [...solution.problem.customers].sort((a, b) =>
-      solution.problem.getDistance(a.deliveryNodeId, seed.deliveryNodeId) -
-      solution.problem.getDistance(b.deliveryNodeId, seed.deliveryNodeId),
+    const sortedCustomers = [...solution.problem.customers].sort(
+      (a, b) =>
+        solution.problem.getDistance(a.deliveryNodeId, seed.deliveryNodeId) -
+        solution.problem.getDistance(b.deliveryNodeId, seed.deliveryNodeId),
     );
 
     // Remove k closest customers
@@ -172,7 +185,11 @@ export const RemovalOperators = {
    * Proximity removal - removes customers close to each other geographically.
    * Focuses purely on spatial proximity.
    */
-  proximity(solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } {
+  proximity: (
+    solution: VrpSolution,
+    k: number,
+    random: () => number,
+  ): { solution: VrpSolution; removed: Customer[] } => {
     const newVrpSolution = solution.clone();
     const removed: Customer[] = [];
 
@@ -181,13 +198,14 @@ export const RemovalOperators = {
     }
 
     // Pick random seed
-    const seedIndex = Math.floor(Math.random() * solution.problem.customers.length);
+    const seedIndex = Math.floor(random() * solution.problem.customers.length);
     const seed = solution.problem.customers[seedIndex]!;
 
     // Sort by pure distance via the precomputed distance matrix
-    const sortedCustomers = [...solution.problem.customers].sort((a, b) =>
-      solution.problem.getDistance(a.deliveryNodeId, seed.deliveryNodeId) -
-      solution.problem.getDistance(b.deliveryNodeId, seed.deliveryNodeId),
+    const sortedCustomers = [...solution.problem.customers].sort(
+      (a, b) =>
+        solution.problem.getDistance(a.deliveryNodeId, seed.deliveryNodeId) -
+        solution.problem.getDistance(b.deliveryNodeId, seed.deliveryNodeId),
     );
 
     for (let i = 0; i < k && i < sortedCustomers.length; i++) {
@@ -205,7 +223,7 @@ export const RemovalOperators = {
    * Temporal removal - removes customers based on time window tightness.
    * Targets customers with the most restrictive timing constraints.
    */
-  temporal(solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } {
+  temporal: (solution: VrpSolution, k: number): { solution: VrpSolution; removed: Customer[] } => {
     const newVrpSolution = solution.clone();
     const removed: Customer[] = [];
 
@@ -280,7 +298,7 @@ export const InsertionOperators = {
   /**
    * Greedy insertion - inserts customers at the best position.
    */
-  greedyInsertion(solution: VrpSolution, customers: readonly Customer[]): VrpSolution {
+  greedyInsertion: (solution: VrpSolution, customers: readonly Customer[]): VrpSolution => {
     const newVrpSolution = solution.clone();
 
     for (const customer of customers) {
@@ -327,7 +345,7 @@ export const InsertionOperators = {
    * Regret-2 insertion - inserts customers based on regret cost.
    * Regret = difference between best and second-best insertion cost.
    */
-  regret2Insertion(solution: VrpSolution, customers: readonly Customer[]): VrpSolution {
+  regret2Insertion: (solution: VrpSolution, customers: readonly Customer[]): VrpSolution => {
     return regretInsertion(solution, customers, 2);
   },
 
@@ -335,7 +353,7 @@ export const InsertionOperators = {
    * Regret-3 insertion - uses difference between best and third-best.
    * Paper specifies this as one of the 4 repair operators.
    */
-  regret3Insertion(solution: VrpSolution, customers: readonly Customer[]): VrpSolution {
+  regret3Insertion: (solution: VrpSolution, customers: readonly Customer[]): VrpSolution => {
     return regretInsertion(solution, customers, 3);
   },
 
@@ -343,7 +361,7 @@ export const InsertionOperators = {
    * Regret-4 insertion - uses difference between best and fourth-best.
    * Paper specifies this as one of the 4 repair operators.
    */
-  regret4Insertion(solution: VrpSolution, customers: readonly Customer[]): VrpSolution {
+  regret4Insertion: (solution: VrpSolution, customers: readonly Customer[]): VrpSolution => {
     return regretInsertion(solution, customers, 4);
   },
 };
@@ -459,11 +477,19 @@ export /**
  *
  */
 const REMOVAL_OPERATOR_KEYS: RemovalOperatorKey[] = [
-  'random', 'worst', 'shaw', 'cluster', 'proximity', 'temporal',
+  'random',
+  'worst',
+  'shaw',
+  'cluster',
+  'proximity',
+  'temporal',
 ];
 export /**
  *
  */
 const INSERTION_OPERATOR_KEYS: InsertionOperatorKey[] = [
-  'greedyInsertion', 'regret2Insertion', 'regret3Insertion', 'regret4Insertion',
+  'greedyInsertion',
+  'regret2Insertion',
+  'regret3Insertion',
+  'regret4Insertion',
 ];
