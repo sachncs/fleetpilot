@@ -35,8 +35,8 @@ describe('Algorithm Correctness', () => {
 
     expect(stats.removalWeights.length).to.equal(stats.removalOps.length);
     expect(stats.insertionWeights.length).to.equal(stats.insertionOps.length);
-    expect(stats.removalWeights.every(w => w > 0)).to.be.true;
-    expect(stats.insertionWeights.every(w => w > 0)).to.be.true;
+    expect(stats.removalWeights.every((w) => w > 0)).to.be.true;
+    expect(stats.insertionWeights.every((w) => w > 0)).to.be.true;
   });
 
   it('BRKGA warm-start roundtrip preserves feasibility', async () => {
