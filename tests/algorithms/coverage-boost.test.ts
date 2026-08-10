@@ -8,6 +8,8 @@ import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/prob
 import { VrpSolution, Route } from '../../src/core/solution.js';
 import { createBasicProblem, createTwoVehicleProblem } from '../helpers.js';
 
+const testRandom: () => number = () => Math.random();
+
 describe('Decoder edge cases', () => {
   it('encode with multi-route and gap-clamping', () => {
     const nodes = {
@@ -22,7 +24,7 @@ describe('Decoder edge cases', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     routes[1]!.nodes.push(3, 4);
     const solution = new VrpSolution(problem, routes);
@@ -114,7 +116,7 @@ describe('ALNS deep branches', () => {
 describe('Shaw and cluster with k > 1', () => {
   function buildSolution(): VrpSolution {
     const problem = createTwoVehicleProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     for (const c of problem.customers) {
       routes[c.id - 1]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -125,21 +127,21 @@ describe('Shaw and cluster with k > 1', () => {
 
   it('shaw with k=2 exercises relatedness scoring', () => {
     const solution = buildSolution();
-    const { solution: partial, removed } = RemovalOperators.shaw(solution, 2);
+    const { solution: partial, removed } = RemovalOperators.shaw(solution, 2, testRandom);
     expect(removed.length).to.equal(2);
     expect(partial.isComplete()).to.be.false;
   });
 
   it('cluster with k=2 exercises distance sorting', () => {
     const solution = buildSolution();
-    const { solution: partial, removed } = RemovalOperators.cluster(solution, 2);
+    const { solution: partial, removed } = RemovalOperators.cluster(solution, 2, testRandom);
     expect(removed.length).to.equal(2);
     expect(partial.isComplete()).to.be.false;
   });
 
   it('proximity with k=2', () => {
     const solution = buildSolution();
-    const { solution: partial, removed } = RemovalOperators.proximity(solution, 2);
+    const { solution: partial, removed } = RemovalOperators.proximity(solution, 2, testRandom);
     expect(removed.length).to.equal(2);
     expect(partial.isComplete()).to.be.false;
   });
@@ -175,7 +177,7 @@ describe('Decoder encode with various customer states', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
@@ -203,7 +205,7 @@ describe('Decoder encode with various customer states', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     routes[1]!.nodes.push(3, 4, 5, 6);
     const solution = new VrpSolution(problem, routes);
