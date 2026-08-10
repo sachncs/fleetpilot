@@ -30,7 +30,13 @@ describe('Dist smoke test', () => {
       Customer: typeof Customer;
       LocationNode: typeof LocationNode;
     };
-    const { VrpRpdSolver: DistSolver, VrpProblem: DistProblem, Vehicle: DistVehicle, Customer: DistCustomer, LocationNode: DistLocationNode } = mod;
+    const {
+      VrpRpdSolver: DistSolver,
+      VrpProblem: DistProblem,
+      Vehicle: DistVehicle,
+      Customer: DistCustomer,
+      LocationNode: DistLocationNode,
+    } = mod;
     const nodes = {
       0: new DistLocationNode(0, 0, 0, 'Depot'),
       1: new DistLocationNode(1, 10, 0, 'D1'),
