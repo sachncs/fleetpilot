@@ -16,4 +16,12 @@ export interface ResourceTransfer {
   amount: number;
   /** Resource type (optional, for multi-resource scenarios) */
   resourceType?: string;
+  /**
+   * Customer IDs whose pickup is enabled by this transfer. Used by transfer-
+   * aware ALNS operators to associate each transfer with the customer(s) it
+   * serves, so removal operators can drop orphaned transfers when a
+   * customer is removed. Optional for backwards compatibility with callers
+   * that did not supply it.
+   */
+  customerIds?: readonly number[];
 }

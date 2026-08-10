@@ -24,6 +24,7 @@ export const TransferAwareInsertionOperators = {
       fromVehicleId: number;
       toVehicleId: number;
       amount: number;
+      customerId: number;
     }> = [];
 
     for (const customer of customers) {
@@ -110,6 +111,8 @@ export const TransferAwareInsertionOperators = {
                     pickupRoute.vehicleId,
                     1,
                     hubReadyTime,
+                    undefined,
+                    [customer.id],
                   );
 
                   if (transferFeasible && testMakespan < bestCost) {
@@ -152,6 +155,7 @@ export const TransferAwareInsertionOperators = {
             fromVehicleId: deliveryRoute.vehicleId,
             toVehicleId: pickupRoute.vehicleId,
             amount: 1,
+            customerId: customer.id,
           });
         } else {
           const route = newSolution.routes[bestConfig.deliveryRouteIndex]!;
@@ -172,6 +176,8 @@ export const TransferAwareInsertionOperators = {
         pt.toVehicleId,
         pt.amount,
         transferTime,
+        undefined,
+        [pt.customerId],
       );
     }
 
@@ -209,13 +215,15 @@ export const TransferAwareRemovalOperators = {
       removed.push(customer);
     }
 
-    // Remove associated transfers
-    const transfersToRemove = newSolution.transfers.filter((t) =>
-      removed.some((r) => {
-        // Check if transfer was related to removed customer
-        return t.hubNodeId === r.deliveryNodeId || t.hubNodeId === r.pickupNodeId;
-      }),
-    );
+    // Remove transfers associated with any removed customer. Transfers carry
+    // `customerIds` (set by `greedyInsertionWithTransfers` and by direct
+    // callers) so this correlation no longer relies on hub-vs-D/P node
+    // id matching, which was incorrect because hubs are separate nodes.
+    const removedIds = new Set(removed.map((c) => c.id));
+    const transfersToRemove = newSolution.transfers.filter((t) => {
+      const ids = t.customerIds ?? [];
+      return ids.some((id) => removedIds.has(id));
+    });
 
     for (const transfer of transfersToRemove) {
       const idx = newSolution.transfers.indexOf(transfer);

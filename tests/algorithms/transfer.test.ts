@@ -345,3 +345,153 @@ describe('TransferManager', () => {
     expect(manager.getAllTransfers().length).to.equal(0);
   });
 });
+
+describe('randomWithTransfers correlates transfers to customers via customerIds', () => {
+  function buildTwoCustomerSolution(): {
+    problem: VrpProblem;
+    solution: SolutionWithTransfers;
+    vehicles: VehicleWithCapabilities[];
+  } {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 30, 0, 'D2'),
+      4: new LocationNode(4, 40, 0, 'P2'),
+      5: new LocationNode(5, 25, 5, 'Hub'),
+    };
+    const customers = [new Customer(1, 1, 2, 5), new Customer(2, 3, 4, 5)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = vehicles.map((v) => new Route(v.id, []));
+    const hubs = [new TransferHub(5, 25, 5, 'Hub')];
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
+    return { problem, solution, vehicles };
+  }
+
+  it('drops only the transfer whose customerIds intersects the removed customers', () => {
+    const { solution } = buildTwoCustomerSolution();
+    solution.routes[0]!.nodes.push(1, 2);
+    solution.routes[1]!.nodes.push(3, 4);
+    solution.calculateSchedule();
+
+    const okA = solution.scheduleTransfer(5, 1, 2, 1, 10, undefined, [1]);
+    const okB = solution.scheduleTransfer(5, 1, 2, 1, 30, undefined, [2]);
+    expect(okA).to.equal(true);
+    expect(okB).to.equal(true);
+    expect(solution.transfers).to.have.lengthOf(2);
+
+    const { removed, solution: after } = TransferAwareRemovalOperators.randomWithTransfers(
+      solution,
+      1,
+      () => 0.0,
+    );
+    expect(removed).to.have.lengthOf(1);
+    expect(removed[0]!.id).to.equal(1);
+
+    expect(after.transfers).to.have.lengthOf(1);
+    expect(after.transfers[0]!.customerIds).to.deep.equal([2]);
+  });
+
+  it('preserves transfers when no customerIds are recorded (backwards compatible)', () => {
+    const { solution } = buildTwoCustomerSolution();
+    solution.routes[0]!.nodes.push(1, 2);
+    solution.routes[1]!.nodes.push(3, 4);
+    solution.calculateSchedule();
+
+    const rawTransfer: ResourceTransfer = {
+      id: 'legacy-no-ids',
+      hubNodeId: 5,
+      fromVehicleId: 1,
+      toVehicleId: 2,
+      amount: 1,
+      transferTime: 10,
+    };
+    solution.transferManager.scheduleTransfer(rawTransfer);
+    solution.transfers.push(rawTransfer);
+
+    expect(solution.transfers).to.have.lengthOf(1);
+
+    TransferAwareRemovalOperators.randomWithTransfers(solution, 1, () => 0.0);
+
+    expect(solution.transfers).to.have.lengthOf(1);
+  });
+
+  it('drops every transfer whose customerIds intersect the removed set', () => {
+    const { solution } = buildTwoCustomerSolution();
+    solution.routes[0]!.nodes.push(1, 2);
+    solution.routes[1]!.nodes.push(3, 4);
+    solution.calculateSchedule();
+
+    solution.scheduleTransfer(5, 1, 2, 1, 10, undefined, [1]);
+    solution.scheduleTransfer(5, 1, 2, 1, 30, undefined, [1, 2]);
+    expect(solution.transfers).to.have.lengthOf(2);
+
+    const { solution: after } = TransferAwareRemovalOperators.randomWithTransfers(
+      solution,
+      1,
+      () => 0.0,
+    );
+
+    expect(after.transfers).to.have.lengthOf(0);
+  });
+});
+
+describe('SolutionWithTransfers.scheduleTransfer stamps customerIds', () => {
+  it('stores customerIds on the transfer and on the manager copy', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 25, 5, 'Hub'),
+    };
+    const customers = [new Customer(1, 1, 2, 5)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = vehicles.map((v) => new Route(v.id, []));
+    const hubs = [new TransferHub(3, 25, 5, 'Hub')];
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
+
+    const ok = solution.scheduleTransfer(3, 1, 2, 1, 10, undefined, [42, 7]);
+    expect(ok).to.equal(true);
+    expect(solution.transfers).to.have.lengthOf(1);
+    expect(solution.transfers[0]!.customerIds).to.deep.equal([42, 7]);
+    const registered = solution.transferManager.getAllTransfers();
+    expect(registered).to.have.lengthOf(1);
+    expect(registered[0]!.customerIds).to.deep.equal([42, 7]);
+  });
+
+  it('omits customerIds when the parameter is not supplied', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 25, 5, 'Hub'),
+    };
+    const customers = [new Customer(1, 1, 2, 5)];
+    const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
+    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const routes = vehicles.map((v) => new Route(v.id, []));
+    const hubs = [new TransferHub(3, 25, 5, 'Hub')];
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
+
+    const ok = solution.scheduleTransfer(3, 1, 2, 1, 10);
+    expect(ok).to.equal(true);
+    expect(solution.transfers[0]!.customerIds).to.be.undefined;
+  });
+});

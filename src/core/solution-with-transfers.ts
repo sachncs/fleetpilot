@@ -51,6 +51,9 @@ export class SolutionWithTransfers extends VrpSolution {
    * @param amount - Quantity to transfer
    * @param transferTime - Scheduled start time
    * @param resourceType - Optional resource category
+   * @param customerIds - Optional customer IDs whose pickup this transfer
+   *   enables. When provided, transfer-aware ALNS operators use this to
+   *   drop orphaned transfers when a customer is removed.
    * @returns True if the transfer was successfully scheduled
    */
   scheduleTransfer(
@@ -60,6 +63,7 @@ export class SolutionWithTransfers extends VrpSolution {
     amount: number,
     transferTime: number,
     resourceType?: string,
+    customerIds?: readonly number[],
   ): boolean {
     const transfer: ResourceTransfer = {
       id: `transfer-${fromVehicleId}-${toVehicleId}-${hubNodeId}-${transferTime}`,
@@ -69,6 +73,7 @@ export class SolutionWithTransfers extends VrpSolution {
       toVehicleId,
       amount,
       resourceType,
+      customerIds: customerIds ? [...customerIds] : undefined,
     };
 
     const success = this.transferManager.scheduleTransfer(transfer);
@@ -213,6 +218,7 @@ export class SolutionWithTransfers extends VrpSolution {
     amount: number,
     transferTime: number,
     resourceType?: string,
+    customerIds?: readonly number[],
   ): boolean {
     const tempManager = new TransferManager();
     const hub = this.transferManager.getHub(hubNodeId);
@@ -230,6 +236,7 @@ export class SolutionWithTransfers extends VrpSolution {
       toVehicleId,
       amount,
       resourceType,
+      customerIds: customerIds ? [...customerIds] : undefined,
     };
     return tempManager.scheduleTransfer(transfer);
   }
