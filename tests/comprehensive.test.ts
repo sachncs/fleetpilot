@@ -1,10 +1,7 @@
 import { expect } from 'chai';
 
 import { ALNS } from '../src/algorithms/alns/alns.js';
-import {
-  RemovalOperators,
-  InsertionOperators,
-} from '../src/algorithms/alns/operators.js';
+import { RemovalOperators, InsertionOperators } from '../src/algorithms/alns/operators.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { Decoder } from '../src/algorithms/brkga/decoder.js';
 import { Depot, MultiDepotProblem } from '../src/core/multi-depot-problem.js';
@@ -20,14 +17,13 @@ import {
   SolutionWithTransfers,
 } from '../src/core/solution-with-transfers.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
-import {
-  TrafficAwareProblem,
-  TrafficModel,
-} from '../src/core/traffic-aware-problem.js';
+import { TrafficAwareProblem, TrafficModel } from '../src/core/traffic-aware-problem.js';
 import { TransferHub } from '../src/core/transfer-hub.js';
 import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.js';
 import { ValidationError } from '../src/errors/index.js';
 import { GISExporter } from '../src/export/index.js';
+
+const testRandom: () => number = () => Math.random();
 
 import { createBasicProblem, createSeededRng } from './helpers.js';
 
@@ -42,7 +38,11 @@ describe('Comprehensive - Problem Validation', () => {
   });
 
   it('rejects non-existent depot node', () => {
-    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0), 2: new LocationNode(2, 20, 0) };
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
     const customers = [new Customer(1, 1, 2, 10)];
     expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)], 999))
       .to.throw(ValidationError)
@@ -51,25 +51,36 @@ describe('Comprehensive - Problem Validation', () => {
   });
 
   it('rejects NaN coordinates', () => {
-    expect(() => new VrpProblem(
-      { 0: new LocationNode(0, NaN, 0) },
-      [new Customer(1, 0, 0, 10)],
-      [new Vehicle(1, 5)],
-    )).to.throw(ValidationError);
+    expect(
+      () =>
+        new VrpProblem(
+          { 0: new LocationNode(0, NaN, 0) },
+          [new Customer(1, 0, 0, 10)],
+          [new Vehicle(1, 5)],
+        ),
+    ).to.throw(ValidationError);
   });
 
   it('rejects Infinity coordinates', () => {
-    expect(() => new VrpProblem(
-      { 0: new LocationNode(0, Infinity, 0) },
-      [new Customer(1, 0, 0, 10)],
-      [new Vehicle(1, 5)],
-    )).to.throw(ValidationError);
+    expect(
+      () =>
+        new VrpProblem(
+          { 0: new LocationNode(0, Infinity, 0) },
+          [new Customer(1, 0, 0, 10)],
+          [new Vehicle(1, 5)],
+        ),
+    ).to.throw(ValidationError);
   });
 
   it('rejects vehicle with capacity zero', () => {
-    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0), 2: new LocationNode(2, 20, 0) };
-    expect(() => new VrpProblem(nodes, [new Customer(1, 1, 2, 10)], [new Vehicle(1, 0)]))
-      .to.throw(ValidationError);
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
+    expect(() => new VrpProblem(nodes, [new Customer(1, 1, 2, 10)], [new Vehicle(1, 0)])).to.throw(
+      ValidationError,
+    );
   });
 
   it('rejects a node shared between two customers', () => {
@@ -79,10 +90,7 @@ describe('Comprehensive - Problem Validation', () => {
       2: new LocationNode(2, 20, 0),
       3: new LocationNode(3, 30, 0),
     };
-    const customers = [
-      new Customer(1, 1, 2, 10),
-      new Customer(2, 2, 3, 10),
-    ];
+    const customers = [new Customer(1, 1, 2, 10), new Customer(2, 2, 3, 10)];
     expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
       .to.throw(ValidationError)
       .with.property('message')
@@ -97,14 +105,16 @@ describe('Comprehensive - Problem Validation', () => {
 
   it('rejects non-integer node ids', () => {
     const nodes = { 1.5: new LocationNode(1.5, 10, 0) };
-    expect(() => new VrpProblem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)]))
-      .to.throw(ValidationError);
+    expect(
+      () => new VrpProblem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)]),
+    ).to.throw(ValidationError);
   });
 
   it('rejects non-integer customer ids', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    expect(() => new VrpProblem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)]))
-      .to.throw(ValidationError);
+    expect(
+      () => new VrpProblem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)]),
+    ).to.throw(ValidationError);
   });
 
   it('rejects inverted delivery time window', () => {
@@ -133,8 +143,9 @@ describe('Comprehensive - Problem Validation', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const depot = 1.5 as unknown as number;
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 10)], depot))
-      .to.throw(ValidationError);
+    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 10)], depot)).to.throw(
+      ValidationError,
+    );
   });
 
   it('getDistance returns 0 for missing node ids', () => {
@@ -211,9 +222,7 @@ describe('Comprehensive - Solution Edge Cases', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const customers = [
-      new CustomerWithTimeWindows(1, 1, 2, 10, 0, 1, 0, 100),
-    ];
+    const customers = [new CustomerWithTimeWindows(1, 1, 2, 10, 0, 1, 0, 100)];
     const vehicles = [new Vehicle(1, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
@@ -227,7 +236,7 @@ describe('Comprehensive - Solution Edge Cases', () => {
 
   it('getObjectives returns correct values', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
 
     solution.totalDistance = 100;
@@ -276,13 +285,16 @@ describe('Comprehensive - Multi-Depot', () => {
       1: new LocationNode(1, 10, 0),
       2: new LocationNode(2, 20, 0),
     };
-    expect(() => new MultiDepotProblem(
-      nodes,
-      [new Customer(1, 1, 2, 10)],
-      [new Vehicle(1, 10)],
-      [],
-      new Map(),
-    )).to.throw(ValidationError);
+    expect(
+      () =>
+        new MultiDepotProblem(
+          nodes,
+          [new Customer(1, 1, 2, 10)],
+          [new Vehicle(1, 10)],
+          [],
+          new Map(),
+        ),
+    ).to.throw(ValidationError);
   });
 
   it('MultiDepotProblem rejects assignment to unknown vehicle', () => {
@@ -291,13 +303,17 @@ describe('Comprehensive - Multi-Depot', () => {
       1: new LocationNode(1, 10, 0),
       2: new LocationNode(2, 20, 0),
     };
-    expect(() => new MultiDepotProblem(
-      nodes,
-      [new Customer(1, 1, 2, 10)],
-      [new Vehicle(1, 10)],
-      [new Depot(0, 0, 0)],
-      new Map([[99, 0]]),
-    )).to.throw(ValidationError)
+    expect(
+      () =>
+        new MultiDepotProblem(
+          nodes,
+          [new Customer(1, 1, 2, 10)],
+          [new Vehicle(1, 10)],
+          [new Depot(0, 0, 0)],
+          new Map([[99, 0]]),
+        ),
+    )
+      .to.throw(ValidationError)
       .with.property('message')
       .that.includes('does not exist');
   });
@@ -308,13 +324,17 @@ describe('Comprehensive - Multi-Depot', () => {
       1: new LocationNode(1, 10, 0),
       2: new LocationNode(2, 20, 0),
     };
-    expect(() => new MultiDepotProblem(
-      nodes,
-      [new Customer(1, 1, 2, 10)],
-      [new Vehicle(1, 10)],
-      [new Depot(0, 0, 0)],
-      new Map([[1, 99]]),
-    )).to.throw(ValidationError)
+    expect(
+      () =>
+        new MultiDepotProblem(
+          nodes,
+          [new Customer(1, 1, 2, 10)],
+          [new Vehicle(1, 10)],
+          [new Depot(0, 0, 0)],
+          new Map([[1, 99]]),
+        ),
+    )
+      .to.throw(ValidationError)
       .with.property('message')
       .that.includes('does not exist');
   });
@@ -465,32 +485,32 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
 
   it('random removal with k=0 removes nothing', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
+    const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
-    const result = RemovalOperators.random(solution, 0);
+    const result = RemovalOperators.random(solution, 0, testRandom);
     expect(result.removed.length).to.equal(0);
     expect(result.solution.routes.length).to.equal(problem.vehicles.length);
   });
 
   it('random removal with negative k removes nothing', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
+    const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
-    const result = RemovalOperators.random(solution, -1);
+    const result = RemovalOperators.random(solution, -1, testRandom);
     expect(result.removed.length).to.equal(0);
   });
 
   it('shaw removal with k=0 removes nothing', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
+    const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
-    const result = RemovalOperators.shaw(solution, 0);
+    const result = RemovalOperators.shaw(solution, 0, testRandom);
     expect(result.removed.length).to.equal(0);
   });
 
@@ -503,7 +523,7 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
 
   it('worst removal with k=1 removes one customer', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
+    const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
@@ -563,10 +583,7 @@ describe('Comprehensive - Solution Feasibility', () => {
       3: new LocationNode(3, 15, 0),
       4: new LocationNode(4, 25, 0),
     };
-    const customers = [
-      new Customer(1, 1, 2, 5),
-      new Customer(2, 3, 4, 5),
-    ];
+    const customers = [new Customer(1, 1, 2, 5), new Customer(2, 3, 4, 5)];
     const vehicles = [new Vehicle(1, 1)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const routes = [new Route(1, [1, 3, 2, 4])];
@@ -580,7 +597,7 @@ describe('Comprehensive - Solution Feasibility', () => {
 describe('Comprehensive - GIS Export', () => {
   it('toKml produces valid output', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
+    const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
@@ -592,7 +609,7 @@ describe('Comprehensive - GIS Export', () => {
 
   it('toCsv produces tabular route data', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, [1, 2]));
+    const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
 
