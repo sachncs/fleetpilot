@@ -1,6 +1,6 @@
 import type { Customer } from '../../core/problem.js';
-import type { TransferHub } from '../../core/resource-transfer.js';
 import type { SolutionWithTransfers } from '../../core/solution-with-transfers.js';
+import type { TransferHub } from '../../core/transfer-hub.js';
 
 /**
  * Transfer-aware insertion operators for ALNS.

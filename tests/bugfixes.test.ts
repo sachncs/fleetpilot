@@ -5,14 +5,15 @@ import { InsertionOperators } from '../src/algorithms/alns/operators.js';
 import { TransferAwareInsertionOperators } from '../src/algorithms/alns/transfer-aware-operators.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { VrpProblem, LocationNode, Customer, Vehicle, CustomerWithTimeWindows } from '../src/core/problem.js';
-import type { ResourceTransfer } from '../src/core/resource-transfer.js';
-import { TransferManager, TransferHub } from '../src/core/resource-transfer.js';
+import type { ResourceTransfer } from '../src/core/resource-transfer-types.js';
 import {
   SolutionWithTransfers,
   ProblemWithTransfers,
 } from '../src/core/solution-with-transfers.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
 import { TrafficAwareProblem, TrafficModel } from '../src/core/traffic-aware-problem.js';
+import { TransferHub } from '../src/core/transfer-hub.js';
+import { TransferManager } from '../src/core/transfer-manager.js';
 import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.js';
 import { GISExporter } from '../src/export/index.js';
 

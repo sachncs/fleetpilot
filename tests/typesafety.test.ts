@@ -5,9 +5,9 @@ import { InsertionOperators } from '../src/algorithms/alns/operators.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { RouteAnalytics } from '../src/analytics/route-analytics.js';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { TransferHub } from '../src/core/resource-transfer.js';
 import { ProblemWithTransfers } from '../src/core/solution-with-transfers.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
+import { TransferHub } from '../src/core/transfer-hub.js';
 import { VehicleWithCapabilities, VehicleFleetManager } from '../src/core/vehicle-with-capabilities.js';
 import { GISExporter } from '../src/export/index.js';
 

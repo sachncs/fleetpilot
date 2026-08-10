@@ -1,44 +1,8 @@
-/**
- * Represents a transfer of resources between vehicles at a hub node.
- */
-export interface ResourceTransfer {
-  /** ID of the transfer event */
-  id: string;
-  /** Hub node where transfer occurs */
-  hubNodeId: number;
-  /** Time when transfer occurs */
-  transferTime: number;
-  /** Vehicle giving resources */
-  fromVehicleId: number;
-  /** Vehicle receiving resources */
-  toVehicleId: number;
-  /** Amount of resources transferred */
-  amount: number;
-  /** Resource type (optional, for multi-resource scenarios) */
-  resourceType?: string;
-}
+import type { ResourceTransfer } from './resource-transfer-types.js';
+import type { TransferHub } from './transfer-hub.js';
 
-/**
- * Hub node where vehicles can exchange resources.
- */
-export class TransferHub {
-  /**
-   * @param id - Unique hub identifier
-   * @param x - X coordinate
-   * @param y - Y coordinate
-   * @param name - Optional display name
-   * @param maxConcurrentTransfers - Maximum simultaneous transfers allowed
-   * @param transferTimePerUnit - Time required to transfer one unit of resource
-   */
-  constructor(
-    public readonly id: number,
-    public readonly x: number,
-    public readonly y: number,
-    public readonly name: string = '',
-    public readonly maxConcurrentTransfers: number = 1,
-    public readonly transferTimePerUnit: number = 1,
-  ) {}
-}
+export type { ResourceTransfer } from './resource-transfer-types.js';
+export { TransferHub } from './transfer-hub.js';
 
 /**
  * Manages resource transfers between vehicles.
@@ -98,32 +62,34 @@ export class TransferManager {
 
     // Check hub concurrency limit
     const concurrentAtHub = Array.from(this.transfers.values()).filter(t => {
-      if (t.hubNodeId !== transfer.hubNodeId) return false;
-      const tDuration = t.amount * hub.transferTimePerUnit;
-      const tEnd = t.transferTime + tDuration;
-      return transfer.transferTime < tEnd && endTime > t.transferTime;
-    }).length;
-    if (concurrentAtHub >= hub.maxConcurrentTransfers) {
-      return false;
+      const tEndTime = t.transferTime + t.amount * (hub.transferTimePerUnit);
+      return t.hubNodeId === transfer.hubNodeId &&
+        t.transferTime < endTime &&
+        tEndTime > transfer.transferTime;
+    });
+
+    if (concurrentAtHub.length >= hub.maxConcurrentTransfers) {
+      return false; // Hub capacity exceeded
     }
 
     // Schedule the transfer
     this.transfers.set(transfer.id, transfer);
-
-    // Update vehicle schedules
-    fromVehicleSchedule.push({
-      startTime: transfer.transferTime,
-      endTime,
-      hubId: transfer.hubNodeId,
-    });
-    toVehicleSchedule.push({
-      startTime: transfer.transferTime,
-      endTime,
-      hubId: transfer.hubNodeId,
-    });
-
-    this.vehicleSchedules.set(transfer.fromVehicleId, fromVehicleSchedule);
-    this.vehicleSchedules.set(transfer.toVehicleId, toVehicleSchedule);
+    this.vehicleSchedules.set(transfer.fromVehicleId, [
+      ...fromVehicleSchedule,
+      {
+        startTime: transfer.transferTime,
+        endTime,
+        hubId: transfer.hubNodeId,
+      },
+    ]);
+    this.vehicleSchedules.set(transfer.toVehicleId, [
+      ...toVehicleSchedule,
+      {
+        startTime: transfer.transferTime,
+        endTime,
+        hubId: transfer.hubNodeId,
+      },
+    ]);
 
     return true;
   }

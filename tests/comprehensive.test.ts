@@ -15,7 +15,6 @@ import {
   CustomerWithTimeWindows,
   Vehicle,
 } from '../src/core/problem.js';
-import { TransferHub } from '../src/core/resource-transfer.js';
 import {
   ProblemWithTransfers,
   SolutionWithTransfers,
@@ -25,6 +24,7 @@ import {
   TrafficAwareProblem,
   TrafficModel,
 } from '../src/core/traffic-aware-problem.js';
+import { TransferHub } from '../src/core/transfer-hub.js';
 import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.js';
 import { ValidationError } from '../src/errors/index.js';
 import { GISExporter } from '../src/export/index.js';

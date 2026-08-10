@@ -2,9 +2,10 @@ import { expect } from 'chai';
 
 import { TransferAwareRemovalOperators, TransferAwareInsertionOperators } from '../../src/algorithms/alns/transfer-aware-operators.js';
 import { VrpProblem, LocationNode, Customer } from '../../src/core/problem.js';
-import { TransferManager, TransferHub, type ResourceTransfer } from '../../src/core/resource-transfer.js';
 import { SolutionWithTransfers } from '../../src/core/solution-with-transfers.js';
 import { Route } from '../../src/core/solution.js';
+import { TransferHub } from '../../src/core/transfer-hub.js';
+import { TransferManager, type ResourceTransfer } from '../../src/core/transfer-manager.js';
 import { VehicleWithCapabilities, VehicleFleetManager } from '../../src/core/vehicle-with-capabilities.js';
 
 describe('Transfer-Aware Operators', () => {

@@ -31,11 +31,9 @@ export {
 } from './core/traffic-aware-problem.js';
 
 // Inter-vehicle resource transfer
-export {
-  TransferManager,
-  TransferHub,
-  type ResourceTransfer,
-} from './core/resource-transfer.js';
+export { TransferManager } from './core/transfer-manager.js';
+export { TransferHub } from './core/transfer-hub.js';
+export type { ResourceTransfer } from './core/resource-transfer-types.js';
 export {
   VehicleWithCapabilities,
   VehicleFleetManager,

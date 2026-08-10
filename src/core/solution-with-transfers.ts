@@ -1,9 +1,10 @@
 import { VrpProblem } from './problem.js';
 import type { Customer, LocationNode } from './problem.js';
-import { TransferManager } from './resource-transfer.js';
-import type { ResourceTransfer , TransferHub } from './resource-transfer.js';
+import type { ResourceTransfer } from './resource-transfer-types.js';
 import { VrpSolution } from './solution.js';
 import type { Route } from './solution.js';
+import type { TransferHub } from './transfer-hub.js';
+import { TransferManager } from './transfer-manager.js';
 import { VehicleWithCapabilities, VehicleFleetManager } from './vehicle-with-capabilities.js';
 
 /**
