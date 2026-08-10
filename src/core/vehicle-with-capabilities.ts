@@ -1,9 +1,9 @@
 import { Vehicle } from './problem.js';
+import type { ResourceType } from './resource-type.js';
+import type { VehicleState } from './vehicle-state.js';
 
-/**
- * Types of resources a vehicle can handle.
- */
-export type ResourceType = 'standard' | 'refrigerated' | 'hazmat' | 'fragile';
+export type { ResourceType } from './resource-type.js';
+export type { VehicleState } from './vehicle-state.js';
 
 /**
  * Extended vehicle with transfer capabilities and resource types.
@@ -62,20 +62,6 @@ export class VehicleWithCapabilities extends Vehicle {
 
     return true;
   }
-}
-
-/**
- * Vehicle state during route execution.
- */
-export interface VehicleState {
-  vehicleId: number;
-  currentLocation: number | null;
-  currentNodeType: 'depot' | 'delivery' | 'pickup' | 'hub' | null;
-  currentLoad: number;
-  loadByType: Map<ResourceType, number>;
-  arrivedAtTime: number;
-  isWaiting: boolean;
-  waitReason: 'resource' | 'transfer' | 'timeWindow' | 'none';
 }
 
 /**
