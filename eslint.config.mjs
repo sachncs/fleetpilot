@@ -3,6 +3,7 @@ import { dirname } from 'node:path';
 import tseslint from 'typescript-eslint';
 import importPlugin from 'eslint-plugin-import';
 import jsdocPlugin from 'eslint-plugin-jsdoc';
+import prettierRecommended from 'eslint-config-prettier';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -82,4 +83,5 @@ export default tseslint.config(
       'jsdoc/require-jsdoc': 'off',
     },
   },
+  prettierRecommended,
 );
