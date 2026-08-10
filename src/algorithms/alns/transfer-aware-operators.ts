@@ -11,11 +11,11 @@ export const TransferAwareInsertionOperators = {
    * Greedy insertion with transfer support.
    * Allows customers to be served via intermediate hub transfers.
    */
-  greedyInsertionWithTransfers(
+  greedyInsertionWithTransfers: (
     solution: SolutionWithTransfers,
     customers: readonly Customer[],
     hubs: TransferHub[],
-  ): SolutionWithTransfers {
+  ): SolutionWithTransfers => {
     const newSolution = solution.clone();
 
     // Track transfers to schedule after the full schedule is calculated
@@ -186,39 +186,34 @@ export const TransferAwareRemovalOperators = {
   /**
    * Random removal that preserves transfer constraints.
    */
-  randomWithTransfers(
+  randomWithTransfers: (
     solution: SolutionWithTransfers,
     k: number,
-  ): { solution: SolutionWithTransfers; removed: Customer[] } {
+    random: () => number,
+  ): { solution: SolutionWithTransfers; removed: Customer[] } => {
     const newSolution = solution.clone();
     const removed: Customer[] = [];
     const allCustomers = [...solution.problem.customers];
 
     for (let i = 0; i < k && allCustomers.length > 0; i++) {
-      const randomIndex = Math.floor(Math.random() * allCustomers.length);
+      const randomIndex = Math.floor(random() * allCustomers.length);
       const customer = allCustomers.splice(randomIndex, 1)[0]!;
 
       for (const route of newSolution.routes) {
         const dIndex = route.nodes.indexOf(customer.deliveryNodeId);
         const pIndex = route.nodes.indexOf(customer.pickupNodeId);
 
-        if (dIndex !== -1) {
-          route.nodes.splice(dIndex, 1);
-          removed.push(customer);
-        }
-        if (pIndex !== -1) {
-          route.nodes.splice(pIndex, 1);
-        }
+        if (dIndex !== -1) route.nodes.splice(dIndex, 1);
+        if (pIndex !== -1) route.nodes.splice(pIndex, 1);
       }
+      removed.push(customer);
     }
 
     // Remove associated transfers
-    const transfersToRemove = newSolution.transfers.filter(t =>
-      removed.some(r => {
+    const transfersToRemove = newSolution.transfers.filter((t) =>
+      removed.some((r) => {
         // Check if transfer was related to removed customer
-        return (
-          t.hubNodeId === r.deliveryNodeId || t.hubNodeId === r.pickupNodeId
-        );
+        return t.hubNodeId === r.deliveryNodeId || t.hubNodeId === r.pickupNodeId;
       }),
     );
 
