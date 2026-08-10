@@ -36,7 +36,7 @@ export function serializeProblem(problem: VrpProblem, meta: WorkerMeta): WorkerD
     nodes[Number(id)] = { id: node.id, x: node.x, y: node.y, name: node.name };
   }
 
-  const customers: WorkerCustomerData[] = problem.customers.map(c => {
+  const customers: WorkerCustomerData[] = problem.customers.map((c) => {
     const base = {
       id: c.id,
       deliveryNodeId: c.deliveryNodeId,
@@ -55,7 +55,7 @@ export function serializeProblem(problem: VrpProblem, meta: WorkerMeta): WorkerD
     return base;
   });
 
-  const vehicles: WorkerVehicleData[] = problem.vehicles.map(v => ({
+  const vehicles: WorkerVehicleData[] = problem.vehicles.map((v) => ({
     id: v.id,
     capacity: v.capacity,
     startDepotId: v.startDepotId,
@@ -76,19 +76,19 @@ export function serializeProblem(problem: VrpProblem, meta: WorkerMeta): WorkerD
   };
 
   if (problem instanceof TrafficAwareProblem) {
-    data.trafficSegments = problem.trafficModel.getAllSegments().map(
-      (s: TrafficSegment): WorkerTrafficSegmentData => ({
+    data.trafficSegments = problem.trafficModel
+      .getAllSegments()
+      .map((s: TrafficSegment): WorkerTrafficSegmentData => ({
         fromId: s.fromId,
         toId: s.toId,
         baseTravelTime: s.baseTravelTime,
         currentTravelTime: s.currentTravelTime,
         congestionLevel: s.congestionLevel,
-      }),
-    );
-    data.trafficTimeFactors = problem.trafficModel.getAllTimeFactors().map(entry => ({
+      }));
+    data.trafficTimeFactors = problem.trafficModel.getAllTimeFactors().map((entry) => ({
       fromId: entry.fromId,
       toId: entry.toId,
-      factors: entry.factors.map(f => ({ startTime: f.startTime, factor: f.factor })),
+      factors: entry.factors.map((f) => ({ startTime: f.startTime, factor: f.factor })),
     }));
     data.defaultSpeed = problem.defaultSpeed;
   }
@@ -111,7 +111,7 @@ export function deserializeProblem(data: WorkerData): VrpProblem {
     nodes[Number(id)] = new LocationNode(node.id, node.x, node.y, node.name);
   }
 
-  const customers = data.customers.map(c => {
+  const customers = data.customers.map((c) => {
     if (c.earliestDeliveryTime !== undefined) {
       return new CustomerWithTimeWindows(
         c.id,
@@ -128,7 +128,7 @@ export function deserializeProblem(data: WorkerData): VrpProblem {
   });
 
   const vehicles = data.vehicles.map(
-    v =>
+    (v) =>
       new Vehicle(
         v.id,
         v.capacity,
