@@ -40,10 +40,7 @@ export {
   type ResourceType,
   type VehicleState,
 } from './core/vehicle-with-capabilities.js';
-export {
-  SolutionWithTransfers,
-  ProblemWithTransfers,
-} from './core/solution-with-transfers.js';
+export { SolutionWithTransfers, ProblemWithTransfers } from './core/solution-with-transfers.js';
 
 // Algorithms
 export { ALNS } from './algorithms/alns/alns.js';
@@ -76,8 +73,6 @@ export { GISExporter } from './export/index.js';
 export type { GeoJson, GeoJsonFeature, KmlPlacemark } from './export/index.js';
 
 // Main solver class
-import { Worker } from 'worker_threads';
-
 import type { ALNSOptions, ALNSProgress } from './algorithms/alns/alns.js';
 import { ALNS } from './algorithms/alns/alns.js';
 import { BRKGA } from './algorithms/brkga/brkga.js';
@@ -88,7 +83,7 @@ import { AlgorithmConvergenceError, InfeasibleSolutionError } from './errors/ind
 import type { Logger } from './logger.js';
 import { defaultLogger } from './logger.js';
 import { serializeProblem } from './worker-data.js';
-import { getWorkerPath } from './worker-path.js';
+import { spawnWorker } from './worker-spawn.js';
 
 function isWorkerResult(msg: object): msg is WorkerResult {
   return 'makespan' in msg && 'routes' in msg && 'type' in msg;
@@ -105,13 +100,13 @@ export interface SolveOptions {
   initialTemp?: number;
   coolingRate?: number;
   parallel?: boolean;
-  warmStart?: boolean;  // Enable ALNS→BRKGA warm-start
+  warmStart?: boolean; // Enable ALNS→BRKGA warm-start
   logger?: Logger;
   /** Maximum time in milliseconds before aborting */
   maxTimeMs?: number;
-  /** Target makespan for early stopping */
+  /** Target makespan for early stopping (forwarded to ALNS and BRKGA). */
   targetMakespan?: number;
-  /** Called with progress updates */
+  /** Called with progress updates. `bestMakespan` is `Infinity` until the first feasible solution. */
   onProgress?: (progress: SolverProgress) => void;
   /** BRKGA island count (default: 1 = single-island). Forwarded to BRKGA. */
   islands?: number;
@@ -119,17 +114,23 @@ export interface SolveOptions {
   migrationInterval?: number;
   /** Fraction of each island that emigrates (default: 0.05). Forwarded to BRKGA. */
   migrantFraction?: number;
+  /** Deterministic RNG seed forwarded to ALNS and BRKGA. */
+  seed?: number;
+  /** Optional `AbortSignal`; throws `AbortError` when triggered. */
+  signal?: AbortSignal;
 }
 
 /**
  * One progress event passed to the `onProgress` callback. `stage` tells
  * which phase is reporting; `iteration`/`maxIterations` are stage-local;
  * `elapsedMs` is wall-clock since `solve()` started.
+ * `bestMakespan` is `Infinity` until the first feasible solution is decoded.
+ * JSON consumers should treat `Infinity` as "no feasible yet".
  */
 export interface SolverProgress {
   stage: 'ALNS' | 'BRKGA' | 'parallel';
   iteration: number;
-  maxIterations: number;
+  maxGenerations: number;
   bestMakespan: number;
   elapsedMs: number;
 }
@@ -185,12 +186,14 @@ export class VrpRpdSolver {
       initialTemp: options.initialTemp ?? 100,
       coolingRate: options.coolingRate ?? 0.9998,
       maxTimeMs: options.maxTimeMs ?? 0,
+      seed: options.seed,
+      signal: options.signal,
       onProgress: reportAlns
         ? (progress: ALNSProgress) => {
             reportAlns({
               stage: 'ALNS',
               iteration: progress.iteration,
-              maxIterations: progress.maxIterations,
+              maxGenerations: progress.maxGenerations,
               bestMakespan: progress.bestMakespan,
               elapsedMs: Date.now() - startTime,
             });
@@ -222,12 +225,15 @@ export class VrpRpdSolver {
       islands: options.islands,
       migrationInterval: options.migrationInterval,
       migrantFraction: options.migrantFraction,
+      seed: options.seed,
+      targetMakespan: options.targetMakespan,
+      signal: options.signal,
       onProgress: reportBrkga
         ? (progress: BRKGAProgress) => {
             reportBrkga({
               stage: 'BRKGA',
               iteration: progress.generation,
-              maxIterations: progress.maxGenerations,
+              maxGenerations: progress.maxGenerations,
               bestMakespan: progress.bestMakespan,
               elapsedMs: Date.now() - startTime,
             });
@@ -256,11 +262,15 @@ export class VrpRpdSolver {
         initialTemp: options.initialTemp,
         coolingRate: options.coolingRate ?? 0.9998,
         maxTimeMs: options.maxTimeMs ?? 0,
+        seed: options.seed,
+        targetMakespan: options.targetMakespan,
       }),
       this.runWorker('BRKGA', {
         populationSize: options.populationSize ?? 30000,
         maxGenerations: options.maxGenerations ?? 20000,
         maxTimeMs: options.maxTimeMs ?? 0,
+        seed: options.seed,
+        targetMakespan: options.targetMakespan,
       }),
     ];
 
@@ -278,7 +288,7 @@ export class VrpRpdSolver {
     }
     const solution = new VrpSolution(
       this.problem,
-      best.routes.map(r => new Route(r.vehicleId, r.nodes)),
+      best.routes.map((r) => new Route(r.vehicleId, r.nodes)),
     );
     solution.calculateSchedule();
     if (!solution.isFeasible()) {
@@ -289,50 +299,69 @@ export class VrpRpdSolver {
     return solution;
   }
 
-  protected runWorker(
+  protected async runWorker(
     type: 'ALNS' | 'BRKGA',
     options: ALNSOptions | BRKGAOptions,
   ): Promise<WorkerResult> {
+    const worker = await spawnWorker();
+    const payload = serializeProblem(this.problem, { type, options });
     return new Promise((resolveResult, reject) => {
-      const worker = new Worker(getWorkerPath(), {
-        workerData: serializeProblem(this.problem, { type, options }),
-      });
-
       let settled = false;
-      worker.on('message', (msg: unknown) => {
-        if (!settled) {
+      let ready = false;
+
+      const trySettle = (msg: unknown): void => {
+        if (settled) return;
+        if (!ready) return;
+        if (typeof msg !== 'object' || msg === null) {
           settled = true;
           void worker.terminate();
-          if (typeof msg === 'object' && msg !== null) {
-            if ('error' in msg) {
-              const errMsg = typeof msg.error === 'string' ? msg.error : 'Unknown error';
-              reject(new AlgorithmConvergenceError(`Worker ${type} failed: ${errMsg}`));
-            } else if (isWorkerResult(msg)) {
-              resolveResult(msg);
-            } else {
-              reject(new AlgorithmConvergenceError(`Worker ${type} returned unexpected result`));
-            }
-          } else {
-            reject(new AlgorithmConvergenceError(`Worker ${type} returned non-object result`));
-          }
+          reject(new AlgorithmConvergenceError(`Worker ${type} returned non-object result`));
+          return;
         }
-      });
-      worker.on('error', err => {
-        if (!settled) {
+        if ('error' in msg) {
           settled = true;
           void worker.terminate();
-          reject(new AlgorithmConvergenceError(`Worker ${type} error: ${err.message}`));
+          const errMsg = typeof msg.error === 'string' ? msg.error : 'Unknown error';
+          reject(new AlgorithmConvergenceError(`Worker ${type} failed: ${errMsg}`));
+          return;
         }
-      });
-      worker.on('exit', code => {
-        if (!settled) {
+        if (isWorkerResult(msg)) {
           settled = true;
           void worker.terminate();
-          if (code !== 0) {
-            reject(new AlgorithmConvergenceError(`Worker stopped with exit code ${code}`));
-          } else {
-            reject(new AlgorithmConvergenceError('Worker exited without producing a result'));
+          resolveResult(msg);
+          return;
+        }
+        settled = true;
+        void worker.terminate();
+        reject(new AlgorithmConvergenceError(`Worker ${type} returned unexpected result`));
+      };
+
+      worker.onMessage((msg) => {
+        if (!ready) {
+          if (typeof msg === 'object' && msg !== null && 'type' in msg && msg.type === 'ready') {
+            ready = true;
+            worker.postMessage(payload);
+            return;
           }
+          trySettle(msg);
+          return;
+        }
+        trySettle(msg);
+      });
+      worker.onError((err) => {
+        if (settled) return;
+        settled = true;
+        void worker.terminate();
+        reject(new AlgorithmConvergenceError(`Worker ${type} error: ${err.message}`));
+      });
+      worker.onExit((code) => {
+        if (settled) return;
+        settled = true;
+        void worker.terminate();
+        if (code !== 0) {
+          reject(new AlgorithmConvergenceError(`Worker stopped with exit code ${code}`));
+        } else {
+          reject(new AlgorithmConvergenceError('Worker exited without producing a result'));
         }
       });
     });
