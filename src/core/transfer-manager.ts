@@ -50,10 +50,10 @@ export class TransferManager {
 
     // Check if either vehicle is busy
     const fromVehicleBusy = fromVehicleSchedule.some(
-      s => transfer.transferTime < s.endTime && endTime > s.startTime,
+      (s) => transfer.transferTime < s.endTime && endTime > s.startTime,
     );
     const toVehicleBusy = toVehicleSchedule.some(
-      s => transfer.transferTime < s.endTime && endTime > s.startTime,
+      (s) => transfer.transferTime < s.endTime && endTime > s.startTime,
     );
 
     if (fromVehicleBusy || toVehicleBusy) {
@@ -61,11 +61,13 @@ export class TransferManager {
     }
 
     // Check hub concurrency limit
-    const concurrentAtHub = Array.from(this.transfers.values()).filter(t => {
-      const tEndTime = t.transferTime + t.amount * (hub.transferTimePerUnit);
-      return t.hubNodeId === transfer.hubNodeId &&
+    const concurrentAtHub = Array.from(this.transfers.values()).filter((t) => {
+      const tEndTime = t.transferTime + t.amount * hub.transferTimePerUnit;
+      return (
+        t.hubNodeId === transfer.hubNodeId &&
         t.transferTime < endTime &&
-        tEndTime > transfer.transferTime;
+        tEndTime > transfer.transferTime
+      );
     });
 
     if (concurrentAtHub.length >= hub.maxConcurrentTransfers) {
@@ -99,7 +101,7 @@ export class TransferManager {
    * @returns All registered transfers whose hub is `hubId`
    */
   getTransfersForHub(hubId: number): ResourceTransfer[] {
-    return Array.from(this.transfers.values()).filter(t => t.hubNodeId === hubId);
+    return Array.from(this.transfers.values()).filter((t) => t.hubNodeId === hubId);
   }
 
   /**
@@ -108,7 +110,7 @@ export class TransferManager {
    */
   getTransfersForVehicle(vehicleId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(
-      t => t.fromVehicleId === vehicleId || t.toVehicleId === vehicleId,
+      (t) => t.fromVehicleId === vehicleId || t.toVehicleId === vehicleId,
     );
   }
 
@@ -139,7 +141,7 @@ export class TransferManager {
    */
   isVehicleAtHub(vehicleId: number, hubId: number, time: number): boolean {
     const schedule = this.vehicleSchedules.get(vehicleId) || [];
-    return schedule.some(s => s.hubId === hubId && s.startTime <= time && s.endTime >= time);
+    return schedule.some((s) => s.hubId === hubId && s.startTime <= time && s.endTime >= time);
   }
 
   /** Removes all transfers and vehicle schedules from this manager. */
