@@ -28,11 +28,7 @@ interface RouteLoad {
   maxDelta: number;
 }
 
-function canAddOperation(
-  load: RouteLoad,
-  capacity: number,
-  type: 'delivery' | 'pickup',
-): boolean {
+function canAddOperation(load: RouteLoad, capacity: number, type: 'delivery' | 'pickup'): boolean {
   const delta = type === 'delivery' ? -1 : 1;
   const newCurrent = load.currentLoad + delta;
   const newMin = Math.min(load.minDelta, newCurrent);
@@ -42,10 +38,7 @@ function canAddOperation(
   return initialLoadNeeded <= capacity && peakLoad <= capacity;
 }
 
-function updateLoad(
-  load: RouteLoad,
-  type: 'delivery' | 'pickup',
-): void {
+function updateLoad(load: RouteLoad, type: 'delivery' | 'pickup'): void {
   const delta = type === 'delivery' ? -1 : 1;
   load.currentLoad += delta;
   load.minDelta = Math.min(load.minDelta, load.currentLoad);
@@ -84,7 +77,9 @@ export class Decoder {
     const assignedVehicle: number[] = [];
     assignedVehicle.length = numCustomers;
     const routeLoads: RouteLoad[] = routes.map(() => ({
-      currentLoad: 0, minDelta: 0, maxDelta: 0,
+      currentLoad: 0,
+      minDelta: 0,
+      maxDelta: 0,
     }));
 
     // Customer order based on priority genes (π), with α as tie-breaker
@@ -99,10 +94,7 @@ export class Decoder {
     // Precompute vehicle index for every customer
     for (const idx of customerOrder) {
       const gene = chromosome.assignments[idx] ?? 0.5;
-      assignedVehicle[idx] = Math.min(
-        Math.floor(gene * numVehicles),
-        numVehicles - 1,
-      );
+      assignedVehicle[idx] = Math.min(Math.floor(gene * numVehicles), numVehicles - 1);
     }
 
     const deliveryScheduled = new Set<number>();
