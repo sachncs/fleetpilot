@@ -77,7 +77,7 @@ describe('BRKGA Decoder', () => {
   it('encode produces valid chromosome from solution', () => {
     const problem = createBasicProblem();
     const decoder = new Decoder(problem);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -93,7 +93,7 @@ describe('BRKGA Decoder', () => {
   it('encode-decode round-trip preserves feasibility', () => {
     const problem = createBasicProblem();
     const decoder = new Decoder(problem);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const original = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       original.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -164,7 +164,7 @@ describe('BRKGA Decoder', () => {
     const solution = decoder.decode(chromosome);
 
     for (const customer of customers) {
-      const deliveryRoute = solution.routes.find(r => r.nodes.includes(customer.deliveryNodeId));
+      const deliveryRoute = solution.routes.find((r) => r.nodes.includes(customer.deliveryNodeId));
       expect(deliveryRoute, `customer ${customer.id} delivery is routed`).to.not.be.undefined;
       expect(
         deliveryRoute!.nodes.includes(customer.pickupNodeId),
@@ -231,7 +231,7 @@ describe('BRKGA Decoder', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     routes[1]!.nodes.push(3, 4);
     const solution = new VrpSolution(problem, routes);
@@ -259,7 +259,7 @@ describe('BRKGA Decoder', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
@@ -279,7 +279,7 @@ describe('BRKGA Decoder', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     const solution = new VrpSolution(problem, routes);
     solution.calculateSchedule();
