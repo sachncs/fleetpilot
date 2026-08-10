@@ -1,19 +1,23 @@
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 
+import { isBrowser } from './env.js';
+
 /**
  * Resolves the absolute path of the worker bundle shipped in dist/.
  *
- * The worker entry is co-located with this module in the package output
- * (dist/), so it is resolved relative to the current module instead of
- * process.cwd(), which breaks when consumers run from another directory.
+ * - Node.js: returns the absolute path to `dist/worker.js`. The
+ *   `VRP_WORKER_PATH` env var overrides the resolved path (used by
+ *   tests to point at the built worker artifact).
+ * - Browser: returns a URL to `dist/worker.browser.js` so callers can
+ *   construct `new Worker(url, { type: 'module' })`.
  *
- * Set VRP_WORKER_PATH to override the resolved path (used by tests to point
- * at the built worker artifact).
- *
- * @returns Absolute path to the worker script
+ * @returns Absolute path or URL of the worker script
  */
-export function getWorkerPath(): string {
+export function getWorkerPath(): string | URL {
+  if (isBrowser()) {
+    return new URL('./worker.browser.js', import.meta.url);
+  }
   const override = process.env['VRP_WORKER_PATH'];
   if (override) return override;
   if (typeof __dirname !== 'undefined') {
