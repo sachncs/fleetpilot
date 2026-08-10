@@ -1,12 +1,20 @@
 import { expect } from 'chai';
 
-import { TransferAwareRemovalOperators, TransferAwareInsertionOperators } from '../../src/algorithms/alns/transfer-aware-operators.js';
+import {
+  TransferAwareRemovalOperators,
+  TransferAwareInsertionOperators,
+} from '../../src/algorithms/alns/transfer-aware-operators.js';
 import { VrpProblem, LocationNode, Customer } from '../../src/core/problem.js';
 import { SolutionWithTransfers } from '../../src/core/solution-with-transfers.js';
 import { Route } from '../../src/core/solution.js';
 import { TransferHub } from '../../src/core/transfer-hub.js';
 import { TransferManager, type ResourceTransfer } from '../../src/core/transfer-manager.js';
-import { VehicleWithCapabilities, VehicleFleetManager } from '../../src/core/vehicle-with-capabilities.js';
+import {
+  VehicleWithCapabilities,
+  VehicleFleetManager,
+} from '../../src/core/vehicle-with-capabilities.js';
+
+const testRandom: () => number = () => Math.random();
 
 describe('Transfer-Aware Operators', () => {
   it('randomWithTransfers removes customers without crashing', () => {
@@ -19,14 +27,18 @@ describe('Transfer-Aware Operators', () => {
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
-    const solution = new SolutionWithTransfers(problem, routes, hubs,
-      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
     solution.routes[0]!.nodes.push(1, 2);
     solution.calculateSchedule();
 
-    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 1);
+    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 1, testRandom);
     expect(removed.length).to.equal(1);
   });
 
@@ -40,15 +52,21 @@ describe('Transfer-Aware Operators', () => {
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
-    const solution = new SolutionWithTransfers(problem, routes, hubs,
-      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
     solution.routes[0]!.nodes.push(1, 2);
     solution.calculateSchedule();
 
     const repaired = TransferAwareInsertionOperators.greedyInsertionWithTransfers(
-      solution, [...problem.customers], hubs,
+      solution,
+      [...problem.customers],
+      hubs,
     );
     expect(repaired.isComplete()).to.be.true;
   });
@@ -63,12 +81,18 @@ describe('Transfer-Aware Operators', () => {
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 50, 0, 'Hub')];
-    const solution = new SolutionWithTransfers(problem, routes, hubs,
-      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
     const repaired = TransferAwareInsertionOperators.greedyInsertionWithTransfers(
-      solution, [...problem.customers], hubs,
+      solution,
+      [...problem.customers],
+      hubs,
     );
     expect(repaired.isComplete()).to.be.true;
   });
@@ -83,14 +107,18 @@ describe('Transfer-Aware Operators', () => {
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
-    const solution = new SolutionWithTransfers(problem, routes, hubs,
-      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
     solution.routes[0]!.nodes.push(1, 2);
     solution.calculateSchedule();
 
-    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 0);
+    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 0, testRandom);
     expect(removed).to.deep.equal([]);
   });
 
@@ -104,14 +132,18 @@ describe('Transfer-Aware Operators', () => {
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
-    const solution = new SolutionWithTransfers(problem, routes, hubs,
-      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
     solution.routes[0]!.nodes.push(1, 2);
     solution.calculateSchedule();
 
-    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 5);
+    const { removed } = TransferAwareRemovalOperators.randomWithTransfers(solution, 5, testRandom);
     expect(removed.length).to.equal(1);
   });
 
@@ -125,12 +157,18 @@ describe('Transfer-Aware Operators', () => {
     const customers = [new Customer(1, 2, 3, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(1, 50, 0, 'Hub')];
-    const solution = new SolutionWithTransfers(problem, routes, hubs,
-      vehicles.map(v => new VehicleWithCapabilities(v.id, v.capacity)));
+    const solution = new SolutionWithTransfers(
+      problem,
+      routes,
+      hubs,
+      vehicles.map((v) => new VehicleWithCapabilities(v.id, v.capacity)),
+    );
     const repaired = TransferAwareInsertionOperators.greedyInsertionWithTransfers(
-      solution, [...problem.customers], hubs,
+      solution,
+      [...problem.customers],
+      hubs,
     );
     expect(repaired.isComplete()).to.be.true;
     // 4 customers with processingTime 50, 2 vehicles with capacity 10 each:
