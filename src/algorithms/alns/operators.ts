@@ -473,10 +473,11 @@ export type RemovalOperatorKey = keyof typeof RemovalOperators;
 /** Valid keys for the insertion operators exposed by `InsertionOperators`. */
 export type InsertionOperatorKey = keyof typeof InsertionOperators;
 
-export /**
- *
+/**
+ * All removal-operator keys in the order they appear in `RemovalOperators`.
+ * Used by `ALNS` to drive weighted roulette selection of destroy operators.
  */
-const REMOVAL_OPERATOR_KEYS: RemovalOperatorKey[] = [
+export const REMOVAL_OPERATOR_KEYS: RemovalOperatorKey[] = [
   'random',
   'worst',
   'shaw',
@@ -484,10 +485,12 @@ const REMOVAL_OPERATOR_KEYS: RemovalOperatorKey[] = [
   'proximity',
   'temporal',
 ];
-export /**
- *
+
+/**
+ * All insertion-operator keys in the order they appear in `InsertionOperators`.
+ * Used by `ALNS` to drive weighted roulette selection of repair operators.
  */
-const INSERTION_OPERATOR_KEYS: InsertionOperatorKey[] = [
+export const INSERTION_OPERATOR_KEYS: InsertionOperatorKey[] = [
   'greedyInsertion',
   'regret2Insertion',
   'regret3Insertion',
