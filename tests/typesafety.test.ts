@@ -8,7 +8,10 @@ import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem
 import { ProblemWithTransfers } from '../src/core/solution-with-transfers.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
 import { TransferHub } from '../src/core/transfer-hub.js';
-import { VehicleWithCapabilities, VehicleFleetManager } from '../src/core/vehicle-with-capabilities.js';
+import {
+  VehicleWithCapabilities,
+  VehicleFleetManager,
+} from '../src/core/vehicle-with-capabilities.js';
 import { GISExporter } from '../src/export/index.js';
 
 // ============================================================
@@ -90,7 +93,7 @@ describe('T3 - nodeTimes string key access', () => {
     const exporter = new GISExporter(solution, problem);
     const geojson = exporter.toGeoJson();
 
-    const routeFeature = geojson.features.find(f => f.properties['type'] === 'route');
+    const routeFeature = geojson.features.find((f) => f.properties['type'] === 'route');
     expect(routeFeature).to.exist;
     expect(typeof routeFeature?.properties['makespan']).to.equal('number');
     expect(routeFeature?.properties['makespan']).to.be.at.least(0);
@@ -114,7 +117,7 @@ describe('T3 - nodeTimes string key access', () => {
     const csv = exporter.toCsv();
 
     // CSV should include a depot_return row with a valid arrival time
-    const lines = csv.split('\n').filter(l => l.includes('depot_return'));
+    const lines = csv.split('\n').filter((l) => l.includes('depot_return'));
     expect(lines.length).to.be.greaterThan(0);
     for (const line of lines) {
       const cols = line.split(',');
@@ -190,12 +193,7 @@ describe('T5 - Safe indexed access in algorithms', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(
-      nodes,
-      [new Customer(1, 1, 2, 50)],
-      [new Vehicle(1, 10)],
-      0,
-    );
+    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
 
     const empty = new VrpSolution(problem, [new Route(1, [])]);
     const solution = InsertionOperators.regret2Insertion(empty, problem.customers);
