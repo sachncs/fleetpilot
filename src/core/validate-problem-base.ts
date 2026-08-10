@@ -34,9 +34,7 @@ export function validateProblemBase(
       throw new ValidationError(`Node ID must be an integer, got ${node.id}`);
     }
     if (Number(key) !== node.id) {
-      throw new ValidationError(
-        `Node map key ${key} does not match node id ${node.id}`,
-      );
+      throw new ValidationError(`Node map key ${key} does not match node id ${node.id}`);
     }
     if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) {
       throw new ValidationError(
@@ -58,9 +56,7 @@ export function validateProblemBase(
     }
     customerIds.add(customer.id);
     if (!Number.isInteger(customer.id)) {
-      throw new ValidationError(
-        `Customer ID must be an integer, got ${customer.id}`,
-      );
+      throw new ValidationError(`Customer ID must be an integer, got ${customer.id}`);
     }
     for (const [nodeId, role] of [
       [customer.deliveryNodeId, 'delivery node'] as const,
@@ -102,7 +98,7 @@ export function validateProblemBase(
     ) {
       throw new ValidationError(
         `Customer ${customer.id} delivery window is inverted ` +
-        `(earliest ${tw.earliestDeliveryTime} > latest ${tw.latestDeliveryTime})`,
+          `(earliest ${tw.earliestDeliveryTime} > latest ${tw.latestDeliveryTime})`,
       );
     }
     if (
@@ -112,7 +108,7 @@ export function validateProblemBase(
     ) {
       throw new ValidationError(
         `Customer ${customer.id} pickup window is inverted ` +
-        `(earliest ${tw.earliestPickupTime} > latest ${tw.latestPickupTime})`,
+          `(earliest ${tw.earliestPickupTime} > latest ${tw.latestPickupTime})`,
       );
     }
   }
