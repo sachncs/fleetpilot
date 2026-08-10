@@ -1,7 +1,12 @@
 import { expect } from 'chai';
 
 import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
-import { VrpError, ValidationError, InfeasibleSolutionError, AlgorithmConvergenceError } from '../src/errors/index.js';
+import {
+  VrpError,
+  ValidationError,
+  InfeasibleSolutionError,
+  AlgorithmConvergenceError,
+} from '../src/errors/index.js';
 import { VrpRpdSolver } from '../src/index.js';
 
 describe('Typed Errors', () => {
