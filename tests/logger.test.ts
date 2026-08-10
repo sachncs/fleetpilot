@@ -11,7 +11,11 @@ describe('Logger Injection', () => {
       log: (msg: string) => logs.push(msg),
     };
 
-    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0), 2: new LocationNode(2, 20, 0) };
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
@@ -21,7 +25,11 @@ describe('Logger Injection', () => {
   });
 
   it('default logger is silent', () => {
-    const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0), 2: new LocationNode(2, 20, 0) };
+    const nodes = {
+      0: new LocationNode(0, 0, 0),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+    };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
