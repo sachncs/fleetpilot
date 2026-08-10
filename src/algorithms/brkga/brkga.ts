@@ -5,6 +5,7 @@ import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
 import { fromSeed } from '../../utils/rng.js';
 import { serializeProblem } from '../../worker-data.js';
+import type { WorkerData } from '../../worker-validation.js';
 
 import { Decoder, type Chromosome } from './decoder.js';
 import { sendCommand, type WireIndividual } from './island-messenger.js';
@@ -423,7 +424,6 @@ export class BRKGA {
 
   protected async solveIslands(startTime: number): Promise<VrpSolution> {
     const islandPopulationSize = Math.max(10, Math.floor(this.populationSize / this.islands));
-    const islandMaxGenerations = this.maxGenerations;
 
     // Lazy-import Node-only modules so the static graph stays browser-friendly.
     const { Worker: NodeWorker } = await import('worker_threads');
@@ -436,25 +436,7 @@ export class BRKGA {
       workers.push(worker);
     }
 
-    const payloads = workers.map((_, i) =>
-      serializeProblem(this.problem, {
-        type: 'island-brkga',
-        islandId: i,
-        options: {
-          populationSize: islandPopulationSize,
-          eliteFraction: this.eliteFraction,
-          mutantFraction: this.mutantFraction,
-          crossoverProb: this.crossoverProb,
-          maxGenerations: islandMaxGenerations,
-          islandPopulationSize,
-          islandMaxGenerations,
-          migrationInterval: this.migrationInterval,
-          warmStartolution: this.warmStartSolution,
-          warmStartProportion: this.warmStartProportion,
-          maxTimeMs: this.maxTimeMs,
-        },
-      }),
-    );
+    const payloads = workers.map((_, i) => this.buildIslandWorkerData(i));
 
     // Handshake: wait for each worker to emit `ready`, then post the payload.
     await Promise.all(
@@ -641,5 +623,37 @@ export class BRKGA {
       (a, b) => (a.fitness ?? Infinity) - (b.fitness ?? Infinity),
     );
     return sorted[0]?.solution ?? null;
+  }
+
+  /**
+   * Builds the `WorkerData` payload sent to a single island worker.
+   *
+   * Extracted from `solveIslands()` so tests can assert on the wire shape
+   * directly (in particular: that `warmStartSolution` is forwarded under
+   * the correct key, not the historical `warmStartolution` typo).
+   *
+   * @param islandId - Zero-based island index
+   * @returns The serialized payload to post to the island's worker
+   */
+  protected buildIslandWorkerData(islandId: number): WorkerData {
+    const islandPopulationSize = Math.max(10, Math.floor(this.populationSize / this.islands));
+    const islandMaxGenerations = this.maxGenerations;
+    return serializeProblem(this.problem, {
+      type: 'island-brkga',
+      islandId,
+      options: {
+        populationSize: islandPopulationSize,
+        eliteFraction: this.eliteFraction,
+        mutantFraction: this.mutantFraction,
+        crossoverProb: this.crossoverProb,
+        maxGenerations: islandMaxGenerations,
+        islandPopulationSize,
+        islandMaxGenerations,
+        migrationInterval: this.migrationInterval,
+        warmStartSolution: this.warmStartSolution,
+        warmStartProportion: this.warmStartProportion,
+        maxTimeMs: this.maxTimeMs,
+      },
+    });
   }
 }
