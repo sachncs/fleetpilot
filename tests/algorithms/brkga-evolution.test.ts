@@ -37,9 +37,9 @@ describe('BRKGA Evolution', () => {
     // @ts-expect-error - accessing protected method for test
     const child = brkga.crossover(elite, nonElite);
 
-    expect(child.chromosome.priorities.every(v => v === 0.1)).to.be.true;
-    expect(child.chromosome.assignments.every(v => v === 0.2)).to.be.true;
-    expect(child.chromosome.dependencies.every(v => v === 0.3)).to.be.true;
+    expect(child.chromosome.priorities.every((v) => v === 0.1)).to.be.true;
+    expect(child.chromosome.assignments.every((v) => v === 0.2)).to.be.true;
+    expect(child.chromosome.dependencies.every((v) => v === 0.3)).to.be.true;
   });
 
   it('evolvePopulation preserves correct elite/mutant/crossover counts', () => {
@@ -64,7 +64,7 @@ describe('BRKGA Evolution', () => {
     const eliteCount = Math.floor(100 * 0.15);
 
     expect(nextPop.length).to.equal(100);
-    const numElite = nextPop.filter(ind => ind.fitness !== null).length;
+    const numElite = nextPop.filter((ind) => ind.fitness !== null).length;
     expect(numElite).to.equal(eliteCount);
   });
 
@@ -161,10 +161,11 @@ describe('BRKGA Evolution', () => {
     // should be mutated.
     const allMutated = stagnantPop
       .slice(0, eliteCount)
-      .every(e =>
-        e.chromosome.priorities.every(g => g !== 0.25) &&
-        e.chromosome.assignments.every(g => g !== 0.25) &&
-        e.chromosome.dependencies.every(g => g !== 0.25),
+      .every(
+        (e) =>
+          e.chromosome.priorities.every((g) => g !== 0.25) &&
+          e.chromosome.assignments.every((g) => g !== 0.25) &&
+          e.chromosome.dependencies.every((g) => g !== 0.25),
       );
     expect(allMutated).to.be.true;
   });
@@ -199,9 +200,9 @@ describe('BRKGA Evolution', () => {
     for (let i = 0; i < eliteCount; i++) {
       const e = evolved[i]!;
       const someGeneChanged =
-        e.chromosome.priorities.some(g => g !== 0.25) ||
-        e.chromosome.assignments.some(g => g !== 0.25) ||
-        e.chromosome.dependencies.some(g => g !== 0.25);
+        e.chromosome.priorities.some((g) => g !== 0.25) ||
+        e.chromosome.assignments.some((g) => g !== 0.25) ||
+        e.chromosome.dependencies.some((g) => g !== 0.25);
 
       // With eliteMutationRate = 0.05 and 3*2=6 genes, at least some elites
       // should have mutations (probability of 0 is negligible)
@@ -212,10 +213,11 @@ describe('BRKGA Evolution', () => {
     // If we get here, no elite had mutations — check again with more aggressive check
     const allUnchanged = evolved
       .slice(0, eliteCount)
-      .every(e =>
-        e.chromosome.priorities.every(g => g === 0.25) &&
-        e.chromosome.assignments.every(g => g === 0.25) &&
-        e.chromosome.dependencies.every(g => g === 0.25),
+      .every(
+        (e) =>
+          e.chromosome.priorities.every((g) => g === 0.25) &&
+          e.chromosome.assignments.every((g) => g === 0.25) &&
+          e.chromosome.dependencies.every((g) => g === 0.25),
       );
     expect(allUnchanged).to.be.false;
   });
