@@ -17,9 +17,7 @@ import type {
   WorkerVehicleData,
 } from './worker-validation.js';
 
-/**
- * TODO(6.3): document WorkerMeta
- */
+/** Metadata that pairs with a problem to form a `WorkerData` payload. */
 export interface WorkerMeta {
   type: 'ALNS' | 'BRKGA' | 'island-brkga';
   options: object;

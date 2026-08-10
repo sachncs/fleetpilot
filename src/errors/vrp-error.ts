@@ -1,7 +1,7 @@
-/** Base error for all VRP-RPD library errors. */
+/** Base error for all VRP-RPD library errors. Catch this to handle any solver/problem error. */
 export class VrpError extends Error {
   /**
-   * TODO(6.3): document TODO
+   * @param message - Human-readable error description
    */
   constructor(message: string) {
     super(message);

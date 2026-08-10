@@ -209,7 +209,12 @@ export class VrpProblem {
   readonly distanceMatrix: Readonly<Record<number, Readonly<Record<number, number>>>>;
 
   /**
-   * TODO(6.3): document TODO
+   * @param nodes - Available nodes by ID (depots, customer D/P, hubs)
+   * @param customers - Customers to serve (each with delivery and pickup node IDs)
+   * @param vehicles - Fleet (each with capacity, optional start/end depot)
+   * @param depotNodeId - Default depot for vehicles without explicit start/end
+   * @throws `ValidationError` if the input violates invariants (shared nodes,
+   *   TW ordering, non-integer IDs, missing customer references, etc.)
    */
   constructor(
     public readonly nodes: Readonly<Record<number, LocationNode>>,

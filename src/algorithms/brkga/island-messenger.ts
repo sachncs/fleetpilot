@@ -13,7 +13,8 @@ export interface WireIndividual {
 }
 
 /**
- * TODO(6.3): document IslandCheckpointMessage
+ * Periodic checkpoint message sent by an island worker, reporting the
+ * current population so the orchestrator can decide on migration.
  */
 export interface IslandCheckpointMessage {
   type: 'checkpoint';
@@ -23,7 +24,8 @@ export interface IslandCheckpointMessage {
 }
 
 /**
- * TODO(6.3): document IslandFinishMessage
+ * Terminal message sent by an island worker when the orchestrator
+ * asks it to stop; carries the best individual found.
  */
 export interface IslandFinishMessage {
   type: 'finish';
@@ -31,37 +33,27 @@ export interface IslandFinishMessage {
   bestIndividual: WireIndividual | null;
 }
 
-/**
- * TODO(6.3): document IslandWorkerMessage
- */
+/** All message types an island worker can send back to the orchestrator. */
 export type IslandWorkerMessage = IslandCheckpointMessage | IslandFinishMessage;
 
-/**
- * TODO(6.3): document EvolveCommand
- */
+/** Tell an island worker to evolve for `generations` generations and report a checkpoint. */
 export interface EvolveCommand {
   type: 'evolve';
   generations: number;
 }
 
-/**
- * TODO(6.3): document InjectCommand
- */
+/** Replace the lowest-fitness individuals in an island with these migrants. */
 export interface InjectCommand {
   type: 'inject';
   migrants: Chromosome[];
 }
 
-/**
- * TODO(6.3): document FinishCommand
- */
+/** Tell an island worker to stop evolving and report its best individual. */
 export interface FinishCommand {
   type: 'finish';
 }
 
-/**
- * TODO(6.3): document IslandCommand
- */
+/** All command types the orchestrator can send to an island worker. */
 export type IslandCommand = EvolveCommand | InjectCommand | FinishCommand;
 
 function isIslandWorkerMessage(msg: unknown): msg is IslandWorkerMessage {

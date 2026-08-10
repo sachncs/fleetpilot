@@ -12,9 +12,7 @@ import { getWorkerPath } from '../../worker-path.js';
 import { Decoder, type Chromosome } from './decoder.js';
 import { sendCommand, type WireIndividual } from './island-messenger.js';
 
-/**
- * TODO(6.3): document BRKGAProgress
- */
+/** Progress event reported via the `onProgress` callback. */
 export interface BRKGAProgress {
   generation: number;
   maxGenerations: number;
@@ -22,9 +20,7 @@ export interface BRKGAProgress {
   populationSize: number;
 }
 
-/**
- * TODO(6.3): document BRKGAOptions
- */
+/** Configuration for the Biased Random-Key Genetic Algorithm solver. */
 export interface BRKGAOptions {
   populationSize?: number;
   eliteFraction?: number;
@@ -59,9 +55,7 @@ export interface BRKGAOptions {
   random?: () => number;
 }
 
-/**
- * TODO(6.3): document Individual
- */
+/** One member of the BRKGA population. `fitness === null` means not yet evaluated. */
 export interface Individual {
   chromosome: Chromosome;
   fitness: number | null;
@@ -187,7 +181,9 @@ export class BRKGA {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Builds the initial population: warm-start chromosomes (if configured)
+   * plus random chromosomes to fill. All fitnesses are `null` until decoded.
+   * @returns The initial population (length === `populationSize`)
    */
   initializePopulation(): Individual[] {
     const population: Individual[] = [];

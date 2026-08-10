@@ -61,12 +61,17 @@ function updateLoad(
  */
 export class Decoder {
   /**
-   * TODO(6.3): document TODO
+   * @param problem - The VRP-RPD instance this decoder translates chromosomes against
    */
   constructor(private readonly problem: VrpProblem) {}
 
   /**
-   * TODO(6.3): document TODO
+   * Translates a chromosome into a VrpSolution by greedily scheduling
+   * deliveries (priority order) then pickups (delivery-vehicle order).
+   *
+   * @param chromosome - 3n-gene chromosome (priorities, assignments, dependencies)
+   * @returns A solution; may be infeasible — caller checks `isFeasible()`
+   * @throws `ValidationError` if a customer cannot be placed within any vehicle's capacity
    */
   decode(chromosome: Chromosome): VrpSolution {
     const numCustomers = this.problem.customers.length;

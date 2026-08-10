@@ -2,7 +2,7 @@ import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 
 /**
- * TODO(6.3): document GeoJsonFeature
+ * A single GeoJSON Feature — either a LineString (route) or a Point (depot / stop).
  */
 export interface GeoJsonFeature {
   type: 'Feature';
@@ -14,7 +14,7 @@ export interface GeoJsonFeature {
 }
 
 /**
- * TODO(6.3): document GeoJSON
+ * A GeoJSON FeatureCollection as emitted by `GISExporter.toGeoJson()`.
  */
 export interface GeoJson {
   type: 'FeatureCollection';
@@ -22,7 +22,7 @@ export interface GeoJson {
 }
 
 /**
- * TODO(6.3): document KmlPlacemark
+ * A KML Placemark as emitted by `GISExporter.toKml()`.
  */
 export interface KmlPlacemark {
   name: string;

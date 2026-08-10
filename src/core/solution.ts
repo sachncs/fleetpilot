@@ -26,14 +26,17 @@ export class Route {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Appends a node ID to the end of this route.
+   * @param nodeId - The node ID to add
    */
   addNode(nodeId: number): void {
     this.nodes.push(nodeId);
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Removes the first occurrence of `nodeId` from this route if present.
+   * No-op if the node is not in the route.
+   * @param nodeId - The node ID to remove
    */
   removeNode(nodeId: number): void {
     const index = this.nodes.indexOf(nodeId);
@@ -43,14 +46,15 @@ export class Route {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param nodeId - The node ID to check
+   * @returns True if `nodeId` is in this route
    */
   hasNode(nodeId: number): boolean {
     return this.nodes.includes(nodeId);
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @returns Deep copy of this route with an independent `nodes` array
    */
   clone(): Route {
     return new Route(this.vehicleId, [...this.nodes]);
@@ -730,7 +734,7 @@ export class VrpSolution {
 }
 
 /**
- * TODO(6.3): document SerializedRoute
+ * JSON-serializable representation of a Route produced by `VrpSolution.serialize()`.
  */
 export interface SerializedRoute {
   vehicleId: number;
@@ -738,7 +742,9 @@ export interface SerializedRoute {
 }
 
 /**
- * TODO(6.3): document SerializedSolution
+ * JSON-serializable representation of a VrpSolution produced by
+ * `VrpSolution.serialize()`. The problem instance is NOT included;
+ * pass it to `VrpSolution.deserialize(data, problem)` to round-trip.
  */
 export interface SerializedSolution {
   routes: SerializedRoute[];

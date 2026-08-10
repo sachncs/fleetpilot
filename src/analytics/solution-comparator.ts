@@ -3,9 +3,7 @@ import type { VrpSolution } from '../core/solution.js';
 
 import { RouteAnalytics } from './route-analytics.js';
 
-/**
- * TODO(6.3): document SolutionMetrics
- */
+/** Aggregate metrics describing a single solution. */
 export interface SolutionMetrics {
   makespan: number;
   totalDistance: number;
@@ -16,9 +14,7 @@ export interface SolutionMetrics {
   feasibilityScore: number;
 }
 
-/**
- * TODO(6.3): document ComparisonResult
- */
+/** Cross-solution ranking for one metric (best/worst/improvement). */
 export interface ComparisonResult {
   metric: string;
   values: Array<{ solutionIndex: number; value: number; rank: number }>;
@@ -27,9 +23,7 @@ export interface ComparisonResult {
   improvement: number;
 }
 
-/**
- * TODO(6.3): document ParetoFront
- */
+/** Pareto-optimal solution indices and their objective vectors. */
 export interface ParetoFront {
   solutions: number[];
   objectives: Array<{ makespan: number; distance: number; cost: number; co2: number }>;

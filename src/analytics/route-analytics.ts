@@ -2,9 +2,7 @@ import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 import { isCustomerWithTimeWindows } from '../core/solution.js';
 
-/**
- * TODO(6.3): document VehicleUtilization
- */
+/** Per-vehicle load and time utilisation for a single route. */
 export interface VehicleUtilization {
   vehicleId: number;
   capacity: number;
@@ -15,9 +13,7 @@ export interface VehicleUtilization {
   customerCount: number;
 }
 
-/**
- * TODO(6.3): document WaitTimeAnalysis
- */
+/** One waiting event: arrival at `nodeId` was delayed by `waitTime` for `reason`. */
 export interface WaitTimeAnalysis {
   nodeId: number;
   arrivalTime: number;
@@ -25,17 +21,13 @@ export interface WaitTimeAnalysis {
   reason: 'resource' | 'timeWindow' | 'none';
 }
 
-/**
- * TODO(6.3): document LoadOverTime
- */
+/** Vehicle load at a specific point in time. */
 export interface LoadOverTime {
   time: number;
   load: number;
 }
 
-/**
- * TODO(6.3): document RouteComparison
- */
+/** Per-route scalar metrics for a single solution. */
 export interface RouteComparison {
   routeId: number;
   vehicleId: number;

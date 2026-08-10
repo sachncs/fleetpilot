@@ -450,13 +450,9 @@ function regretInsertion(
   return newVrpSolution;
 }
 
-/**
- * TODO(6.3): document RemovalOperatorKey
- */
+/** Valid keys for the removal operators exposed by `RemovalOperators`. */
 export type RemovalOperatorKey = keyof typeof RemovalOperators;
-/**
- * TODO(6.3): document InsertionOperatorKey
- */
+/** Valid keys for the insertion operators exposed by `InsertionOperators`. */
 export type InsertionOperatorKey = keyof typeof InsertionOperators;
 
 export /**

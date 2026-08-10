@@ -233,7 +233,8 @@ export class SolutionWithTransfers extends VrpSolution {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @returns True if the base feasibility checks pass AND all transfers
+   * are valid (vehicle was at the hub at transfer time, etc.)
    */
   override isFeasible(): boolean {
     const baseFeasible = super.isFeasible();
@@ -277,7 +278,7 @@ export class SolutionWithTransfers extends VrpSolution {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @returns Deep copy with cloned routes, hubs, vehicles, and transfers
    */
   override clone(): SolutionWithTransfers {
     const cloned = new SolutionWithTransfers(
@@ -321,14 +322,16 @@ export class ProblemWithTransfers extends VrpProblem {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param nodeId - Node ID to check
+   * @returns True if `nodeId` is registered as a transfer hub on this problem
    */
   isTransferHub(nodeId: number): boolean {
     return this.transferHubs.some(h => h.id === nodeId);
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param nodeId - Hub node ID to look up
+   * @returns The hub, or undefined if not registered
    */
   getTransferHub(nodeId: number): TransferHub | undefined {
     return this.transferHubs.find(h => h.id === nodeId);

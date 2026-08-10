@@ -1,6 +1,4 @@
-/**
- * TODO(6.3): document WorkerNodeData
- */
+/** Wire-serializable node (matches LocationNode's serialized fields). */
 export interface WorkerNodeData {
   id: number;
   x: number;
@@ -8,9 +6,7 @@ export interface WorkerNodeData {
   name: string;
 }
 
-/**
- * TODO(6.3): document WorkerCustomerData
- */
+/** Wire-serializable customer (plain Customer or CustomerWithTimeWindows). */
 export interface WorkerCustomerData {
   id: number;
   deliveryNodeId: number;
@@ -22,9 +18,7 @@ export interface WorkerCustomerData {
   latestPickupTime?: number;
 }
 
-/**
- * TODO(6.3): document WorkerVehicleData
- */
+/** Wire-serializable vehicle. */
 export interface WorkerVehicleData {
   id: number;
   capacity: number;
@@ -34,9 +28,7 @@ export interface WorkerVehicleData {
   co2PerKm?: number;
 }
 
-/**
- * TODO(6.3): document WorkerTrafficSegmentData
- */
+/** Wire-serializable traffic segment (matches TrafficSegment). */
 export interface WorkerTrafficSegmentData {
   fromId: number;
   toId: number;
@@ -45,17 +37,13 @@ export interface WorkerTrafficSegmentData {
   congestionLevel: 'low' | 'medium' | 'high' | 'severe';
 }
 
-/**
- * TODO(6.3): document WorkerTimeFactorData
- */
+/** Wire-serializable time-dependent factor (multiplier after `startTime`). */
 export interface WorkerTimeFactorData {
   startTime: number;
   factor: number;
 }
 
-/**
- * TODO(6.3): document WorkerData
- */
+/** Payload sent into a worker thread via `workerData`. */
 export interface WorkerData {
   nodes: Record<number, WorkerNodeData>;
   customers: WorkerCustomerData[];
@@ -74,9 +62,7 @@ export interface WorkerData {
   islandId?: number;
 }
 
-/**
- * TODO(6.3): document WorkerResult
- */
+/** Result posted back from the worker thread when solving completes. */
 export interface WorkerResult {
   makespan: number;
   routes: Array<{ vehicleId: number; nodes: number[] }>;
@@ -84,7 +70,10 @@ export interface WorkerResult {
 }
 
 /**
- * TODO(6.3): document isWorkerData
+ * Structural type guard: does `value` have the shape of a `WorkerData`?
+ * Use this before further validating with `validateWorkerData`.
+ * @param value - Unknown payload (typically `workerData`)
+ * @returns True if `value` has the required top-level fields and shapes
  */
 export function isWorkerData(value: unknown): value is WorkerData {
   if (typeof value !== 'object' || value === null) return false;
@@ -102,7 +91,10 @@ export function isWorkerData(value: unknown): value is WorkerData {
 }
 
 /**
- * TODO(6.3): document validateWorkerData
+ * Validates every field of a `WorkerData` after `isWorkerData` has accepted
+ * the top-level shape. Returns the first error found, or null if valid.
+ * @param data - Worker data that already passed `isWorkerData`
+ * @returns A human-readable error message, or null if `data` is valid
  */
 export function validateWorkerData(data: WorkerData): string | null {
   const nodeIds = Object.keys(data.nodes).map(Number);

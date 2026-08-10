@@ -13,9 +13,7 @@ import {
   type InsertionOperatorKey,
 } from './operators.js';
 
-/**
- * TODO(6.3): document ALNSProgress
- */
+/** Progress event reported via the `onProgress` callback. */
 export interface ALNSProgress {
   iteration: number;
   maxIterations: number;
@@ -24,9 +22,7 @@ export interface ALNSProgress {
   temperature: number;
 }
 
-/**
- * TODO(6.3): document ALNSOptions
- */
+/** Configuration for the Adaptive Large-Neighbourhood Search solver. */
 export interface ALNSOptions {
   maxIterations?: number;
   initialTemp?: number;

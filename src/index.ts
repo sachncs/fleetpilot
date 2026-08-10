@@ -97,7 +97,8 @@ function isWorkerResult(msg: object): msg is WorkerResult {
 }
 
 /**
- * TODO(6.3): document SolveOptions
+ * Options accepted by `VrpRpdSolver.solve()`. All fields are optional; the
+ * solver falls back to library defaults tuned for paper-quality results.
  */
 export interface SolveOptions {
   alnsIterations?: number;
@@ -123,7 +124,9 @@ export interface SolveOptions {
 }
 
 /**
- * TODO(6.3): document SolverProgress
+ * One progress event passed to the `onProgress` callback. `stage` tells
+ * which phase is reporting; `iteration`/`maxIterations` are stage-local;
+ * `elapsedMs` is wall-clock since `solve()` started.
  */
 export interface SolverProgress {
   stage: 'ALNS' | 'BRKGA' | 'parallel';
@@ -134,7 +137,8 @@ export interface SolverProgress {
 }
 
 /**
- * TODO(6.3): document WorkerResult
+ * Result returned from a worker thread when `parallel: true` is used.
+ * Equivalent to the in-process `VrpSolution.serialize()` output.
  */
 export interface WorkerResult {
   makespan: number;

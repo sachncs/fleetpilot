@@ -22,7 +22,8 @@ export class TrafficModel {
     new Map();
 
   /**
-   * TODO(6.3): document TODO
+   * Registers or replaces a traffic segment for a road.
+   * @param segment - Segment to set (from, to, base/current travel time, congestion)
    */
   setSegment(segment: TrafficSegment): void {
     const key = this.makeKey(segment.fromId, segment.toId);
@@ -30,7 +31,11 @@ export class TrafficModel {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Registers time-dependent multipliers for a segment. The most recent
+   * `factor.startTime <= departureTime` factor is applied.
+   * @param fromId - Origin node of the segment
+   * @param toId - Destination node of the segment
+   * @param factors - Time-dependent multipliers, ascending by `startTime`
    */
   setTimeFactors(
     fromId: number,
@@ -138,7 +143,9 @@ export class TrafficModel {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param fromId - Origin node ID
+   * @param toId - Destination node ID
+   * @returns The configured congestion level, or undefined if no segment exists
    */
   getCongestionLevel(
     fromId: number,
@@ -194,7 +201,12 @@ export class TrafficAwareProblem extends VrpProblem {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Time-dependent travel time. Falls back to Euclidean distance / default
+   * speed if no segment is configured for this road.
+   * @param fromId - Origin node ID
+   * @param toId - Destination node ID
+   * @param departureTime - Time of departure (defaults to 0)
+   * @returns Travel time, possibly scaled by traffic factor
    */
   override getTravelTime(fromId: number, toId: number, departureTime: number = 0): number {
     if (!this.trafficModel.hasSegment(fromId, toId)) {
@@ -205,7 +217,9 @@ export class TrafficAwareProblem extends VrpProblem {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Auto-generates a `TrafficSegment` for every road in this problem using
+   * the precomputed distance matrix as both base and current travel time.
+   * Use this to seed traffic data without per-segment configuration.
    */
   initializeTrafficFromDistances(): void {
     const nodeIds = Object.keys(this.nodes).map(Number);

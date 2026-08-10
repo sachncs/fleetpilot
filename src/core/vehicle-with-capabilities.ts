@@ -86,7 +86,7 @@ export class VehicleFleetManager {
   private readonly states: Map<number, VehicleState> = new Map();
 
   /**
-   * TODO(6.3): document TODO
+   * @param vehicles - Vehicles to seed the manager with
    */
   constructor(vehicles: VehicleWithCapabilities[] = []) {
     for (const vehicle of vehicles) {
@@ -95,7 +95,8 @@ export class VehicleFleetManager {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * Registers a vehicle and initialises its state.
+   * @param vehicle - Vehicle to add
    */
   addVehicle(vehicle: VehicleWithCapabilities): void {
     this.vehicles.set(vehicle.id, vehicle);
@@ -112,14 +113,16 @@ export class VehicleFleetManager {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param vehicleId - Vehicle ID to look up
+   * @returns The vehicle, or undefined if not registered
    */
   getVehicle(vehicleId: number): VehicleWithCapabilities | undefined {
     return this.vehicles.get(vehicleId);
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param vehicleId - Vehicle ID to look up
+   * @returns The current state for the vehicle, or undefined if not registered
    */
   getVehicleState(vehicleId: number): VehicleState | undefined {
     return this.states.get(vehicleId);
@@ -260,9 +263,7 @@ export class VehicleFleetManager {
     return stats;
   }
 
-  /**
-   * TODO(6.3): document TODO
-   */
+  /** Resets every registered vehicle back to its initial empty state. */
   resetAllStates(): void {
     for (const [id] of this.vehicles.entries()) {
       this.states.set(id, {
@@ -278,9 +279,7 @@ export class VehicleFleetManager {
     }
   }
 
-  /**
-   * TODO(6.3): document TODO
-   */
+  /** @returns All vehicles registered with this manager. */
   getAllVehicles(): readonly VehicleWithCapabilities[] {
     return Array.from(this.vehicles.values());
   }

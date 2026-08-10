@@ -14,7 +14,8 @@ export function mulberry32(seed: number): () => number {
 }
 
 /**
- * TODO(6.3): document RandomSource
+ * A seedable random source. Either create one via `fromSeed(seed)` or
+ * wrap an existing `() => number` with `asRandomSource(...)`.
  */
 export interface RandomSource {
   /** Returns a float in [0, 1). */
@@ -26,7 +27,9 @@ export interface RandomSource {
 }
 
 /**
- * TODO(6.3): document asRandomSource
+ * Wraps a `() => number` that returns floats in [0, 1) as a RandomSource.
+ * @param next - Underlying PRNG returning floats in [0, 1)
+ * @returns A `RandomSource` whose `int` and `chance` derive from `next`
  */
 export function asRandomSource(next: () => number): RandomSource {
   return {
@@ -41,7 +44,9 @@ export function asRandomSource(next: () => number): RandomSource {
 }
 
 /**
- * TODO(6.3): document fromSeed
+ * Builds a deterministic `RandomSource` from a fixed seed using mulberry32.
+ * @param seed - Any 32-bit integer
+ * @returns A `RandomSource` that produces the same sequence on every run
  */
 export function fromSeed(seed: number): RandomSource {
   return asRandomSource(mulberry32(seed));

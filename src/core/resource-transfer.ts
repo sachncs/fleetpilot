@@ -52,14 +52,16 @@ export class TransferManager {
   > = new Map();
 
   /**
-   * TODO(6.3): document TODO
+   * Registers a transfer hub with this manager.
+   * @param hub - The hub to register
    */
   registerHub(hub: TransferHub): void {
     this.hubs.set(hub.id, hub);
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param hubId - Hub ID to look up
+   * @returns The hub, or undefined if not registered
    */
   getHub(hubId: number): TransferHub | undefined {
     return this.hubs.get(hubId);
@@ -127,14 +129,16 @@ export class TransferManager {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param hubId - Hub to filter transfers by
+   * @returns All registered transfers whose hub is `hubId`
    */
   getTransfersForHub(hubId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(t => t.hubNodeId === hubId);
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param vehicleId - Vehicle to filter transfers by
+   * @returns All registered transfers where the vehicle is sender or receiver
    */
   getTransfersForVehicle(vehicleId: number): ResourceTransfer[] {
     return Array.from(this.transfers.values()).filter(
@@ -162,31 +166,28 @@ export class TransferManager {
   }
 
   /**
-   * TODO(6.3): document TODO
+   * @param vehicleId - Vehicle to check
+   * @param hubId - Hub to check
+   * @param time - Time at which to check presence
+   * @returns True if the vehicle is scheduled at `hubId` at `time`
    */
   isVehicleAtHub(vehicleId: number, hubId: number, time: number): boolean {
     const schedule = this.vehicleSchedules.get(vehicleId) || [];
     return schedule.some(s => s.hubId === hubId && s.startTime <= time && s.endTime >= time);
   }
 
-  /**
-   * TODO(6.3): document TODO
-   */
+  /** Removes all transfers and vehicle schedules from this manager. */
   clearAll(): void {
     this.transfers.clear();
     this.vehicleSchedules.clear();
   }
 
-  /**
-   * TODO(6.3): document TODO
-   */
+  /** @returns All currently registered transfers. */
   getAllTransfers(): readonly ResourceTransfer[] {
     return Array.from(this.transfers.values());
   }
 
-  /**
-   * TODO(6.3): document TODO
-   */
+  /** @returns All hubs registered with this manager. */
   getAllHubs(): readonly TransferHub[] {
     return Array.from(this.hubs.values());
   }

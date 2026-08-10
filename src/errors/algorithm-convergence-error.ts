@@ -1,9 +1,9 @@
 import { VrpError } from './vrp-error.js';
 
-/** Thrown when an algorithm fails to converge. */
+/** Thrown when ALNS or BRKGA cannot produce a feasible result within its iteration budget. */
 export class AlgorithmConvergenceError extends VrpError {
   /**
-   * TODO(6.3): document TODO
+   * @param message - Description of the convergence failure
    */
   constructor(message: string) {
     super(message);
