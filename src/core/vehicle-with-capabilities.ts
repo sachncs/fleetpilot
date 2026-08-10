@@ -52,7 +52,7 @@ export class VehicleWithCapabilities extends Vehicle {
    */
   canTransferWith(other: VehicleWithCapabilities): boolean {
     // Check if both vehicles support at least one common resource type
-    const commonTypes = this.supportedResourceTypes.filter(t =>
+    const commonTypes = this.supportedResourceTypes.filter((t) =>
       other.supportedResourceTypes.includes(t),
     );
     if (commonTypes.length === 0) return false;
@@ -149,7 +149,7 @@ export class VehicleFleetManager {
     if (state.currentLoad < 0 || state.currentLoad > vehicle.capacity) {
       throw new Error(
         `Vehicle ${vehicleId} capacity violation: ` +
-        `load=${state.currentLoad}, capacity=${vehicle.capacity}`,
+          `load=${state.currentLoad}, capacity=${vehicle.capacity}`,
       );
     }
 
@@ -179,7 +179,7 @@ export class VehicleFleetManager {
    * @returns Vehicles capable of transporting the given resource type
    */
   getVehiclesForResourceType(type: ResourceType): VehicleWithCapabilities[] {
-    return Array.from(this.vehicles.values()).filter(v => v.canHandleResource(type));
+    return Array.from(this.vehicles.values()).filter((v) => v.canHandleResource(type));
   }
 
   /**
@@ -190,11 +190,7 @@ export class VehicleFleetManager {
   getAvailableVehiclesAtHub(hubId: number, time: number): VehicleWithCapabilities[] {
     const available: VehicleWithCapabilities[] = [];
     for (const [id, state] of this.states.entries()) {
-      if (
-        state.currentLocation === hubId &&
-        !state.isWaiting &&
-        state.arrivedAtTime <= time
-      ) {
+      if (state.currentLocation === hubId && !state.isWaiting && state.arrivedAtTime <= time) {
         const vehicle = this.vehicles.get(id);
         if (vehicle) available.push(vehicle);
       }
