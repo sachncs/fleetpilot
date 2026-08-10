@@ -20,17 +20,17 @@ This library solves VRP-RPD where goods must be delivered, processed, and then p
 
 This implementation surpasses the baseline algorithms described in arXiv:2602.23685v2 with several novel enhancements:
 
-| Improvement | Description |
-|-------------|-------------|
-| **Adaptive Removal Sizing** | ALNS removal fraction auto-adjusts 10% → 45% based on stagnation ratio |
-| **Multi-Restart ALNS** | Up to 3 restarts with temperature reset and weight zeroing on stagnation |
-| **Clone Avoidance** | ALNS only clones solution on new best, avoiding regressions |
-| **Elite Diversity Preservation** | Mild mutation on elite BRKGA copies proportional to stagnation |
-| **Adaptive Mutation Rate** | Up to +5% extra mutants injected when population stagnates |
-| **Immigrant Injection** | 20% of population replaced with fresh random individuals before breaking stagnation |
-| **Hall-of-Fame Tracking** | Best-ever solution tracked separately from population elite |
-| **Decoder O(1) Capacity Checks** | Incremental `RouteLoad` tracking replaces O(n) route simulation |
-| **Island-Model Parallelization** | Multi-population BRKGA with elite migration via `worker_threads` |
+| Improvement                      | Description                                                                         |
+| -------------------------------- | ----------------------------------------------------------------------------------- |
+| **Adaptive Removal Sizing**      | ALNS removal fraction auto-adjusts 10% → 45% based on stagnation ratio              |
+| **Multi-Restart ALNS**           | Up to 3 restarts with temperature reset and weight zeroing on stagnation            |
+| **Clone Avoidance**              | ALNS only clones solution on new best, avoiding regressions                         |
+| **Elite Diversity Preservation** | Mild mutation on elite BRKGA copies proportional to stagnation                      |
+| **Adaptive Mutation Rate**       | Up to +5% extra mutants injected when population stagnates                          |
+| **Immigrant Injection**          | 20% of population replaced with fresh random individuals before breaking stagnation |
+| **Hall-of-Fame Tracking**        | Best-ever solution tracked separately from population elite                         |
+| **Decoder O(1) Capacity Checks** | Incremental `RouteLoad` tracking replaces O(n) route simulation                     |
+| **Island-Model Parallelization** | Multi-population BRKGA with elite migration via `worker_threads`                    |
 
 ## Features
 
@@ -76,18 +76,18 @@ vrp-solver --problem samples/delhi-10.json --output solution.json
 vrp-solver --problem samples/mumbai-20.json --progress
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--problem <file>` | required | Path to problem JSON file |
-| `--output <file>` | stdout | Write solution JSON |
-| `--alns-iterations <n>` | `500` | ALNS iterations |
-| `--population-size <n>` | `30000` | BRKGA population size |
-| `--max-generations <n>` | `20000` | BRKGA max generations |
-| `--max-time <ms>` | `0` (unlimited) | Max solver time |
-| `--target-makespan <n>` | `0` (disabled) | Early stopping target |
-| `--parallel` | off | Run ALNS + BRKGA in parallel |
-| `--no-warm-start` | on | Disable ALNS warm-start |
-| `--progress` | off | Print progress to stderr |
+| Option                  | Default         | Description                  |
+| ----------------------- | --------------- | ---------------------------- |
+| `--problem <file>`      | required        | Path to problem JSON file    |
+| `--output <file>`       | stdout          | Write solution JSON          |
+| `--alns-iterations <n>` | `500`           | ALNS iterations              |
+| `--population-size <n>` | `30000`         | BRKGA population size        |
+| `--max-generations <n>` | `20000`         | BRKGA max generations        |
+| `--max-time <ms>`       | `0` (unlimited) | Max solver time              |
+| `--target-makespan <n>` | `0` (disabled)  | Early stopping target        |
+| `--parallel`            | off             | Run ALNS + BRKGA in parallel |
+| `--no-warm-start`       | on              | Disable ALNS warm-start      |
+| `--progress`            | off             | Print progress to stderr     |
 
 ### Node.js API (TypeScript)
 
@@ -100,10 +100,10 @@ const nodes = {
   2: new LocationNode(2, 20, 0, 'Customer A - Pick'),
 };
 const customers = [new Customer(1, 1, 2, 50)]; // id, del-node, pk-node, processing-minutes
-const vehicles  = [new Vehicle(1, 5)];          // id, capacity
+const vehicles = [new Vehicle(1, 5)]; // id, capacity
 
 const problem = new VrpProblem(nodes, customers, vehicles, 0);
-const solver  = new VrpRpdSolver(problem);
+const solver = new VrpRpdSolver(problem);
 
 const solution = await solver.solve({ maxTimeMs: 30000 });
 console.log(`Best makespan: ${solution.makespan.toFixed(2)} min`);
@@ -115,62 +115,64 @@ console.log(`Distance: ${solution.totalDistance.toFixed(2)} km`);
 
 ```typescript
 interface SolveOptions {
-  alnsIterations?: number;       // Default: 500
-  populationSize?: number;       // Default: 100 (practical) / 30000 (paper)
-  maxGenerations?: number;       // Default: 100 (practical) / 20000 (paper)
-  initialTemp?: number;          // Default: 100
-  coolingRate?: number;          // Default: 0.9998
-  parallel?: boolean;            // Default: false
-  warmStart?: boolean;           // Default: true
-  maxTimeMs?: number;            // Default: 0 (unlimited)
-  targetMakespan?: number;       // Default: 0 (disabled)
+  alnsIterations?: number; // Default: 500
+  populationSize?: number; // Default: 100 (practical) / 30000 (paper)
+  maxGenerations?: number; // Default: 100 (practical) / 20000 (paper)
+  initialTemp?: number; // Default: 100
+  coolingRate?: number; // Default: 0.9998
+  parallel?: boolean; // Default: false
+  warmStart?: boolean; // Default: true
+  maxTimeMs?: number; // Default: 0 (unlimited)
+  targetMakespan?: number; // Default: 0 (disabled)
+  seed?: number; // Default: 1 (deterministic by default)
+  signal?: AbortSignal; // Throws AbortError when triggered
+  islands?: number; // Default: 1 (single-island)
+  migrationInterval?: number; // Default: 50 generations between migrations
+  migrantFraction?: number; // Default: 0.05
   logger?: Logger;
   onProgress?: (p: SolverProgress) => void;
 }
 ```
 
-Island-model BRKGA options (`islands`, `migrationInterval`, `migrantFraction`)
-are passed via `BRKGAOptions` when constructing a `BRKGA` instance directly
-— they are not part of `SolveOptions` today. Track item 5.2 to expose
-them on the high-level solver.
-
 ## Configuration
 
-No environment variables are required for core usage. Defaults are tuned for paper-quality results.
+No environment variables are required for core usage. Defaults are tuned for paper-quality results. `VRP_WORKER_PATH` overrides the worker bundle path used by `parallel: true` (handy for tests).
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `alnsIterations` | `500` | ALNS iteration cap |
-| `populationSize` | `30000` | BRKGA population size |
-| `maxGenerations` | `20000` | BRKGA generation cap |
-| `initialTemp` | `100` | Simulated-annealing start temperature |
-| `coolingRate` | `0.9998` | Geometric cooling factor |
-| `parallel` | `false` | Run ALNS + BRKGA concurrently |
-| `warmStart` | `true` | Seed 15% of BRKGA from ALNS solution |
-| `maxTimeMs` | `0` | Wall-clock cap (`0` = unlimited) |
-| `targetMakespan` | `0` | Early-stop on reaching target |
-
-The island-model BRKGA options (`islands`, `migrationInterval`,
-`migrantFraction`) live on `BRKGAOptions` and are used when constructing
-a `BRKGA` instance directly. They are not yet wired into `SolveOptions`
-(track 5.2).
+| Setting             | Default  | Description                            |
+| ------------------- | -------- | -------------------------------------- |
+| `alnsIterations`    | `500`    | ALNS iteration cap                     |
+| `populationSize`    | `30000`  | BRKGA population size                  |
+| `maxGenerations`    | `20000`  | BRKGA generation cap                   |
+| `initialTemp`       | `100`    | Simulated-annealing start temperature  |
+| `coolingRate`       | `0.9998` | Geometric cooling factor               |
+| `parallel`          | `false`  | Run ALNS + BRKGA concurrently          |
+| `warmStart`         | `true`   | Seed 15% of BRKGA from ALNS solution   |
+| `maxTimeMs`         | `0`      | Wall-clock cap (`0` = unlimited)       |
+| `targetMakespan`    | `0`      | Early-stop on reaching target          |
+| `seed`              | `1`      | Deterministic mulberry32 seed          |
+| `islands`           | `1`      | BRKGA island count (multi-island ≥ 2)  |
+| `migrationInterval` | `50`     | Generations between elite migrations   |
+| `migrantFraction`   | `0.05`   | Fraction of each island that emigrates |
 
 ## API
 
-| Symbol | Type | Description |
-|--------|------|-------------|
-| `VrpRpdSolver` | class | Orchestrator (ALNS → warm-start → BRKGA) |
-| `VrpProblem` | class | Standard problem definition |
-| `TrafficAwareProblem` | class | Problem with time-dependent travel times |
-| `MultiDepotProblem` | class | Multi-depot variant |
-| `Customer` / `CustomerWithTimeWindows` | class | Customer with optional delivery / pickup windows |
-| `Vehicle` / `VehicleWithCapabilities` | class | Vehicle with capacity and directional capabilities |
-| `LocationNode` | class | Node with coordinates |
-| `RouteAnalytics` | class | Post-solution summary metrics |
-| `SolutionComparator` | class | Pareto-front comparison |
-| `GISExporter` | class | `.toGeoJson()` / `.toKml()` / `.toCsv()` |
-| `TrafficModel` | class | Time-dependent segment factors |
-| `VrpError` → `ValidationError` \| `InfeasibleSolutionError` \| `AlgorithmConvergenceError` | classes | Typed error hierarchy |
+| Symbol                                                                                                     | Type    | Description                                        |
+| ---------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------- |
+| `VrpRpdSolver`                                                                                             | class   | Orchestrator (ALNS → warm-start → BRKGA)           |
+| `VrpProblem`                                                                                               | class   | Standard problem definition                        |
+| `TrafficAwareProblem`                                                                                      | class   | Problem with time-dependent travel times           |
+| `MultiDepotProblem`                                                                                        | class   | Multi-depot variant                                |
+| `Customer` / `CustomerWithTimeWindows`                                                                     | class   | Customer with optional delivery / pickup windows   |
+| `Vehicle` / `VehicleWithCapabilities`                                                                      | class   | Vehicle with capacity and directional capabilities |
+| `LocationNode`                                                                                             | class   | Node with coordinates                              |
+| `RouteAnalytics`                                                                                           | class   | Post-solution summary metrics                      |
+| `SolutionComparator`                                                                                       | class   | Pareto-front comparison                            |
+| `GISExporter`                                                                                              | class   | `.toGeoJson()` / `.toKml()` / `.toCsv()`           |
+| `TrafficModel`                                                                                             | class   | Time-dependent segment factors                     |
+| `VrpError` → `ValidationError` \| `InfeasibleSolutionError` \| `AlgorithmConvergenceError` \| `AbortError` | classes | Typed error hierarchy                              |
+| `SolutionWithTransfers` / `ProblemWithTransfers` / `TransferHub` / `TransferManager`                       | classes | Inter-vehicle resource transfers at hub nodes      |
+| `TransferAwareInsertionOperators` / `TransferAwareRemovalOperators`                                        | objects | ALNS operators that respect transfer constraints   |
+| `MultiDepotProblem` (extends `VrpProblem`) + `Depot`                                                       | classes | Vehicles start/end at different depots             |
 
 ## Examples
 
@@ -181,10 +183,14 @@ import { CustomerWithTimeWindows } from 'vehicle-routing';
 
 // Deliver between 9 AM and 1 PM (360–480 min), pick up between 11 AM and 10 PM (420–600 min)
 const customer = new CustomerWithTimeWindows(
-  1, 1, 2,              // id, delivery node, pickup node
-  30,                    // 30-min processing
-  360, 480,              // earliest / latest delivery
-  420, 600,              // earliest / latest pickup
+  1,
+  1,
+  2, // id, delivery node, pickup node
+  30, // 30-min processing
+  360,
+  480, // earliest / latest delivery
+  420,
+  600, // earliest / latest pickup
 );
 ```
 
@@ -202,7 +208,7 @@ traffic.setSegment({
   congestionLevel: 'low',
 });
 traffic.setTimeFactors(depotNodeId, customerNodeId, [
-  { startTime: 8, factor: 1.5 },   // 8am rush hour
+  { startTime: 8, factor: 1.5 }, // 8am rush hour
   { startTime: 9, factor: 2.0 },
   { startTime: 17, factor: 1.8 },
   { startTime: 18, factor: 1.6 },
@@ -221,9 +227,9 @@ console.log(analytics.getSummary());
 // { makespan, totalDistance, totalCost, totalCo2, avgUtilization, ... }
 
 const exporter = new GISExporter(solution, problem);
-const geojson = exporter.toGeoJson();   // QGIS / Mapbox
-const kml     = exporter.toKml();       // Google Earth
-const csv     = exporter.toCsv();       // Excel
+const geojson = exporter.toGeoJson(); // QGIS / Mapbox
+const kml = exporter.toKml(); // Google Earth
+const csv = exporter.toCsv(); // Excel
 ```
 
 ### Progress Tracking
@@ -231,7 +237,9 @@ const csv     = exporter.toCsv();       // Excel
 ```typescript
 const solution = await solver.solve({
   onProgress: (p) => {
-    console.log(`[${p.stage}] ${p.iteration}/${p.maxIterations} — best: ${p.bestMakespan.toFixed(1)}min`);
+    console.log(
+      `[${p.stage}] ${p.iteration}/${p.maxIterations} — best: ${p.bestMakespan.toFixed(1)}min`,
+    );
   },
 });
 ```
@@ -242,15 +250,11 @@ const solution = await solver.solve({
 {
   "nodes": [
     { "id": 0, "x": 28.61, "y": 77.23, "name": "Delhi Depot" },
-    { "id": 1, "x": 28.54, "y": 77.20, "name": "Customer 1 Drop" },
+    { "id": 1, "x": 28.54, "y": 77.2, "name": "Customer 1 Drop" },
     { "id": 2, "x": 28.56, "y": 77.25, "name": "Customer 1 Pick" }
   ],
-  "customers": [
-    { "id": 1, "deliveryNodeId": 1, "pickupNodeId": 2, "processingTime": 30 }
-  ],
-  "vehicles": [
-    { "id": 1, "capacity": 100, "costPerKm": 12, "co2PerKm": 0.15 }
-  ],
+  "customers": [{ "id": 1, "deliveryNodeId": 1, "pickupNodeId": 2, "processingTime": 30 }],
+  "vehicles": [{ "id": 1, "capacity": 100, "costPerKm": 12, "co2PerKm": 0.15 }],
   "depotNodeId": 0
 }
 ```
@@ -261,12 +265,12 @@ For time windows, add these fields to customers: `earliestDeliveryTime`, `latest
 
 The solver is organized into four layers:
 
-| Layer | Directory | Responsibility |
-|-------|-----------|----------------|
-| **Core** | `src/core/` | Problem definition, solution model, schedule engine |
+| Layer          | Directory         | Responsibility                                                       |
+| -------------- | ----------------- | -------------------------------------------------------------------- |
+| **Core**       | `src/core/`       | Problem definition, solution model, schedule engine                  |
 | **Algorithms** | `src/algorithms/` | ALNS metaheuristic, BRKGA evolutionary algorithm, chromosome decoder |
-| **Analytics** | `src/analytics/` | Post-solution analysis, Pareto front computation |
-| **Export** | `src/export/` | GIS serialization (GeoJSON, KML, CSV) |
+| **Analytics**  | `src/analytics/`  | Post-solution analysis, Pareto front computation                     |
+| **Export**     | `src/export/`     | GIS serialization (GeoJSON, KML, CSV)                                |
 
 The `VrpRpdSolver` orchestrator runs a **two-stage metaheuristic**: ALNS first, then BRKGA warm-started from the ALNS solution. In parallel mode both run concurrently via `worker_threads` and the best result is returned.
 
@@ -397,7 +401,7 @@ Time-dependent travel speed: if `departureTime ≥ latest-matching factor.startT
 npm install
 npm run build              # rollup ESM + CJS bundles
 npm run dev                # rollup --watch
-npm test                   # 330+ tests
+npm test                   # 370+ tests
 npm run test:coverage      # c8 text + lcov + html
 npm run lint               # eslint src tests
 npm run lint:fix
@@ -410,7 +414,7 @@ npm run clean              # rm -rf dist docs/api docs/md
 ## Testing
 
 ```bash
-npm test                   # mocha (330+ tests)
+npm test                   # mocha (370+ tests)
 npm run test:watch
 npm run test:coverage      # c8 with text / lcov / html reports and 85/85/70/85 thresholds
 ```
@@ -423,6 +427,7 @@ npm run prepublishOnly     # build + test gate (run automatically before publish
 ```
 
 Artifacts:
+
 - `dist/index.mjs`, `dist/index.cjs`, `dist/index.d.ts` — library
 - `dist/cli.mjs` — `vrp-solver` binary
 
@@ -439,64 +444,83 @@ git tag v0.1.X && git push origin v0.1.X
 
 ```
 src/
-├── core/                          # Problem & solution definitions
-│   ├── problem.ts                 #   - VRP-RPD problem
-│   ├── solution.ts                #   - Solution routing
-│   ├── multi-depot-problem.ts     #   - Multi-depot
-│   ├── traffic-aware-problem.ts   #   - Traffic model
-│   ├── resource-transfer.ts       #   - Inter-vehicle transfers
-│   ├── vehicle-with-capabilities.ts
-│   └── solution-with-transfers.ts
+├── core/                              # Problem & solution definitions
+│   ├── problem.ts                     #   - VRP-RPD problem
+│   ├── solution.ts                    #   - Solution routing
+│   ├── multi-depot-problem.ts         #   - Multi-depot
+│   ├── traffic-aware-problem.ts       #   - Traffic model
+│   ├── transfer-hub.ts                #   - Inter-vehicle transfer hub
+│   ├── transfer-manager.ts            #   - Inter-vehicle transfer scheduling
+│   ├── resource-transfer-types.ts     #   - ResourceTransfer interface
+│   ├── vehicle-with-capabilities.ts   #   - VehicleWithCapabilities + FleetManager
+│   ├── solution-with-transfers.ts     #   - Solution/problem + transfers
+│   └── validate-problem-base.ts       #   - Shared input validation
 ├── algorithms/
-│   ├── alns/                      # ALNS metaheuristic
+│   ├── alns/                          # ALNS metaheuristic
 │   │   ├── alns.ts
 │   │   ├── operators.ts
 │   │   └── transfer-aware-operators.ts
-│   └── brkga/                     # BRKGA evolutionary algorithm
+│   └── brkga/                         # BRKGA evolutionary algorithm
 │       ├── brkga.ts
 │       ├── decoder.ts
-│       └── island-messenger.ts    #   - Worker communication
-├── analytics/                     # Solution analysis
+│       └── island-messenger.ts        #   - Worker communication
+├── analytics/                         # Solution analysis
 │   ├── route-analytics.ts
-│   └── solution-comparator.ts
-├── export/                        # GIS export (GeoJSON, KML, CSV)
-│   └── gis-exporter.ts
-├── errors.ts                      # Typed error classes
-├── logger.ts                      # Logger interface
-├── cli.ts                         # CLI entry point
-├── index.ts                       # Public API exports
-├── worker.ts                      # Worker thread entry point
-└── worker-validation.ts           # Worker data validation
+│   ├── solution-comparator.ts
+│   └── *.ts                           #   - Extracted result interfaces
+├── export/                            # GIS export (GeoJSON, KML, CSV)
+│   ├── gis-exporter.ts
+│   ├── geo-json.ts / geo-json-feature.ts
+│   └── kml-placemark.ts
+├── errors/                            # Typed error classes (one per file)
+│   ├── vrp-error.ts
+│   ├── validation-error.ts
+│   ├── infeasible-solution-error.ts
+│   ├── algorithm-convergence-error.ts
+│   └── abort-error.ts
+├── utils/rng.ts                       # mulberry32 + RandomSource
+├── logger.ts                          # Logger interface
+├── env.ts                             # isNode / isBrowser
+├── cli.ts                             # CLI entry point
+├── index.ts                           # Public API exports
+├── worker.ts                          # Node worker entry
+├── worker-browser.ts                  # Browser worker entry
+├── worker-core.ts                     # Shared worker task runner
+├── worker-data.ts                     # Problem serialize / deserialize
+├── worker-validation.ts               # WorkerData validation
+├── worker-path.ts                     # Env-aware worker bundle path
+└── worker-spawn.ts                    # Node / browser worker spawn
 
-samples/                           # Example problem files
+samples/                               # Example problem files
 ├── basic.json
 ├── time-windows.json
 ├── multi-depot.json
-└── delhi-10.json
+├── delhi-10.json
+└── mumbai-20.json
 ```
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|------------|
-| Language | TypeScript 5.7+ |
-| Module system | ES Modules with CommonJS + `.d.ts` support |
-| Runtime | Node.js ≥ 18 (engines; reference badge targets 20+) |
-| Build | Rollup + `@rollup/plugin-typescript` + `rollup-plugin-dts` |
-| Test framework | Mocha + Chai |
-| Coverage | c8 |
-| Lint | ESLint + `@typescript-eslint` + `eslint-plugin-import` |
-| Type check | `tsc --noEmit` |
-| Docs | TypeDoc + `typedoc-plugin-markdown` |
-| CLI | `dist/cli.mjs` (`vrp-solver` bin) |
-| Parallelism | `worker_threads` |
-| Dev runner | Vite (dev mode only) |
+| Category       | Technology                                                                  |
+| -------------- | --------------------------------------------------------------------------- |
+| Language       | TypeScript 7.0+                                                             |
+| Module system  | ES Modules with CommonJS + `.d.ts` support                                  |
+| Runtime        | Node.js ≥ 20                                                                |
+| Build          | Rollup + `@rollup/plugin-typescript` + `rollup-plugin-dts`                  |
+| Test framework | Mocha + Chai                                                                |
+| Coverage       | c8                                                                          |
+| Lint           | ESLint + `@typescript-eslint` + `eslint-plugin-import`                      |
+| Type check     | `tsc --noEmit`                                                              |
+| Format         | Prettier 3.9                                                                |
+| Docs           | TypeDoc + `typedoc-plugin-markdown`                                         |
+| CLI            | `dist/cli.mjs` (`vrp-solver` bin)                                           |
+| Parallelism    | `worker_threads` (Node) / Web Worker (browser via `dist/worker.browser.js`) |
+| Dev runner     | Vite (dev mode only)                                                        |
 
 ## Roadmap
 
-- **v1.1.0** — Current: hardened worker infrastructure, validated problem inputs, BRKGA feasibility-only hall-of-fame, paired pickups/deliveries on the same vehicle, tight decoder error semantics, CLI non-finite numeric guards, parallel solving verified end-to-end.
-- **v1.2.0** — Planned: incremental schedule updates, ALNS insertion O(v·n²), distance cache, deterministic seeded RNG.
-- **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models.
+- **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toVrpProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
+- **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models; GPU acceleration for ALNS.
 
 ## Contributing
 
@@ -514,4 +538,4 @@ public issue for security-sensitive reports.
 
 ## References
 
-- Saseendran, H., Sodhi, M., & Prasad, R. (2026). *Vehicle Routing Problem with Resource-Constrained Pickup and Delivery*. [arXiv:2602.23685](https://arxiv.org/abs/2602.23685) · [HTML](https://arxiv.org/html/2602.23685v2)
+- Saseendran, H., Sodhi, M., & Prasad, R. (2026). _Vehicle Routing Problem with Resource-Constrained Pickup and Delivery_. [arXiv:2602.23685](https://arxiv.org/abs/2602.23685) · [HTML](https://arxiv.org/html/2602.23685v2)
