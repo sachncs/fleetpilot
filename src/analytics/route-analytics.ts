@@ -2,41 +2,15 @@ import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 import { isCustomerWithTimeWindows } from '../core/solution.js';
 
-/** Per-vehicle load and time utilisation for a single route. */
-export interface VehicleUtilization {
-  vehicleId: number;
-  capacity: number;
-  maxLoad: number;
-  utilizationRate: number;
-  totalDistance: number;
-  totalTime: number;
-  customerCount: number;
-}
+import type { LoadOverTime } from './load-over-time.js';
+import type { RouteComparison } from './route-comparison.js';
+import type { VehicleUtilization } from './vehicle-utilization.js';
+import type { WaitTimeAnalysis } from './wait-time-analysis.js';
 
-/** One waiting event: arrival at `nodeId` was delayed by `waitTime` for `reason`. */
-export interface WaitTimeAnalysis {
-  nodeId: number;
-  arrivalTime: number;
-  waitTime: number;
-  reason: 'resource' | 'timeWindow' | 'none';
-}
-
-/** Vehicle load at a specific point in time. */
-export interface LoadOverTime {
-  time: number;
-  load: number;
-}
-
-/** Per-route scalar metrics for a single solution. */
-export interface RouteComparison {
-  routeId: number;
-  vehicleId: number;
-  makespan: number;
-  totalDistance: number;
-  totalCost: number;
-  totalCo2: number;
-  efficiency: number;
-}
+export type { LoadOverTime } from './load-over-time.js';
+export type { RouteComparison } from './route-comparison.js';
+export type { VehicleUtilization } from './vehicle-utilization.js';
+export type { WaitTimeAnalysis } from './wait-time-analysis.js';
 
 /**
  * Analytics engine for VRP-RPD solutions.
