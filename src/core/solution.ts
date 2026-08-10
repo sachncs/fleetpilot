@@ -1,11 +1,7 @@
-import type { VrpProblem, Customer, CustomerWithTimeWindows } from './problem.js';
+import { isCustomerWithTimeWindows } from './is-customer-with-time-windows.js';
+import type { VrpProblem } from './problem.js';
 
-/**
- * Type guard to check if a customer has time windows.
- */
-export function isCustomerWithTimeWindows(customer: Customer): customer is CustomerWithTimeWindows {
-  return 'earliestDeliveryTime' in customer;
-}
+export { isCustomerWithTimeWindows };
 
 /**
  * Represents a single vehicle's route.
