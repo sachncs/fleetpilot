@@ -1,7 +1,7 @@
 import { ValidationError } from '../errors/index.js';
 
 import type { LocationNode, Customer, Vehicle } from './problem.js';
-import { validateProblemBase } from './problem.js';
+import { validateProblemBase } from './validate-problem-base.js';
 
 /**
  * Represents a depot where vehicles can start and end their routes.
