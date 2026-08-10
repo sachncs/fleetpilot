@@ -9,7 +9,7 @@ import { createBasicProblem, createTwoVehicleProblem } from './helpers.js';
 describe('RouteAnalytics', () => {
   it('getVehicleUtilization returns values between 0 and 1', () => {
     const problem = createTwoVehicleProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       const route = solution.routes[c.id - 1];
@@ -29,7 +29,7 @@ describe('RouteAnalytics', () => {
 
   it('getWaitTimes returns non-negative values', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -45,7 +45,7 @@ describe('RouteAnalytics', () => {
 
   it('getLoadOverTime returns entries for each route', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -59,7 +59,7 @@ describe('RouteAnalytics', () => {
 
   it('compareRoutes returns efficiency array', () => {
     const problem = createTwoVehicleProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       const route = solution.routes[c.id - 1];
@@ -76,7 +76,7 @@ describe('RouteAnalytics', () => {
 
   it('getSummary returns all fields', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -92,7 +92,7 @@ describe('RouteAnalytics', () => {
 
   it('getSummary covers all fields', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -109,7 +109,7 @@ describe('RouteAnalytics', () => {
 
   it('getWaitTimes returns entries for routes with resource waits', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -125,7 +125,7 @@ describe('RouteAnalytics', () => {
 describe('SolutionComparator', () => {
   it('getMetrics returns all metric fields', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -146,14 +146,14 @@ describe('SolutionComparator', () => {
 
   it('getAllComparisons returns comparisons for all solutions', () => {
     const problem = createBasicProblem();
-    const routes1 = problem.vehicles.map(v => new Route(v.id, []));
+    const routes1 = problem.vehicles.map((v) => new Route(v.id, []));
     const s1 = new VrpSolution(problem, routes1);
     for (const c of problem.customers) {
       s1.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
     s1.calculateSchedule();
 
-    const routes2 = problem.vehicles.map(v => new Route(v.id, []));
+    const routes2 = problem.vehicles.map((v) => new Route(v.id, []));
     const s2 = new VrpSolution(problem, routes2);
     for (const c of problem.customers) {
       s2.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -167,7 +167,7 @@ describe('SolutionComparator', () => {
 
   it('findParetoFront returns non-dominated solutions', () => {
     const problem = createBasicProblem();
-    const routes1 = problem.vehicles.map(v => new Route(v.id, []));
+    const routes1 = problem.vehicles.map((v) => new Route(v.id, []));
     const s1 = new VrpSolution(problem, routes1);
     for (const c of problem.customers) {
       s1.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -181,7 +181,7 @@ describe('SolutionComparator', () => {
 
   it('generateReport returns non-empty string', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const solution = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
@@ -195,14 +195,14 @@ describe('SolutionComparator', () => {
 
   it('compares two solutions with different metrics', () => {
     const problem = createBasicProblem();
-    const routes1 = problem.vehicles.map(v => new Route(v.id, []));
+    const routes1 = problem.vehicles.map((v) => new Route(v.id, []));
     const s1 = new VrpSolution(problem, routes1);
     for (const c of problem.customers) {
       s1.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
     s1.calculateSchedule();
 
-    const routes2 = problem.vehicles.map(v => new Route(v.id, []));
+    const routes2 = problem.vehicles.map((v) => new Route(v.id, []));
     const s2 = new VrpSolution(problem, routes2);
 
     const comparator = new SolutionComparator([s1, s2], problem);
@@ -214,7 +214,7 @@ describe('SolutionComparator', () => {
 
   it('findParetoFront filters dominated solutions', () => {
     const problem = createBasicProblem();
-    const routes = problem.vehicles.map(v => new Route(v.id, []));
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const s1 = new VrpSolution(problem, routes);
     for (const c of problem.customers) {
       s1.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
