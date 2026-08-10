@@ -1,33 +1,14 @@
 import type { VrpProblem } from '../core/problem.js';
 import type { VrpSolution } from '../core/solution.js';
 
+import type { ComparisonResult } from './comparison-result.js';
+import type { ParetoFront } from './pareto-front.js';
 import { RouteAnalytics } from './route-analytics.js';
+import type { SolutionMetrics } from './solution-metrics.js';
 
-/** Aggregate metrics describing a single solution. */
-export interface SolutionMetrics {
-  makespan: number;
-  totalDistance: number;
-  totalCost: number;
-  totalCo2: number;
-  avgVehicleUtilization: number;
-  totalWaitTime: number;
-  feasibilityScore: number;
-}
-
-/** Cross-solution ranking for one metric (best/worst/improvement). */
-export interface ComparisonResult {
-  metric: string;
-  values: Array<{ solutionIndex: number; value: number; rank: number }>;
-  best: number;
-  worst: number;
-  improvement: number;
-}
-
-/** Pareto-optimal solution indices and their objective vectors. */
-export interface ParetoFront {
-  solutions: number[];
-  objectives: Array<{ makespan: number; distance: number; cost: number; co2: number }>;
-}
+export type { ComparisonResult } from './comparison-result.js';
+export type { ParetoFront } from './pareto-front.js';
+export type { SolutionMetrics } from './solution-metrics.js';
 
 /**
  * Compares multiple solutions side-by-side.
