@@ -72,11 +72,11 @@ export class SolutionComparator {
 
     // Map ranks back to original order
     for (const v of values) {
-      v.rank = sorted.find(s => s.solutionIndex === v.solutionIndex)?.rank ?? 0;
+      v.rank = sorted.find((s) => s.solutionIndex === v.solutionIndex)?.rank ?? 0;
     }
 
-    const best = Math.min(...values.map(v => v.value));
-    const worst = Math.max(...values.map(v => v.value));
+    const best = Math.min(...values.map((v) => v.value));
+    const worst = Math.max(...values.map((v) => v.value));
     const improvement = worst > 0 ? ((worst - best) / worst) * 100 : 0;
 
     return {
@@ -183,7 +183,7 @@ export class SolutionComparator {
 
     for (const [metric, result] of Object.entries(comparisons)) {
       report += `${metric}:\n`;
-      const bestIdx = result.values.find(v => v.value === result.best)?.solutionIndex;
+      const bestIdx = result.values.find((v) => v.value === result.best)?.solutionIndex;
       report += `  Best: ${result.best.toFixed(2)} (Solution ${bestIdx})\n`;
       report += `  Worst: ${result.worst.toFixed(2)}\n`;
       report += `  Improvement: ${result.improvement.toFixed(1)}%\n\n`;
@@ -196,7 +196,8 @@ export class SolutionComparator {
         const obj = pareto.objectives[i];
         const solIdx = pareto.solutions[i];
         if (!obj || solIdx === undefined) continue;
-        report += `  Solution ${solIdx}: ` +
+        report +=
+          `  Solution ${solIdx}: ` +
           `makespan=${obj.makespan.toFixed(2)}, ` +
           `distance=${obj.distance.toFixed(2)}, ` +
           `cost=${obj.cost.toFixed(2)}, co2=${obj.co2.toFixed(2)}\n`;
