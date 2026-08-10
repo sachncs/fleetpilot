@@ -1,7 +1,12 @@
 import { expect } from 'chai';
 
 import { ALNS } from '../../src/algorithms/alns/alns.js';
-import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../../src/core/problem.js';
+import {
+  VrpProblem,
+  LocationNode,
+  CustomerWithTimeWindows,
+  Vehicle,
+} from '../../src/core/problem.js';
 import { ValidationError } from '../../src/errors/index.js';
 import { createBasicProblem, createSingleCustomerProblem } from '../helpers.js';
 
@@ -27,8 +32,10 @@ function makeProblemWithTwCustomers(): VrpProblem {
 describe('ALNS validation', () => {
   it('rejects maxIterations < 1', () => {
     const problem = createBasicProblem();
-    expect(() => new ALNS(problem, { maxIterations: 0 })).to.throw(ValidationError)
-      .with.property('message').that.includes('Max iterations');
+    expect(() => new ALNS(problem, { maxIterations: 0 }))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('Max iterations');
   });
 
   it('rejects coolingRate <= 0', () => {
@@ -75,7 +82,9 @@ describe('ALNS solve edge cases', () => {
     const alns = new ALNS(problem, {
       maxIterations: 30,
       segmentSize: 1,
-      onProgress: progress => { events.push(progress.iteration); },
+      onProgress: (progress) => {
+        events.push(progress.iteration);
+      },
     });
     alns.solve();
     expect(events.length).to.be.greaterThan(0);
