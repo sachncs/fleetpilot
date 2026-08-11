@@ -7,7 +7,6 @@ import L from 'leaflet';
 import { cn } from '@/lib/utils';
 
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-draw/dist/leaflet.draw.css';
 
 export interface MapProps extends Omit<MapContainerProps, 'ref'> {
   className?: string;
