@@ -1,0 +1,60 @@
+{
+  "family": "darp",
+  "instance": "darp-8req-4veh.json",
+  "ok": true,
+  "customers": 8,
+  "vehicles": 4,
+  "makespan": 186.57044903269437,
+  "totalDistance": 0,
+  "totalCost": 0,
+  "totalCo2": 0,
+  "feasible": true,
+  "complete": true,
+  "routes": [
+    {
+      "vehicleId": 1,
+      "nodes": [
+        15,
+        7,
+        16,
+        8
+      ]
+    },
+    {
+      "vehicleId": 2,
+      "nodes": [
+        11,
+        12
+      ]
+    },
+    {
+      "vehicleId": 3,
+      "nodes": [
+        9,
+        3,
+        10,
+        4
+      ]
+    },
+    {
+      "vehicleId": 4,
+      "nodes": [
+        1,
+        5,
+        13,
+        2,
+        6,
+        14
+      ]
+    }
+  ],
+  "runtimeMs": 39,
+  "config": {
+    "maxTimeMs": 5000,
+    "alnsIterations": 50,
+    "populationSize": 100,
+    "maxGenerations": 50,
+    "seed": 1,
+    "warmStart": true
+  }
+}

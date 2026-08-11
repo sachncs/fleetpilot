@@ -1,0 +1,54 @@
+{
+  "family": "synthetic",
+  "instance": "synth-10c-small.json",
+  "ok": true,
+  "customers": 10,
+  "vehicles": 2,
+  "makespan": 379.24329382892006,
+  "totalDistance": 0,
+  "totalCost": 0,
+  "totalCo2": 0,
+  "feasible": true,
+  "complete": true,
+  "routes": [
+    {
+      "vehicleId": 1,
+      "nodes": [
+        9,
+        7,
+        15,
+        10,
+        8,
+        16
+      ]
+    },
+    {
+      "vehicleId": 2,
+      "nodes": [
+        3,
+        13,
+        1,
+        19,
+        11,
+        5,
+        17,
+        4,
+        14,
+        2,
+        20,
+        12,
+        6,
+        18
+      ]
+    }
+  ],
+  "runtimeMs": 41,
+  "config": {
+    "maxTimeMs": 5000,
+    "alnsIterations": 50,
+    "populationSize": 100,
+    "maxGenerations": 50,
+    "seed": 1,
+    "warmStart": true
+  }
+}

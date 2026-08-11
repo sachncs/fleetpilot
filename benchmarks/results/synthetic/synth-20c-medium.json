@@ -1,0 +1,79 @@
+{
+  "family": "synthetic",
+  "instance": "synth-20c-medium.json",
+  "ok": true,
+  "customers": 20,
+  "vehicles": 3,
+  "makespan": 453.1486983841209,
+  "totalDistance": 0,
+  "totalCost": 0,
+  "totalCo2": 0,
+  "feasible": true,
+  "complete": true,
+  "routes": [
+    {
+      "vehicleId": 1,
+      "nodes": [
+        17,
+        3,
+        21,
+        11,
+        37,
+        33,
+        31,
+        7,
+        27,
+        18,
+        4,
+        22,
+        12,
+        38,
+        34,
+        32,
+        8,
+        28
+      ]
+    },
+    {
+      "vehicleId": 2,
+      "nodes": [
+        35,
+        39,
+        25,
+        23,
+        1,
+        15,
+        36,
+        40,
+        26,
+        24,
+        2,
+        16
+      ]
+    },
+    {
+      "vehicleId": 3,
+      "nodes": [
+        13,
+        9,
+        19,
+        29,
+        5,
+        14,
+        10,
+        20,
+        30,
+        6
+      ]
+    }
+  ],
+  "runtimeMs": 185,
+  "config": {
+    "maxTimeMs": 5000,
+    "alnsIterations": 50,
+    "populationSize": 100,
+    "maxGenerations": 50,
+    "seed": 1,
+    "warmStart": true
+  }
+}

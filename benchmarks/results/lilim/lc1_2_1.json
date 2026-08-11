@@ -1,0 +1,482 @@
+{
+  "family": "lilim",
+  "instance": "lc1_2_1.txt",
+  "ok": true,
+  "customers": 106,
+  "vehicles": 50,
+  "makespan": 631.221427278573,
+  "totalDistance": 0,
+  "totalCost": 0,
+  "totalCo2": 0,
+  "feasible": true,
+  "complete": true,
+  "routes": [
+    {
+      "vehicleId": 1,
+      "nodes": [
+        183,
+        119,
+        139,
+        137,
+        144,
+        6
+      ]
+    },
+    {
+      "vehicleId": 2,
+      "nodes": [
+        163,
+        92,
+        182,
+        23
+      ]
+    },
+    {
+      "vehicleId": 3,
+      "nodes": [
+        69,
+        185,
+        124,
+        18
+      ]
+    },
+    {
+      "vehicleId": 4,
+      "nodes": [
+        180,
+        109,
+        112,
+        82,
+        178,
+        134
+      ]
+    },
+    {
+      "vehicleId": 5,
+      "nodes": []
+    },
+    {
+      "vehicleId": 6,
+      "nodes": [
+        160,
+        200,
+        210,
+        147,
+        141,
+        164
+      ]
+    },
+    {
+      "vehicleId": 7,
+      "nodes": [
+        131,
+        42,
+        150,
+        105,
+        62,
+        50,
+        114,
+        89
+      ]
+    },
+    {
+      "vehicleId": 8,
+      "nodes": [
+        96,
+        108,
+        97,
+        33
+      ]
+    },
+    {
+      "vehicleId": 9,
+      "nodes": [
+        63,
+        129,
+        179,
+        22,
+        73,
+        64
+      ]
+    },
+    {
+      "vehicleId": 10,
+      "nodes": [
+        87,
+        99,
+        168,
+        9
+      ]
+    },
+    {
+      "vehicleId": 11,
+      "nodes": [
+        175,
+        162,
+        201,
+        155,
+        80,
+        53
+      ]
+    },
+    {
+      "vehicleId": 12,
+      "nodes": [
+        106,
+        145,
+        193,
+        75
+      ]
+    },
+    {
+      "vehicleId": 13,
+      "nodes": [
+        158,
+        34
+      ]
+    },
+    {
+      "vehicleId": 14,
+      "nodes": [
+        100,
+        91,
+        59,
+        173,
+        66,
+        15
+      ]
+    },
+    {
+      "vehicleId": 15,
+      "nodes": [
+        56,
+        16
+      ]
+    },
+    {
+      "vehicleId": 16,
+      "nodes": [
+        204,
+        140
+      ]
+    },
+    {
+      "vehicleId": 17,
+      "nodes": [
+        77,
+        196,
+        153,
+        20,
+        192,
+        48
+      ]
+    },
+    {
+      "vehicleId": 18,
+      "nodes": [
+        28,
+        30
+      ]
+    },
+    {
+      "vehicleId": 19,
+      "nodes": [
+        187,
+        61,
+        123,
+        151,
+        27,
+        156
+      ]
+    },
+    {
+      "vehicleId": 20,
+      "nodes": []
+    },
+    {
+      "vehicleId": 21,
+      "nodes": [
+        72,
+        94,
+        110,
+        191,
+        32,
+        25
+      ]
+    },
+    {
+      "vehicleId": 22,
+      "nodes": [
+        211,
+        76,
+        60,
+        44
+      ]
+    },
+    {
+      "vehicleId": 23,
+      "nodes": [
+        70,
+        103,
+        17,
+        47,
+        148,
+        4
+      ]
+    },
+    {
+      "vehicleId": 24,
+      "nodes": [
+        189,
+        126,
+        1,
+        171,
+        101,
+        71
+      ]
+    },
+    {
+      "vehicleId": 25,
+      "nodes": [
+        206,
+        202,
+        39,
+        35,
+        36,
+        58,
+        113,
+        166
+      ]
+    },
+    {
+      "vehicleId": 26,
+      "nodes": []
+    },
+    {
+      "vehicleId": 27,
+      "nodes": [
+        209,
+        90,
+        154,
+        78
+      ]
+    },
+    {
+      "vehicleId": 28,
+      "nodes": [
+        188,
+        121
+      ]
+    },
+    {
+      "vehicleId": 29,
+      "nodes": [
+        95,
+        24,
+        186,
+        190,
+        45,
+        8
+      ]
+    },
+    {
+      "vehicleId": 30,
+      "nodes": [
+        26,
+        133
+      ]
+    },
+    {
+      "vehicleId": 31,
+      "nodes": [
+        135,
+        136,
+        55,
+        115
+      ]
+    },
+    {
+      "vehicleId": 32,
+      "nodes": [
+        128,
+        46,
+        205,
+        5,
+        10,
+        79
+      ]
+    },
+    {
+      "vehicleId": 33,
+      "nodes": [
+        81,
+        37
+      ]
+    },
+    {
+      "vehicleId": 34,
+      "nodes": [
+        207,
+        31,
+        167,
+        85
+      ]
+    },
+    {
+      "vehicleId": 35,
+      "nodes": [
+        176,
+        122,
+        83,
+        116
+      ]
+    },
+    {
+      "vehicleId": 36,
+      "nodes": [
+        198,
+        98,
+        152,
+        3
+      ]
+    },
+    {
+      "vehicleId": 37,
+      "nodes": [
+        212,
+        157,
+        107,
+        177
+      ]
+    },
+    {
+      "vehicleId": 38,
+      "nodes": [
+        174,
+        138,
+        65,
+        199
+      ]
+    },
+    {
+      "vehicleId": 39,
+      "nodes": [
+        149,
+        165,
+        67,
+        172,
+        14,
+        143,
+        13,
+        41
+      ]
+    },
+    {
+      "vehicleId": 40,
+      "nodes": [
+        68,
+        74,
+        102,
+        130
+      ]
+    },
+    {
+      "vehicleId": 41,
+      "nodes": [
+        29,
+        169,
+        170,
+        40
+      ]
+    },
+    {
+      "vehicleId": 42,
+      "nodes": [
+        51,
+        86
+      ]
+    },
+    {
+      "vehicleId": 43,
+      "nodes": [
+        38,
+        7,
+        54,
+        127,
+        159,
+        104,
+        161,
+        88
+      ]
+    },
+    {
+      "vehicleId": 44,
+      "nodes": [
+        125,
+        117,
+        84,
+        181
+      ]
+    },
+    {
+      "vehicleId": 45,
+      "nodes": [
+        184,
+        118,
+        111,
+        93,
+        57,
+        142
+      ]
+    },
+    {
+      "vehicleId": 46,
+      "nodes": []
+    },
+    {
+      "vehicleId": 47,
+      "nodes": [
+        11,
+        12
+      ]
+    },
+    {
+      "vehicleId": 48,
+      "nodes": [
+        19,
+        203,
+        52,
+        120,
+        197,
+        194
+      ]
+    },
+    {
+      "vehicleId": 49,
+      "nodes": [
+        49,
+        208,
+        132,
+        146
+      ]
+    },
+    {
+      "vehicleId": 50,
+      "nodes": [
+        2,
+        195,
+        43,
+        21
+      ]
+    }
+  ],
+  "runtimeMs": 8895,
+  "config": {
+    "maxTimeMs": 5000,
+    "alnsIterations": 20,
+    "populationSize": 50,
+    "maxGenerations": 20,
+    "seed": 1,
+    "warmStart": true
+  }
+}

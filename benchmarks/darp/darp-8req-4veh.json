@@ -1,0 +1,207 @@
+{
+  "depotNodeId": 0,
+  "nodes": {
+    "0": {
+      "id": 0,
+      "x": 50,
+      "y": 50,
+      "name": "Depot"
+    },
+    "1": {
+      "id": 1,
+      "x": 26,
+      "y": 35,
+      "name": "D1"
+    },
+    "2": {
+      "id": 2,
+      "x": 53,
+      "y": 81,
+      "name": "P1"
+    },
+    "3": {
+      "id": 3,
+      "x": 11,
+      "y": 52,
+      "name": "D2"
+    },
+    "4": {
+      "id": 4,
+      "x": 28,
+      "y": 50,
+      "name": "P2"
+    },
+    "5": {
+      "id": 5,
+      "x": 21,
+      "y": 30,
+      "name": "D3"
+    },
+    "6": {
+      "id": 6,
+      "x": 38,
+      "y": 87,
+      "name": "P3"
+    },
+    "7": {
+      "id": 7,
+      "x": 29,
+      "y": 27,
+      "name": "D4"
+    },
+    "8": {
+      "id": 8,
+      "x": 68,
+      "y": 55,
+      "name": "P4"
+    },
+    "9": {
+      "id": 9,
+      "x": 61,
+      "y": 64,
+      "name": "D5"
+    },
+    "10": {
+      "id": 10,
+      "x": 29,
+      "y": 23,
+      "name": "P5"
+    },
+    "11": {
+      "id": 11,
+      "x": 89,
+      "y": 88,
+      "name": "D6"
+    },
+    "12": {
+      "id": 12,
+      "x": 70,
+      "y": 40,
+      "name": "P6"
+    },
+    "13": {
+      "id": 13,
+      "x": 21,
+      "y": 51,
+      "name": "D7"
+    },
+    "14": {
+      "id": 14,
+      "x": 39,
+      "y": 81,
+      "name": "P7"
+    },
+    "15": {
+      "id": 15,
+      "x": 74,
+      "y": 10,
+      "name": "D8"
+    },
+    "16": {
+      "id": 16,
+      "x": 66,
+      "y": 32,
+      "name": "P8"
+    }
+  },
+  "customers": [
+    {
+      "id": 1,
+      "deliveryNodeId": 1,
+      "pickupNodeId": 2,
+      "processingTime": 5,
+      "earliestDeliveryTime": 33,
+      "latestDeliveryTime": 570,
+      "earliestPickupTime": 38,
+      "latestPickupTime": 575
+    },
+    {
+      "id": 2,
+      "deliveryNodeId": 3,
+      "pickupNodeId": 4,
+      "processingTime": 5,
+      "earliestDeliveryTime": 38,
+      "latestDeliveryTime": 476,
+      "earliestPickupTime": 43,
+      "latestPickupTime": 481
+    },
+    {
+      "id": 3,
+      "deliveryNodeId": 5,
+      "pickupNodeId": 6,
+      "processingTime": 5,
+      "earliestDeliveryTime": 3,
+      "latestDeliveryTime": 504,
+      "earliestPickupTime": 8,
+      "latestPickupTime": 509
+    },
+    {
+      "id": 4,
+      "deliveryNodeId": 7,
+      "pickupNodeId": 8,
+      "processingTime": 5,
+      "earliestDeliveryTime": 52,
+      "latestDeliveryTime": 475,
+      "earliestPickupTime": 57,
+      "latestPickupTime": 480
+    },
+    {
+      "id": 5,
+      "deliveryNodeId": 9,
+      "pickupNodeId": 10,
+      "processingTime": 5,
+      "earliestDeliveryTime": 52,
+      "latestDeliveryTime": 466,
+      "earliestPickupTime": 57,
+      "latestPickupTime": 471
+    },
+    {
+      "id": 6,
+      "deliveryNodeId": 11,
+      "pickupNodeId": 12,
+      "processingTime": 5,
+      "earliestDeliveryTime": 21,
+      "latestDeliveryTime": 553,
+      "earliestPickupTime": 26,
+      "latestPickupTime": 558
+    },
+    {
+      "id": 7,
+      "deliveryNodeId": 13,
+      "pickupNodeId": 14,
+      "processingTime": 5,
+      "earliestDeliveryTime": 29,
+      "latestDeliveryTime": 600,
+      "earliestPickupTime": 34,
+      "latestPickupTime": 605
+    },
+    {
+      "id": 8,
+      "deliveryNodeId": 15,
+      "pickupNodeId": 16,
+      "processingTime": 5,
+      "earliestDeliveryTime": 56,
+      "latestDeliveryTime": 528,
+      "earliestPickupTime": 61,
+      "latestPickupTime": 533
+    }
+  ],
+  "vehicles": [
+    {
+      "id": 1,
+      "capacity": 4
+    },
+    {
+      "id": 2,
+      "capacity": 4
+    },
+    {
+      "id": 3,
+      "capacity": 4
+    },
+    {
+      "id": 4,
+      "capacity": 4
+    }
+  ]
+}
