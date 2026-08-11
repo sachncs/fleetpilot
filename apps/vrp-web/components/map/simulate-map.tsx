@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import L from 'leaflet';
+import { useMap, Marker, type MarkerProps } from 'react-leaflet';
 
 import { Map } from '@/components/map/map';
 import { MapTileLayer } from '@/components/map/map-tile-layer';
@@ -23,12 +24,76 @@ export interface SimulateMapProps {
   hoveredVehicleId: number | null;
 }
 
-interface VehiclePos {
+interface VehicleTrace {
   vehicleId: number;
   color: string;
   positions: Array<[number, number]>;
   nodeTimes: number[];
-  currentIndex: number;
+}
+
+function interpolate(
+  positions: Array<[number, number]>,
+  nodeTimes: number[],
+  currentTime: number,
+): [number, number] {
+  if (positions.length === 0) return [0, 0];
+  if (positions.length === 1) return positions[0]!;
+  if (currentTime <= (nodeTimes[0] ?? 0)) return positions[0]!;
+  const last = positions.length - 1;
+  const lastT = nodeTimes[last] ?? 0;
+  if (currentTime >= lastT) return positions[last]!;
+  // Find the segment [i, i+1] where currentTime falls.
+  for (let i = 0; i < last; i++) {
+    const t0 = nodeTimes[i] ?? 0;
+    const t1 = nodeTimes[i + 1] ?? 0;
+    if (currentTime >= t0 && currentTime <= t1) {
+      const span = t1 - t0;
+      const frac = span > 0 ? (currentTime - t0) / span : 0;
+      const p0 = positions[i]!;
+      const p1 = positions[i + 1]!;
+      return [p0[0] + (p1[0] - p0[0]) * frac, p0[1] + (p1[1] - p0[1]) * frac];
+    }
+  }
+  return positions[last]!;
+}
+
+interface AnimatedHeadProps {
+  position: [number, number];
+  color: string;
+  label: number;
+}
+
+function AnimatedHead({ position, color, label }: AnimatedHeadProps): React.ReactElement {
+  const map = useMap();
+  const markerRef = React.useRef<L.Marker | null>(null);
+  const iconRef = React.useRef<L.DivIcon | null>(null);
+
+  if (!iconRef.current) {
+    const html = `<div style="background:${color};width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;">${label}</div>`;
+    iconRef.current = L.divIcon({
+      className: 'vrp-head-marker',
+      html,
+      iconSize: [20, 20],
+      iconAnchor: [10, 10],
+    });
+  }
+
+  React.useEffect(() => {
+    if (markerRef.current) {
+      markerRef.current.setLatLng(position);
+    }
+  }, [position[0], position[1]]);
+
+  return (
+    <Marker
+      ref={(instance) => {
+        markerRef.current = instance;
+      }}
+      position={position}
+      icon={iconRef.current}
+      zIndexOffset={1000}
+    />
+  );
 }
 
 export function SimulateMap({
@@ -61,52 +126,49 @@ export function SimulateMap({
     );
   }
 
-  const nodeTimes = (solution.nodeTimesEntries ?? []).map(([k, v]) => [Number(k), v] as [number, number]);
-  const nodeTimeMap = new globalThis.Map<number, number>(nodeTimes);
-
-  const vehicles: VehiclePos[] = solution.routes.map((route, idx) => {
-    const positions: Array<[number, number]> = [];
-    const times: number[] = [];
-    for (const nodeId of route.nodes) {
-      const node = nodeById.get(nodeId);
-      if (!node) continue;
-      const [lat, lng] = metresToLatLngExpr(referenceOrigin, node.x, node.y) as [number, number];
-      positions.push([lat, lng]);
-      times.push(nodeTimeMap.get(nodeId) ?? 0);
+  const nodeTimeMap = React.useMemo(() => {
+    const m = new globalThis.Map<number, number>();
+    for (const [k, v] of solution.nodeTimesEntries ?? []) {
+      m.set(Number(k), v);
     }
+    return m;
+  }, [solution]);
 
-    let currentIndex = 0;
-    for (let i = 0; i < times.length; i++) {
-      if ((times[i] ?? 0) <= currentTime) {
-        currentIndex = i;
-      } else {
-        break;
+  const vehicles: VehicleTrace[] = React.useMemo(() => {
+    return solution.routes.map((route, idx) => {
+      const positions: Array<[number, number]> = [];
+      const times: number[] = [];
+      for (const nodeId of route.nodes) {
+        const node = nodeById.get(nodeId);
+        if (!node) continue;
+        const [lat, lng] = metresToLatLngExpr(referenceOrigin, node.x, node.y) as [
+          number,
+          number,
+        ];
+        positions.push([lat, lng]);
+        times.push(nodeTimeMap.get(nodeId) ?? 0);
       }
-    }
+      return {
+        vehicleId: route.vehicleId,
+        color: TABLEAU[idx % TABLEAU.length] ?? '#4e79a7',
+        positions,
+        nodeTimes: times,
+      };
+    });
+  }, [solution, nodeById, nodeTimeMap, referenceOrigin]);
 
-    return {
-      vehicleId: route.vehicleId,
-      color: TABLEAU[idx % TABLEAU.length] ?? '#4e79a7',
-      positions,
-      nodeTimes: times,
-      currentIndex,
-    };
-  });
-
-  const fitBounds = React.useRef(false);
-  const mapRef = React.useRef<L.Map | null>(null);
+  const fitBoundsRef = React.useRef(false);
 
   return (
     <Map
       ref={(m) => {
-        mapRef.current = m;
-        if (m && !fitBounds.current && vehicles.some((v) => v.positions.length > 0)) {
+        if (m && !fitBoundsRef.current) {
           const allPts = vehicles.flatMap((v) => v.positions) as [number, number][];
           if (allPts.length > 0) {
             const bounds = L.latLngBounds(allPts);
             m.fitBounds(bounds, { padding: [40, 40] });
-            fitBounds.current = true;
           }
+          fitBoundsRef.current = true;
         }
       }}
       center={center}
@@ -146,43 +208,25 @@ export function SimulateMap({
             <MapPopup>
               <div className="text-xs">
                 <div className="font-semibold">Vehicle {v.vehicleId}</div>
-                <div>Stop {idx + 1} of {v.positions.length}</div>
-                <div className="text-muted-foreground">Arrival: {v.nodeTimes[idx]?.toFixed(1) ?? '—'} min</div>
+                <div>
+                  Stop {idx + 1} of {v.positions.length}
+                </div>
+                <div className="text-muted-foreground">
+                  Arrival: {v.nodeTimes[idx]?.toFixed(1) ?? '—'} min
+                </div>
               </div>
             </MapPopup>
           </MapMarker>
         )),
       )}
-      {vehicles.map((v) => {
-        const pos = v.positions[v.currentIndex];
-        if (!pos) return null;
-        return (
-          <MapMarker
-            key={`head-${v.vehicleId}`}
-            position={pos}
-            icon={
-              <div
-                style={{
-                  background: v.color,
-                  width: 20,
-                  height: 20,
-                  borderRadius: '50%',
-                  border: '3px solid white',
-                  boxShadow: '0 0 0 2px rgba(0,0,0,0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontSize: 11,
-                  fontWeight: 700,
-                }}
-              >
-                {v.vehicleId}
-              </div>
-            }
-          />
-        );
-      })}
+      {vehicles.map((v) => (
+        <AnimatedHead
+          key={`head-${v.vehicleId}`}
+          position={interpolate(v.positions, v.nodeTimes, currentTime)}
+          color={v.color}
+          label={v.vehicleId}
+        />
+      ))}
     </Map>
   );
 }
