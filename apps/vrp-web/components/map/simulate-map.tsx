@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import L from 'leaflet';
-import { useMap } from 'react-leaflet';
+import { Marker, useMap } from 'react-leaflet';
 
 import { Map } from '@/components/map/map';
 import { MapTileLayer } from '@/components/map/map-tile-layer';
@@ -77,13 +77,14 @@ function interpolate(
   return { pos: last, heading: 0, atStop: true };
 }
 
-// Two-layer icon: outer wrapper for size, inner `rotation` div for heading.
-// Lets us update heading in O(1) via DOM (no `setIcon` round-trip).
-function truckHtml(color: string, label: number): string {
+function truckHtml(color: string, label: number, heading: number, atStop: boolean): string {
+  const shadow = atStop
+    ? 'box-shadow: 0 0 0 8px rgba(59,130,246,0.35), 0 0 0 2px rgba(0,0,0,0.4);'
+    : 'box-shadow: 0 0 0 2px rgba(0,0,0,0.4);';
   return `<div class="vrp-truck-outer">
-    <div class="vrp-truck-rotation" style="transform: rotate(0deg)">
+    <div class="vrp-truck-rotation" style="transform: rotate(${heading}deg)">
       <div class="vrp-truck-pointer" style="background:${color}"></div>
-      <div class="vrp-truck-body" style="background:${color}">${label}</div>
+      <div class="vrp-truck-body" style="background:${color};${shadow}">${label}</div>
     </div>
   </div>`;
 }
@@ -96,82 +97,36 @@ function depotHtml(): string {
   return `<div class="vrp-depot">D</div>`;
 }
 
-function HeadsLayer({
-  vehicles,
-  currentTime,
-}: {
-  vehicles: VehicleTrace[];
-  currentTime: number;
-}): null {
-  const map = useMap();
-  const markersRef = React.useRef<globalThis.Map<number, L.Marker>>(new globalThis.Map());
+interface TruckMarkerProps {
+  position: [number, number];
+  color: string;
+  label: number;
+  heading: number;
+  atStop: boolean;
+}
 
-  // Build markers when the vehicle set changes.
-  React.useEffect(() => {
-    const layer = markersRef.current;
-    for (const v of vehicles) {
-      if (!layer.has(v.vehicleId)) {
-        const { pos } = interpolate(v.positions, v.nodeTimes, currentTime);
-        const marker = L.marker(pos, {
-          icon: L.divIcon({
-            className: 'vrp-head-marker',
-            html: truckHtml(v.color, v.vehicleId),
-            iconSize: [40, 40],
-            iconAnchor: [20, 20],
-          }),
-          keyboard: false,
-          zIndexOffset: 1000,
-        });
-        marker.addTo(map);
-        layer.set(v.vehicleId, marker);
-      }
-    }
-    for (const [id, marker] of layer) {
-      if (!vehicles.some((v) => v.vehicleId === id)) {
-        marker.remove();
-        layer.delete(id);
-      }
-    }
-    return () => {
-      for (const marker of layer.values()) {
-        marker.remove();
-      }
-      layer.clear();
-    };
-  }, [map, vehicles]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Update marker positions and headings on every currentTime change.
-  // We mutate the existing DOM (no `setIcon`) so rAF can drive this at 60fps
-  // without re-rendering any React component.
-  React.useEffect(() => {
-    const layer = markersRef.current;
-    for (const v of vehicles) {
-      const marker = layer.get(v.vehicleId);
-      if (!marker) continue;
-      const { pos, heading, atStop } = interpolate(v.positions, v.nodeTimes, currentTime);
-      marker.setLatLng(pos);
-      const el = marker.getElement();
-      if (el) {
-        const rotation = el.querySelector<HTMLDivElement>('.vrp-truck-rotation');
-        if (rotation) {
-          rotation.style.transform = `rotate(${heading}deg)`;
-          rotation.style.transition = 'transform 120ms linear';
-        }
-        const body = el.querySelector<HTMLDivElement>('.vrp-truck-body');
-        const pointer = el.querySelector<HTMLDivElement>('.vrp-truck-pointer');
-        if (body && pointer) {
-          // Visual pulse when arriving at a stop: a quick scale-up of the body.
-          if (atStop) {
-            body.style.boxShadow = '0 0 0 6px rgba(59,130,246,0.35)';
-          } else {
-            body.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.35)';
-          }
-        }
-      }
-    }
-  }, [currentTime, vehicles]);
-
-  return null;
+function TruckMarker({
+  position,
+  color,
+  label,
+  heading,
+  atStop,
+}: TruckMarkerProps): React.ReactElement {
+  // The icon HTML is rebuilt on every render so the heading rotates and
+  // the atStop pulse reflects the latest currentTime. With divIcon's html
+  // string, react-leaflet calls setIcon() and the inner divs are reused,
+  // so the rotation transition stays smooth across frames.
+  const icon = React.useMemo(
+    () =>
+      L.divIcon({
+        className: 'vrp-head-marker',
+        html: truckHtml(color, label, heading, atStop),
+        iconSize: [40, 40],
+        iconAnchor: [20, 20],
+      }),
+    [color, label, heading, atStop],
+  );
+  return <Marker position={position} icon={icon} zIndexOffset={1000} />;
 }
 
 export function SimulateMap({
@@ -182,10 +137,6 @@ export function SimulateMap({
   const problem = useProblemStore((s) => s.problem);
   const solution = useProblemStore((s) => s.solution);
 
-  // Fall back to the depot node's position when referenceOrigin is missing.
-  // The samples use lat/lng for x/y, so the depot's coords double as the
-  // origin. Without this, the marker placement silently falls back to the
-  // empty-map branch.
   const effectiveOrigin: ReferenceOrigin | null = React.useMemo(() => {
     if (referenceOrigin) return referenceOrigin;
     if (!problem) return null;
@@ -305,7 +256,19 @@ export function SimulateMap({
           );
         }),
       )}
-      <HeadsLayer vehicles={vehicles} currentTime={currentTime} />
+      {vehicles.map((v) => {
+        const { pos, heading, atStop } = interpolate(v.positions, v.nodeTimes, currentTime);
+        return (
+          <TruckMarker
+            key={`head-${v.vehicleId}`}
+            position={pos}
+            color={v.color}
+            label={v.vehicleId}
+            heading={heading}
+            atStop={atStop}
+          />
+        );
+      })}
     </Map>
   );
 }
