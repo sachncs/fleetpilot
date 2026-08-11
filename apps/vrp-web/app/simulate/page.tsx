@@ -25,6 +25,8 @@ const SimulateMap = dynamic(
   },
 );
 
+const REALTIME_MS_PER_MIN = 200; // 1 wall-clock minute = 200 ms of playback
+
 export default function SimulatePage(): React.ReactElement {
   const problem = useProblemStore((s) => s.problem);
   const solution = useProblemStore((s) => s.solution);
@@ -38,26 +40,57 @@ export default function SimulatePage(): React.ReactElement {
 
   const makespan = solution?.makespan ?? 0;
 
+  // Use requestAnimationFrame for smooth playback. Each frame advances
+  // currentTime by the wall-clock delta scaled by speed. Ensure playback
+  // runs on the same tick regardless of refresh rate, but cap at ~60 fps.
+  const rafRef = React.useRef<number | null>(null);
+  const lastTickRef = React.useRef<number>(0);
+  const stateRef = React.useRef({ playing, speed, makespan });
   React.useEffect(() => {
-    if (!playing) return;
-    const id = window.setInterval(() => {
+    stateRef.current = { playing, speed, makespan };
+  }, [playing, speed, makespan]);
+
+  React.useEffect(() => {
+    if (!playing || makespan <= 0) {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      return;
+    }
+    lastTickRef.current = performance.now();
+    const tick = (now: number): void => {
+      const last = lastTickRef.current;
+      const dtMs = now - last;
+      lastTickRef.current = now;
+      // Cap dt to 100ms so a tab-switch doesn't teleport the head.
+      const dtMin = Math.min(dtMs, 100) / REALTIME_MS_PER_MIN;
+      const { speed: curSpeed, makespan: curMakespan } = stateRef.current;
       setCurrentTime((t) => {
-        const next = t + 0.5 * speed;
-        if (next >= makespan) {
+        const next = t + dtMin * curSpeed;
+        if (next >= curMakespan) {
           setPlaying(false);
-          return makespan;
+          return curMakespan;
         }
         return next;
       });
-    }, 50);
-    return () => window.clearInterval(id);
-  }, [playing, makespan, speed]);
+      rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current != null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [playing, makespan]);
 
+  // Reset currentTime to 0 when a new solution arrives.
   React.useEffect(() => {
-    if (solution && currentTime === 0) {
+    if (solution && currentTime !== 0) {
       setCurrentTime(0);
     }
-  }, [solution, currentTime]);
+  }, [solution]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!problem || !solution) {
     return (
@@ -137,7 +170,7 @@ export default function SimulatePage(): React.ReactElement {
                 type="range"
                 min={0}
                 max={makespan}
-                step={0.5}
+                step={0.1}
                 value={currentTime}
                 onChange={(e) => setCurrentTime(Number(e.target.value))}
                 className="w-full"
@@ -171,6 +204,7 @@ export default function SimulatePage(): React.ReactElement {
                   <option value={1}>1×</option>
                   <option value={2}>2×</option>
                   <option value={5}>5×</option>
+                  <option value={10}>10×</option>
                 </select>
               </div>
             </CardContent>
@@ -204,7 +238,7 @@ export default function SimulatePage(): React.ReactElement {
               <CardTitle className="text-base">Routes ({solution.routes.length})</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {solution.routes.map((r, idx) => (
+              {solution.routes.map((r) => (
                 <div
                   key={r.vehicleId}
                   className="rounded-md border p-2 text-xs hover:bg-muted"

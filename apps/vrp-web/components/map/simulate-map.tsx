@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import L from 'leaflet';
-import { useMap, Marker, type MarkerProps } from 'react-leaflet';
+import { useMap } from 'react-leaflet';
 
 import { Map } from '@/components/map/map';
 import { MapTileLayer } from '@/components/map/map-tile-layer';
@@ -42,7 +42,6 @@ function interpolate(
   const last = positions.length - 1;
   const lastT = nodeTimes[last] ?? 0;
   if (currentTime >= lastT) return positions[last]!;
-  // Find the segment [i, i+1] where currentTime falls.
   for (let i = 0; i < last; i++) {
     const t0 = nodeTimes[i] ?? 0;
     const t1 = nodeTimes[i + 1] ?? 0;
@@ -57,43 +56,68 @@ function interpolate(
   return positions[last]!;
 }
 
-interface AnimatedHeadProps {
-  position: [number, number];
-  color: string;
-  label: number;
+function makeHeadIcon(color: string, label: number): L.DivIcon {
+  return L.divIcon({
+    className: 'vrp-head-marker',
+    html: `<div style="background:${color};width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;">${label}</div>`,
+    iconSize: [20, 20],
+    iconAnchor: [10, 10],
+  });
 }
 
-function AnimatedHead({ position, color, label }: AnimatedHeadProps): React.ReactElement {
+function HeadsLayer({
+  vehicles,
+  currentTime,
+}: {
+  vehicles: VehicleTrace[];
+  currentTime: number;
+}): null {
   const map = useMap();
-  const markerRef = React.useRef<L.Marker | null>(null);
-  const iconRef = React.useRef<L.DivIcon | null>(null);
+  const markersRef = React.useRef<globalThis.Map<number, L.Marker>>(new globalThis.Map());
 
-  if (!iconRef.current) {
-    const html = `<div style="background:${color};width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;">${label}</div>`;
-    iconRef.current = L.divIcon({
-      className: 'vrp-head-marker',
-      html,
-      iconSize: [20, 20],
-      iconAnchor: [10, 10],
-    });
-  }
-
+  // Build / rebuild markers whenever the vehicle set changes.
   React.useEffect(() => {
-    if (markerRef.current) {
-      markerRef.current.setLatLng(position);
+    const layer = markersRef.current;
+    for (const v of vehicles) {
+      const existing = layer.get(v.vehicleId);
+      if (!existing) {
+        const initial = interpolate(v.positions, v.nodeTimes, currentTime);
+        const marker = L.marker(initial, {
+          icon: makeHeadIcon(v.color, v.vehicleId),
+          keyboard: false,
+          zIndexOffset: 1000,
+        });
+        marker.addTo(map);
+        layer.set(v.vehicleId, marker);
+      }
     }
-  }, [position[0], position[1]]);
+    // Remove markers whose vehicles disappeared.
+    for (const [id, marker] of layer) {
+      if (!vehicles.some((v) => v.vehicleId === id)) {
+        marker.remove();
+        layer.delete(id);
+      }
+    }
+    return () => {
+      for (const marker of layer.values()) {
+        marker.remove();
+      }
+      layer.clear();
+    };
+  }, [map, vehicles]);
 
-  return (
-    <Marker
-      ref={(instance) => {
-        markerRef.current = instance;
-      }}
-      position={position}
-      icon={iconRef.current}
-      zIndexOffset={1000}
-    />
-  );
+  // Update positions on every currentTime change.
+  React.useEffect(() => {
+    const layer = markersRef.current;
+    for (const v of vehicles) {
+      const marker = layer.get(v.vehicleId);
+      if (!marker) continue;
+      const pos = interpolate(v.positions, v.nodeTimes, currentTime);
+      marker.setLatLng(pos);
+    }
+  }, [currentTime, vehicles]);
+
+  return null;
 }
 
 export function SimulateMap({
@@ -219,14 +243,7 @@ export function SimulateMap({
           </MapMarker>
         )),
       )}
-      {vehicles.map((v) => (
-        <AnimatedHead
-          key={`head-${v.vehicleId}`}
-          position={interpolate(v.positions, v.nodeTimes, currentTime)}
-          color={v.color}
-          label={v.vehicleId}
-        />
-      ))}
+      <HeadsLayer vehicles={vehicles} currentTime={currentTime} />
     </Map>
   );
 }
