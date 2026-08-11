@@ -1,0 +1,39 @@
+# Build context exclusions for Docker.
+# Keep the image small and the build cache clean.
+
+# Build artefacts and dev-time data
+node_modules
+coverage
+dist
+docs/api
+docs/md
+*.log
+.DS_Store
+.git
+.gitignore
+.github
+.vscode
+.idea
+
+# Source files not needed at runtime
+tests
+demo
+examples
+benchmarks/results
+benchmarks/lilim/**/*.json
+benchmarks/solomon/**/*.json
+benchmarks/cordeau/**/*.json
+benchmarks/darp/**/*.json
+benchmarks/salhi-nagy/**/*.json
+benchmarks/synthetic
+.eslintcache
+*.tsbuildinfo
+
+# Docker itself
+Dockerfile
+.dockerignore
+
+# Editor / OS state
+*.swp
+*.swo
+*~
