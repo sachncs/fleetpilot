@@ -50,6 +50,55 @@ jobs:
       - run: npm ci
       - run: npm run test:coverage
 
+  cli-smoke:
+    name: CLI smoke against samples (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run build
+      - name: Run vrp-solver against every samples/*.json
+        run: npx mocha tests/cli-samples.test.ts --timeout 120000
+
+  docker-smoke:
+    name: Docker smoke (vrp-solver in node:20-alpine)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+      - run: npm ci
+      - name: Build image
+        run: npm run docker:build
+      - name: Run vrp-solver inside image
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}/samples:/app/samples:ro" \
+            --name vrp-smoke \
+            vehicle-routing:test \
+            vrp-solver --problem samples/delhi-10.json --max-time 5000 --alns-iterations 100 --population-size 500 --max-generations 200 --seed 1 > /tmp/solution.json
+          test -s /tmp/solution.json
+          node -e "const s = require('/tmp/solution.json'); if (!s.feasible) process.exit(1)"
+      - name: Image size check
+        run: |
+          SIZE=$(docker image inspect vehicle-routing:test --format '{{.Size}}' | numfmt --to=iec)
+          echo "Image size: $SIZE"
+          # Fail if image exceeds 300 MB.
+          BYTES=$(docker image inspect vehicle-routing:test --format '{{.Size}}')
+          test "$BYTES" -lt 314572800
+
   build:
     runs-on: ubuntu-latest
     needs: [lint, typecheck, test]
