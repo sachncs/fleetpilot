@@ -182,10 +182,22 @@ export function SimulateMap({
   const problem = useProblemStore((s) => s.problem);
   const solution = useProblemStore((s) => s.solution);
 
+  // Fall back to the depot node's position when referenceOrigin is missing.
+  // The samples use lat/lng for x/y, so the depot's coords double as the
+  // origin. Without this, the marker placement silently falls back to the
+  // empty-map branch.
+  const effectiveOrigin: ReferenceOrigin | null = React.useMemo(() => {
+    if (referenceOrigin) return referenceOrigin;
+    if (!problem) return null;
+    const nodeList = Array.isArray(problem.nodes) ? problem.nodes : Object.values(problem.nodes);
+    const depot = nodeList.find((n) => n.id === problem.depotNodeId) ?? nodeList[0];
+    return depot ? { lat: depot.x, lng: depot.y } : null;
+  }, [referenceOrigin, problem]);
+
   const center: [number, number] = React.useMemo(() => {
-    if (referenceOrigin) return [referenceOrigin.lat, referenceOrigin.lng];
+    if (effectiveOrigin) return [effectiveOrigin.lat, effectiveOrigin.lng];
     return [28.6139, 77.209];
-  }, [referenceOrigin]);
+  }, [effectiveOrigin]);
 
   const nodeById = React.useMemo(() => {
     const map = new globalThis.Map<number, { x: number; y: number; name: string }>();
@@ -196,7 +208,7 @@ export function SimulateMap({
     return map;
   }, [problem]);
 
-  if (!referenceOrigin || !problem || !solution) {
+  if (!effectiveOrigin || !problem || !solution) {
     return (
       <Map center={center} zoom={12} className="rounded-xl border">
         <MapTileLayer />
@@ -219,7 +231,7 @@ export function SimulateMap({
       for (const nodeId of route.nodes) {
         const node = nodeById.get(nodeId);
         if (!node) continue;
-        const [lat, lng] = metresToLatLngExpr(referenceOrigin, node.x, node.y) as [
+        const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [
           number,
           number,
         ];
@@ -233,7 +245,7 @@ export function SimulateMap({
         nodeTimes: times,
       };
     });
-  }, [solution, nodeById, nodeTimeMap, referenceOrigin]);
+  }, [solution, nodeById, nodeTimeMap, effectiveOrigin]);
 
   const fitBoundsRef = React.useRef(false);
 

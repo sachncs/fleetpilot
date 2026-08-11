@@ -83,6 +83,15 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
     return DELHI_CENTER;
   }, [referenceOrigin]);
 
+  // Fall back to the depot node when referenceOrigin is missing.
+  const effectiveOrigin: ReferenceOrigin | null = React.useMemo(() => {
+    if (referenceOrigin) return referenceOrigin;
+    if (!problem) return null;
+    const nodeList = Array.isArray(problem.nodes) ? problem.nodes : Object.values(problem.nodes);
+    const depot = nodeList.find((n) => n.id === problem.depotNodeId) ?? nodeList[0];
+    return depot ? { lat: depot.x, lng: depot.y } : null;
+  }, [referenceOrigin, problem]);
+
   const nodeList = problem
     ? Array.isArray(problem.nodes)
       ? problem.nodes
@@ -97,8 +106,8 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
         <></>
       </MapDrawControl>
       {nodeList.map((node) => {
-        if (!referenceOrigin) return null;
-        const [lat, lng] = metresToLatLngExpr(referenceOrigin, node.x, node.y) as [number, number];
+        if (!effectiveOrigin) return null;
+        const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [number, number];
         const isDepot = node.id === depotNodeId;
         return (
           <MapMarker
