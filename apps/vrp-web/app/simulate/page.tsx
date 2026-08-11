@@ -78,7 +78,11 @@ export default function SimulatePage(): React.ReactElement {
               <CardTitle>No solution yet</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
-              <p>{status === 'error' ? 'The last solve failed.' : 'Build a problem and solve it first.'}</p>
+              <p>
+                {status === 'error'
+                  ? 'The last solve failed.'
+                  : 'Build a problem and solve it first.'}
+              </p>
               <div className="flex gap-2">
                 <Button asChild>
                   <Link href="/build">Go to builder</Link>
@@ -148,7 +152,14 @@ export default function SimulatePage(): React.ReactElement {
                   {playing ? <Pause className="mr-1 h-3 w-3" /> : <Play className="mr-1 h-3 w-3" />}
                   {playing ? 'Pause' : 'Play'}
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => { setCurrentTime(0); setPlaying(false); }}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setCurrentTime(0);
+                    setPlaying(false);
+                  }}
+                >
                   <RotateCcw className="mr-1 h-3 w-3" /> Reset
                 </Button>
                 <select

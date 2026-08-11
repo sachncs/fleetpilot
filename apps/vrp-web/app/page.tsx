@@ -22,8 +22,8 @@ export default function HomePage(): React.ReactElement {
               <CardTitle>Build a problem</CardTitle>
             </div>
             <CardDescription>
-              Drop a depot and customer stops on the map, configure vehicles and time windows,
-              then solve.
+              Drop a depot and customer stops on the map, configure vehicles and time windows, then
+              solve.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -42,8 +42,8 @@ export default function HomePage(): React.ReactElement {
               <CardTitle>Simulate a solution</CardTitle>
             </div>
             <CardDescription>
-              Step through a solved route plan over time. Watch vehicles move, see ETAs, and
-              compare against KPIs.
+              Step through a solved route plan over time. Watch vehicles move, see ETAs, and compare
+              against KPIs.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -59,7 +59,12 @@ export default function HomePage(): React.ReactElement {
       <footer className="mt-16 text-center text-sm text-muted-foreground">
         <p>
           Built with Next.js, shadcn/ui, and{' '}
-          <a href="https://shadcn-map.vercel.app" className="underline" target="_blank" rel="noreferrer">
+          <a
+            href="https://shadcn-map.vercel.app"
+            className="underline"
+            target="_blank"
+            rel="noreferrer"
+          >
             shadcn-map
           </a>
           . Powered by the <code>vehicle-routing</code> package.
