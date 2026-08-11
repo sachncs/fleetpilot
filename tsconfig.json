@@ -25,6 +25,6 @@
     "verbatimModuleSyntax": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src/**/*", "tests/**/*"],
+  "include": ["src/**/*", "tests/**/*", "benchmarks/**/*"],
   "exclude": ["node_modules", "dist", "demo"]
 }

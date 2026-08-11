@@ -520,7 +520,21 @@ samples/                               # Example problem files
 ## Roadmap
 
 - **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toVrpProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
+- **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, `apps/vrp-web/` interactive UI.
 - **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models; GPU acceleration for ALNS.
+
+## Web UI
+
+`apps/vrp-web/` is a Next.js 14 + shadcn/ui + [shadcn-map](https://shadcn-map.vercel.app)
+frontend that lets users drop a depot and customer stops on a real map, configure
+vehicles and time windows, and step through the solved routes on a replayable
+timeline. See `apps/vrp-web/README.md` for details.
+
+```bash
+npm install
+npm run build
+npm run dev -w vrp-web    # http://localhost:3000
+```
 
 ## Contributing
 
