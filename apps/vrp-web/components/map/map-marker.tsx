@@ -12,20 +12,37 @@ const DEFAULT_ICON = L.divIcon({
 });
 
 export interface MapMarkerProps extends Omit<MarkerProps, 'icon'> {
-  icon?: React.ReactNode;
+  /**
+   * Either a `L.Icon` / `L.DivIcon` instance to render directly, or a
+   * string of HTML for the icon body. We don't accept React nodes because
+   * the only way to render them inside a Leaflet divIcon is to serialize
+   * them server-side, which defeats the purpose of an interactive marker.
+   */
+  icon?: L.Icon | string;
+  iconSize?: [number, number];
   iconAnchor?: [number, number];
+  className?: string;
 }
 
-export const MapMarker: React.FC<MapMarkerProps> = ({ icon, iconAnchor, ...props }) => {
+export const MapMarker: React.FC<MapMarkerProps> = ({
+  icon,
+  iconSize,
+  iconAnchor,
+  className,
+  ...props
+}) => {
   const leafletIcon = React.useMemo(() => {
     if (icon === undefined) return DEFAULT_ICON;
-    return L.divIcon({
-      className: 'vrp-custom-marker',
-      html: `<div class="vrp-custom-marker-inner">${(typeof icon === 'string' ? icon : '')}</div>`,
-      iconSize: [24, 24],
-      iconAnchor: iconAnchor ?? [12, 12],
-    });
-  }, [icon, iconAnchor]);
+    if (typeof icon === 'string') {
+      return L.divIcon({
+        className: `vrp-custom-marker ${className ?? ''}`,
+        html: icon,
+        iconSize: iconSize ?? [24, 24],
+        iconAnchor: iconAnchor ?? [12, 12],
+      });
+    }
+    return icon;
+  }, [icon, iconSize, iconAnchor, className]);
 
   return <Marker icon={leafletIcon} {...props} />;
 };

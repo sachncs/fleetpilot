@@ -64,3 +64,83 @@
   width: 100%;
   z-index: 0;
 }
+
+/* Truck (head) marker — animated, points in the direction of travel */
+.vrp-head-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.vrp-truck-outer {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.vrp-truck-rotation {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  transform-origin: 50% 50%;
+  transition: transform 120ms linear;
+}
+.vrp-truck-body {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  margin: -13px 0 0 -13px;
+  border: 2px solid white;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+}
+.vrp-truck-pointer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+.vrp-stop {
+  width: 18px;
+  height: 18px;
+  border: 3px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+}
+.vrp-depot {
+  width: 22px;
+  height: 22px;
+  background: #0f172a;
+  border: 3px solid white;
+  border-radius: 4px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  box-sizing: border-box;
+}
+.vrp-default-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.vrp-custom-marker {
+  background: transparent !important;
+  border: none !important;
+}

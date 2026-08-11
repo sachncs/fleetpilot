@@ -31,18 +31,32 @@ interface VehicleTrace {
   nodeTimes: number[];
 }
 
+interface InterpolateResult {
+  pos: [number, number];
+  heading: number;
+  atStop: boolean;
+}
+
 function interpolate(
   positions: Array<[number, number]>,
   nodeTimes: number[],
   currentTime: number,
-): [number, number] {
-  if (positions.length === 0) return [0, 0];
-  if (positions.length === 1) return positions[0]!;
-  if (currentTime <= (nodeTimes[0] ?? 0)) return positions[0]!;
-  const last = positions.length - 1;
-  const lastT = nodeTimes[last] ?? 0;
-  if (currentTime >= lastT) return positions[last]!;
-  for (let i = 0; i < last; i++) {
+): InterpolateResult {
+  if (positions.length === 0) {
+    return { pos: [0, 0], heading: 0, atStop: true };
+  }
+  if (positions.length === 1) {
+    return { pos: positions[0]!, heading: 0, atStop: true };
+  }
+  const first = positions[0]!;
+  const last = positions[positions.length - 1]!;
+  if (currentTime <= (nodeTimes[0] ?? 0)) {
+    return { pos: first, heading: 0, atStop: true };
+  }
+  if (currentTime >= (nodeTimes[nodeTimes.length - 1] ?? 0)) {
+    return { pos: last, heading: 0, atStop: true };
+  }
+  for (let i = 0; i < positions.length - 1; i++) {
     const t0 = nodeTimes[i] ?? 0;
     const t1 = nodeTimes[i + 1] ?? 0;
     if (currentTime >= t0 && currentTime <= t1) {
@@ -50,19 +64,36 @@ function interpolate(
       const frac = span > 0 ? (currentTime - t0) / span : 0;
       const p0 = positions[i]!;
       const p1 = positions[i + 1]!;
-      return [p0[0] + (p1[0] - p0[0]) * frac, p0[1] + (p1[1] - p0[1]) * frac];
+      const pos: [number, number] = [
+        p0[0] + (p1[0] - p0[0]) * frac,
+        p0[1] + (p1[1] - p0[1]) * frac,
+      ];
+      const dLat = p1[0] - p0[0];
+      const dLng = p1[1] - p0[1];
+      const heading = frac > 0.001 ? (Math.atan2(dLng, dLat) * 180) / Math.PI : 0;
+      return { pos, heading, atStop: false };
     }
   }
-  return positions[last]!;
+  return { pos: last, heading: 0, atStop: true };
 }
 
-function makeHeadIcon(color: string, label: number): L.DivIcon {
-  return L.divIcon({
-    className: 'vrp-head-marker',
-    html: `<div style="background:${color};width:20px;height:20px;border-radius:50%;border:3px solid white;box-shadow:0 0 0 2px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:700;">${label}</div>`,
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
-  });
+// Two-layer icon: outer wrapper for size, inner `rotation` div for heading.
+// Lets us update heading in O(1) via DOM (no `setIcon` round-trip).
+function truckHtml(color: string, label: number): string {
+  return `<div class="vrp-truck-outer">
+    <div class="vrp-truck-rotation" style="transform: rotate(0deg)">
+      <div class="vrp-truck-pointer" style="background:${color}"></div>
+      <div class="vrp-truck-body" style="background:${color}">${label}</div>
+    </div>
+  </div>`;
+}
+
+function stopHtml(color: string): string {
+  return `<div class="vrp-stop" style="background:${color}"></div>`;
+}
+
+function depotHtml(): string {
+  return `<div class="vrp-depot">D</div>`;
 }
 
 function HeadsLayer({
@@ -75,15 +106,19 @@ function HeadsLayer({
   const map = useMap();
   const markersRef = React.useRef<globalThis.Map<number, L.Marker>>(new globalThis.Map());
 
-  // Build / rebuild markers whenever the vehicle set changes.
+  // Build markers when the vehicle set changes.
   React.useEffect(() => {
     const layer = markersRef.current;
     for (const v of vehicles) {
-      const existing = layer.get(v.vehicleId);
-      if (!existing) {
-        const initial = interpolate(v.positions, v.nodeTimes, currentTime);
-        const marker = L.marker(initial, {
-          icon: makeHeadIcon(v.color, v.vehicleId),
+      if (!layer.has(v.vehicleId)) {
+        const { pos } = interpolate(v.positions, v.nodeTimes, currentTime);
+        const marker = L.marker(pos, {
+          icon: L.divIcon({
+            className: 'vrp-head-marker',
+            html: truckHtml(v.color, v.vehicleId),
+            iconSize: [40, 40],
+            iconAnchor: [20, 20],
+          }),
           keyboard: false,
           zIndexOffset: 1000,
         });
@@ -91,7 +126,6 @@ function HeadsLayer({
         layer.set(v.vehicleId, marker);
       }
     }
-    // Remove markers whose vehicles disappeared.
     for (const [id, marker] of layer) {
       if (!vehicles.some((v) => v.vehicleId === id)) {
         marker.remove();
@@ -104,16 +138,36 @@ function HeadsLayer({
       }
       layer.clear();
     };
-  }, [map, vehicles]);
+  }, [map, vehicles]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update positions on every currentTime change.
+  // Update marker positions and headings on every currentTime change.
+  // We mutate the existing DOM (no `setIcon`) so rAF can drive this at 60fps
+  // without re-rendering any React component.
   React.useEffect(() => {
     const layer = markersRef.current;
     for (const v of vehicles) {
       const marker = layer.get(v.vehicleId);
       if (!marker) continue;
-      const pos = interpolate(v.positions, v.nodeTimes, currentTime);
+      const { pos, heading, atStop } = interpolate(v.positions, v.nodeTimes, currentTime);
       marker.setLatLng(pos);
+      const el = marker.getElement();
+      if (el) {
+        const rotation = el.querySelector<HTMLDivElement>('.vrp-truck-rotation');
+        if (rotation) {
+          rotation.style.transform = `rotate(${heading}deg)`;
+          rotation.style.transition = 'transform 120ms linear';
+        }
+        const body = el.querySelector<HTMLDivElement>('.vrp-truck-body');
+        const pointer = el.querySelector<HTMLDivElement>('.vrp-truck-pointer');
+        if (body && pointer) {
+          // Visual pulse when arriving at a stop: a quick scale-up of the body.
+          if (atStop) {
+            body.style.boxShadow = '0 0 0 6px rgba(59,130,246,0.35)';
+          } else {
+            body.style.boxShadow = '0 0 0 2px rgba(0,0,0,0.35)';
+          }
+        }
+      }
     }
   }, [currentTime, vehicles]);
 
@@ -211,37 +265,33 @@ export function SimulateMap({
           }}
         />
       ))}
-      {vehicles.map((v) =>
-        v.positions.map((pos, idx) => (
-          <MapMarker
-            key={`stop-${v.vehicleId}-${idx}`}
-            position={pos}
-            icon={
-              <div
-                style={{
-                  background: v.color,
-                  width: 12,
-                  height: 12,
-                  borderRadius: '50%',
-                  border: '2px solid white',
-                  boxShadow: '0 0 0 1px rgba(0,0,0,0.2)',
-                }}
-              />
-            }
-          >
-            <MapPopup>
-              <div className="text-xs">
-                <div className="font-semibold">Vehicle {v.vehicleId}</div>
-                <div>
-                  Stop {idx + 1} of {v.positions.length}
+      {vehicles.flatMap((v) =>
+        v.positions.map((pos, idx) => {
+          const isDepot = idx === 0;
+          const html = isDepot ? depotHtml() : stopHtml(v.color);
+          const size: [number, number] = isDepot ? [22, 22] : [18, 18];
+          const anchor: [number, number] = isDepot ? [11, 11] : [9, 9];
+          return (
+            <MapMarker
+              key={`stop-${v.vehicleId}-${idx}`}
+              position={pos}
+              icon={html}
+              iconSize={size}
+              iconAnchor={anchor}
+            >
+              <MapPopup>
+                <div className="text-xs">
+                  <div className="font-semibold">
+                    {isDepot ? 'Depot' : `Vehicle ${v.vehicleId}`} stop {idx + 1}
+                  </div>
+                  <div className="text-muted-foreground">
+                    Arrival: {v.nodeTimes[idx]?.toFixed(1) ?? '—'} min
+                  </div>
                 </div>
-                <div className="text-muted-foreground">
-                  Arrival: {v.nodeTimes[idx]?.toFixed(1) ?? '—'} min
-                </div>
-              </div>
-            </MapPopup>
-          </MapMarker>
-        )),
+              </MapPopup>
+            </MapMarker>
+          );
+        }),
       )}
       <HeadsLayer vehicles={vehicles} currentTime={currentTime} />
     </Map>
