@@ -1,0 +1,60 @@
+name: Security Audit
+
+on:
+  schedule:
+    # Weekly, Tuesday 06:00 UTC (after npm's CVE publish cycle).
+    - cron: "0 6 * * 2"
+  workflow_dispatch:
+    # Allow manual triggers from the Actions tab.
+  push:
+    branches: [master, main]
+    paths:
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/fix-tsc-symlink.mjs"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: npm audit (high+)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+      - name: Install dependencies
+        run: npm ci
+      - name: Run npm audit (high+ severity)
+        id: audit
+        # Always exit 0 here so we can post-process and decide.
+        run: |
+          set +e
+          npm audit --audit-level=high --json > audit.json
+          AUDIT_EXIT=$?
+          set -e
+          echo "exit_code=${AUDIT_EXIT}" >> "$GITHUB_OUTPUT"
+        continue-on-error: true
+      - name: Upload audit artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit.json
+          retention-days: 30
+      - name: Fail on high/critical vulnerabilities
+        if: steps.audit.outputs.exit_code != '0'
+        run: |
+          echo "npm audit found high or critical vulnerabilities. See the uploaded artifact."
+          echo "If this is a known false-positive or transitive-only issue, see SECURITY.md."
+          exit 1
+      - name: Summary
+        if: steps.audit.outputs.exit_code == '0'
+        run: |
+          echo "No high or critical vulnerabilities found."
+          cat audit.json | jq '{metadata: .metadata, vulnerabilities: (.vulnerabilities | length)}'
