@@ -16,12 +16,34 @@ const DELHI_CENTER: [number, number] = [28.6139, 77.209];
 
 export interface BuildMapProps {
   referenceOrigin: ReferenceOrigin | null;
+  selectedNodeId: number | null;
+  onSelectNode: (nodeId: number | null) => void;
 }
 
-export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement {
+function nodeLabelHtml(id: number, isDepot: boolean, isSelected: boolean): string {
+  const ring = isSelected
+    ? 'box-shadow: 0 0 0 4px rgba(59,130,246,0.55), 0 0 0 2px rgba(0,0,0,0.4);'
+    : 'box-shadow: 0 0 0 2px rgba(0,0,0,0.4);';
+  const bg = isDepot ? '#0f172a' : isSelected ? '#3b82f6' : '#64748b';
+  return `<div style="
+    width:24px;height:24px;
+    background:${bg};
+    color:white;
+    border:2px solid white;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700;
+    ${ring}
+  ">${id}</div>`;
+}
+
+export function BuildMap({
+  referenceOrigin,
+  selectedNodeId,
+  onSelectNode,
+}: BuildMapProps): React.ReactElement {
   const problem = useProblemStore((s) => s.problem);
   const setProblem = useProblemStore((s) => s.setProblem);
-  const [selectedNodeId, setSelectedNodeId] = React.useState<number | null>(null);
   const layerRef = React.useRef<L.FeatureGroup | null>(null);
 
   const handleMapClick = React.useCallback(
@@ -48,8 +70,8 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
       const marker = L.marker([latLng.lat, latLng.lng], {
         icon: L.divIcon({
           className: 'vrp-draw-marker',
-          iconSize: [18, 18],
-          iconAnchor: [9, 9],
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
         }),
       });
       (marker.options as { markerId?: number }).markerId = nextId;
@@ -63,7 +85,7 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
         const [mx, my] = latLngToMetres(referenceOrigin, ll.lat, ll.lng);
         return [{ id, x: Math.abs(mx), y: Math.abs(my), name: `Node ${id}` }];
       });
-      const depotNodeId = currentProblem?.depotNodeId ?? 0;
+      const depotNodeId = currentProblem?.depotNodeId ?? nodes[0]?.id ?? 0;
       const customers = currentProblem?.customers ?? [];
       const vehicles = currentProblem?.vehicles ?? [{ id: 1, capacity: 100 }];
 
@@ -74,8 +96,9 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
         vehicles,
         referenceOrigin: { lat: referenceOrigin.lat, lng: referenceOrigin.lng },
       });
+      onSelectNode(nextId);
     },
-    [referenceOrigin, setProblem],
+    [referenceOrigin, setProblem, onSelectNode],
   );
 
   const center: [number, number] = React.useMemo(() => {
@@ -109,19 +132,25 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
         if (!effectiveOrigin) return null;
         const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [number, number];
         const isDepot = node.id === depotNodeId;
+        const isSelected = node.id === selectedNodeId;
         return (
           <MapMarker
             key={node.id}
             position={[lat, lng]}
+            icon={nodeLabelHtml(node.id, isDepot, isSelected)}
+            iconSize={[24, 24]}
+            iconAnchor={[12, 12]}
             eventHandlers={{
-              click: () => setSelectedNodeId(node.id),
+              click: () => onSelectNode(node.id),
             }}
           >
             <MapPopup>
               <div className="text-xs">
-                <div className="font-semibold">{node.name ?? `Node ${node.id}`}</div>
-                <div className="text-muted-foreground">
-                  {isDepot ? 'Depot' : `Customer stop #${node.id}`}
+                <div className="font-semibold">
+                  {node.name ?? `Node ${node.id}`}
+                  {isDepot && (
+                    <span className="ml-1 rounded bg-slate-900 px-1.5 text-white">Depot</span>
+                  )}
                 </div>
                 <div className="text-muted-foreground">
                   ({node.x.toFixed(1)}, {node.y.toFixed(1)})
@@ -131,9 +160,9 @@ export function BuildMap({ referenceOrigin }: BuildMapProps): React.ReactElement
           </MapMarker>
         );
       })}
-      {selectedNodeId !== null && (
-        <div className="absolute bottom-2 left-2 z-1000 rounded-md bg-white/90 px-3 py-2 text-xs shadow">
-          Selected: Node {selectedNodeId}
+      {effectiveOrigin && (
+        <div className="absolute right-2 top-2 z-1000 rounded-md bg-white/90 px-3 py-1.5 text-xs shadow">
+          Click the map to drop a node · {nodeList.length} nodes
         </div>
       )}
     </Map>
