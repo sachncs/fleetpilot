@@ -1,4 +1,6 @@
 import { createServer } from 'node:http';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import next from 'next';
 import { ensureSchema } from './lib/db/migrate';
 import { seedDefaultApiKey } from './lib/db/seed';
@@ -7,6 +9,7 @@ import { getPubSub } from './lib/ws/pubsub';
 import { attachWebSocket } from './lib/ws/server';
 import { config } from './lib/config';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 const dev = process.env['NODE_ENV'] !== 'production';
 const hostname = '0.0.0.0';
 const port = config.port;
@@ -32,7 +35,7 @@ async function main(): Promise<void> {
     }
   });
 
-  const app = next({ dev, hostname, port });
+  const app = next({ dev, dir: __dirname, hostname, port });
   const handle = app.getRequestHandler();
 
   await app.prepare();
