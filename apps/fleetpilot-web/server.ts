@@ -8,13 +8,20 @@ import { startWorker, onWorkerMessage, stopWorker } from './lib/worker/spawn';
 import { getPubSub } from './lib/ws/pubsub';
 import { attachWebSocket } from './lib/ws/server';
 import { config } from './lib/config';
+import { isFirstRun } from './lib/config-store';
+import { runOnboarding } from './lib/onboarding';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dev = process.env['NODE_ENV'] !== 'production';
-const hostname = '0.0.0.0';
-const port = config.port;
 
 async function main(): Promise<void> {
+  if (isFirstRun()) {
+    await runOnboarding();
+  }
+
+  const dev = process.env['NODE_ENV'] !== 'production';
+  const hostname = '0.0.0.0';
+  const port = config.port;
+
   console.log('[FleetPilot] Initializing database...');
   await ensureSchema();
 

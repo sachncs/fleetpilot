@@ -1,12 +1,12 @@
-import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { loadConfig } from './config-store';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+const fileConfig = loadConfig();
 
 export const config = {
-  databaseUrl: process.env['DATABASE_URL']?.replace('file:', '') ?? resolve(__dirname, '../data/fleetpilot.db'),
-  maxConcurrentSolves: Number(process.env['MAX_CONCURRENT_SOLVES'] ?? '1'),
-  maxTimeMs: 600_000,
-  maxGenerations: 50_000,
-  port: Number(process.env['PORT'] ?? '3000'),
+  databaseUrl: process.env['DATABASE_URL']?.replace('file:', '') ?? fileConfig.databasePath,
+  dataDir: fileConfig.dataDir,
+  maxConcurrentSolves: Number(process.env['MAX_CONCURRENT_SOLVES'] ?? String(fileConfig.maxConcurrentSolves)),
+  maxTimeMs: fileConfig.maxTimeMs,
+  maxGenerations: fileConfig.maxGenerations,
+  port: Number(process.env['PORT'] ?? String(fileConfig.port)),
 } as const;

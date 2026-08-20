@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { randomBytes } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
+import { config } from '../config';
 
 const POLL_INTERVAL = 1000;
 
@@ -16,9 +17,8 @@ interface Problem {
 }
 
 function getDb() {
-  const dbPath = process.env['DATABASE_URL']?.replace('file:', '') ?? '/app/data/fleetpilot.db';
-  mkdirSync(dbPath.replace(/\/[^/]+$/, ''), { recursive: true });
-  const db = new Database(dbPath);
+  mkdirSync(config.databaseUrl.replace(/\/[^/]+$/, ''), { recursive: true });
+  const db = new Database(config.databaseUrl);
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   return db;

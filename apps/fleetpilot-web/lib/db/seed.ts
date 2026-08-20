@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 import { getDb } from './index';
 import { apiKeys } from './schema';
-import { sql } from 'drizzle-orm';
+import { loadConfig } from '../config-store';
 
 export function generateApiKey(): string {
   return `fp_${randomBytes(32).toString('hex')}`;
@@ -17,13 +17,27 @@ export async function seedDefaultApiKey(): Promise<string | null> {
   const existing = db.select().from(apiKeys).all();
   if (existing.length > 0) return null;
 
+  const cfg = loadConfig();
+  const keyHash = cfg.initialApiKeyHash;
+
+  if (keyHash) {
+    db.insert(apiKeys)
+      .values({
+        id: `key_${randomBytes(16).toString('hex')}`,
+        keyHash,
+        name: 'Default',
+      })
+      .run();
+    return null;
+  }
+
   const rawKey = generateApiKey();
-  const keyHash = hashApiKey(rawKey);
+  const hash = hashApiKey(rawKey);
 
   db.insert(apiKeys)
     .values({
       id: `key_${randomBytes(16).toString('hex')}`,
-      keyHash,
+      keyHash: hash,
       name: 'Default',
     })
     .run();
