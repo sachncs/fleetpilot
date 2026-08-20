@@ -1,0 +1,64 @@
+import { createServer } from 'node:http';
+import next from 'next';
+import { ensureSchema } from './lib/db/migrate';
+import { seedDefaultApiKey } from './lib/db/seed';
+import { startWorker, onWorkerMessage, stopWorker } from './lib/worker/spawn';
+import { getPubSub } from './lib/ws/pubsub';
+import { attachWebSocket } from './lib/ws/server';
+import { config } from './lib/config';
+
+const dev = process.env['NODE_ENV'] !== 'production';
+const hostname = '0.0.0.0';
+const port = config.port;
+
+async function main(): Promise<void> {
+  console.log('[FleetPilot] Initializing database...');
+  await ensureSchema();
+
+  const defaultKey = await seedDefaultApiKey();
+  if (defaultKey) {
+    console.log(`[FleetPilot] Default API key: ${defaultKey}`);
+    console.log('[FleetPilot] Save this key — it will not be shown again.');
+  }
+
+  console.log('[FleetPilot] Starting worker...');
+  startWorker();
+
+  const pubsub = getPubSub();
+  onWorkerMessage((msg) => {
+    const jobId = 'jobId' in msg ? msg.jobId : undefined;
+    if (jobId) {
+      pubsub.publish(jobId, msg);
+    }
+  });
+
+  const app = next({ dev, hostname, port });
+  const handle = app.getRequestHandler();
+
+  await app.prepare();
+
+  const server = createServer((req, res) => {
+    handle(req, res);
+  });
+
+  attachWebSocket(server);
+
+  server.listen(port, hostname, () => {
+    console.log(`[FleetPilot] Ready on http://${hostname}:${port}`);
+  });
+
+  const shutdown = (): void => {
+    console.log('\n[FleetPilot] Shutting down...');
+    stopWorker();
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(1), 5000);
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
+}
+
+main().catch((err) => {
+  console.error('[FleetPilot] Fatal:', err);
+  process.exit(1);
+});
