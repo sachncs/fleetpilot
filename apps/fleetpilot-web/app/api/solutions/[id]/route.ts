@@ -12,14 +12,19 @@ export async function GET(
   const auth = authenticate(_request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
-  const { id } = await params;
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await params;
 
-  const solution = db.select().from(solutions).where(eq(solutions.id, id)).get();
-  if (!solution) {
-    return NextResponse.json({ error: 'Solution not found' }, { status: 404 });
+    const solution = db.select().from(solutions).where(eq(solutions.id, id)).get();
+    if (!solution) {
+      return NextResponse.json({ error: 'Solution not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(solution);
+  } catch (err) {
+    console.error('[API] GET /api/solutions/[id] error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return NextResponse.json(solution);
 }

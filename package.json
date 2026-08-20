@@ -36,6 +36,7 @@
   "packageManager": "npm@11.6.1",
   "scripts": {
     "build": "rollup -c",
+    "build:saas": "npm run build && npm run build -w fleetpilot-web",
     "check-samples": "node scripts/check-samples.mjs",
     "prebuild": "npm run check-samples",
     "dev": "rollup -c -w",

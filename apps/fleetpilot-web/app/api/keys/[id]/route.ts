@@ -12,16 +12,21 @@ export async function DELETE(
   const auth = authenticate(_request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
-  const { id } = await params;
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await params;
 
-  const key = db.select().from(apiKeys).where(eq(apiKeys.id, id)).get();
-  if (!key) {
-    return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+    const key = db.select().from(apiKeys).where(eq(apiKeys.id, id)).get();
+    if (!key) {
+      return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+    }
+
+    db.delete(apiKeys).where(eq(apiKeys.id, id)).run();
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[API] DELETE /api/keys/[id] error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  db.delete(apiKeys).where(eq(apiKeys.id, id)).run();
-
-  return NextResponse.json({ ok: true });
 }

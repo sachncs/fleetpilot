@@ -12,30 +12,35 @@ export async function GET(
   const auth = authenticate(_request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
-  const { id } = await params;
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await params;
 
-  const problem = db.select().from(problems).where(eq(problems.id, id)).get();
-  if (!problem) {
-    return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    const problem = db.select().from(problems).where(eq(problems.id, id)).get();
+    if (!problem) {
+      return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    }
+
+    const problemSolutions = db
+      .select()
+      .from(solutions)
+      .where(eq(solutions.problemId, id))
+      .orderBy(desc(solutions.createdAt))
+      .all();
+
+    const problemJobs = db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.problemId, id))
+      .orderBy(desc(jobs.createdAt))
+      .all();
+
+    return NextResponse.json({ ...problem, solutions: problemSolutions, jobs: problemJobs });
+  } catch (err) {
+    console.error('[API] GET /api/problems/[id] error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  const problemSolutions = db
-    .select()
-    .from(solutions)
-    .where(eq(solutions.problemId, id))
-    .orderBy(desc(solutions.createdAt))
-    .all();
-
-  const problemJobs = db
-    .select()
-    .from(jobs)
-    .where(eq(jobs.problemId, id))
-    .orderBy(desc(jobs.createdAt))
-    .all();
-
-  return NextResponse.json({ ...problem, solutions: problemSolutions, jobs: problemJobs });
 }
 
 export async function DELETE(
@@ -45,16 +50,21 @@ export async function DELETE(
   const auth = authenticate(_request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
-  const { id } = await params;
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await params;
 
-  const problem = db.select().from(problems).where(eq(problems.id, id)).get();
-  if (!problem) {
-    return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    const problem = db.select().from(problems).where(eq(problems.id, id)).get();
+    if (!problem) {
+      return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    }
+
+    db.delete(problems).where(eq(problems.id, id)).run();
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[API] DELETE /api/problems/[id] error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  db.delete(problems).where(eq(problems.id, id)).run();
-
-  return NextResponse.json({ ok: true });
 }

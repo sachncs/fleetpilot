@@ -1,4 +1,3 @@
-import { parentPort } from 'node:worker_threads';
 import Database from 'better-sqlite3';
 import { randomBytes } from 'node:crypto';
 
@@ -87,7 +86,6 @@ async function run() {
       const vrpProblem = new VrpProblem(nodes, customers, vehicles, probData['depotNodeId'] as number);
       const opts = JSON.parse(job.solver_options_json) as Record<string, unknown>;
 
-      const startTime = Date.now();
       const solver = new FleetPilotSolver(vrpProblem);
       const solution = await solver.solve({
         alnsIterations: opts['alnsIterations'] as number,
@@ -157,7 +155,7 @@ async function run() {
 }
 
 function send(msg: unknown): void {
-  parentPort?.postMessage(msg);
+  process.send?.(msg);
 }
 
 function sleep(ms: number): Promise<void> {

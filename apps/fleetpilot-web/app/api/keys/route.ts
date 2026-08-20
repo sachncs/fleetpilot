@@ -11,26 +11,29 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
+  try {
+    await ensureSchema();
+    const db = getDb();
 
-  const rows = db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt)).all();
+    const rows = db.select().from(apiKeys).orderBy(desc(apiKeys.createdAt)).all();
 
-  return NextResponse.json({
-    keys: rows.map((k) => ({
-      id: k.id,
-      name: k.name,
-      createdAt: k.createdAt,
-      lastUsedAt: k.lastUsedAt,
-    })),
-  });
+    return NextResponse.json({
+      keys: rows.map((k) => ({
+        id: k.id,
+        name: k.name,
+        createdAt: k.createdAt,
+        lastUsedAt: k.lastUsedAt,
+      })),
+    });
+  } catch (err) {
+    console.error('[API] GET /api/keys error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
-
-  await ensureSchema();
 
   let body: unknown;
   try {
@@ -44,17 +47,24 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'name is required' }, { status: 400 });
   }
 
-  const rawKey = generateApiKey();
-  const keyHash = hashApiKey(rawKey);
-  const db = getDb();
+  try {
+    await ensureSchema();
 
-  db.insert(apiKeys)
-    .values({
-      id: `key_${randomBytes(16).toString('hex')}`,
-      keyHash,
-      name,
-    })
-    .run();
+    const rawKey = generateApiKey();
+    const keyHash = hashApiKey(rawKey);
+    const db = getDb();
 
-  return NextResponse.json({ key: rawKey, name }, { status: 201 });
+    db.insert(apiKeys)
+      .values({
+        id: `key_${randomBytes(16).toString('hex')}`,
+        keyHash,
+        name,
+      })
+      .run();
+
+    return NextResponse.json({ key: rawKey, name }, { status: 201 });
+  } catch (err) {
+    console.error('[API] POST /api/keys error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

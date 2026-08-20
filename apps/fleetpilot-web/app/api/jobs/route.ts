@@ -12,8 +12,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-
   let body: unknown;
   try {
     body = await request.json();
@@ -30,58 +28,69 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'problemId is required' }, { status: 400 });
   }
 
-  const db = getDb();
-  const problem = db.select().from(problems).where(eq(problems.id, problemId)).get();
-  if (!problem) {
-    return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const problem = db.select().from(problems).where(eq(problems.id, problemId)).get();
+    if (!problem) {
+      return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
+    }
+
+    const opts = {
+      alnsIterations: Math.min(Number(solverOptions?.['alnsIterations'] ?? 200), 5000),
+      populationSize: Math.min(Number(solverOptions?.['populationSize'] ?? 1000), 10000),
+      maxGenerations: Math.min(Number(solverOptions?.['maxGenerations'] ?? 500), config.maxGenerations),
+      maxTimeMs: Math.min(Number(solverOptions?.['maxTimeMs'] ?? 30000), config.maxTimeMs),
+      seed: Number(solverOptions?.['seed'] ?? 1),
+      warmStart: solverOptions?.['warmStart'] !== false,
+    };
+
+    const id = `job_${randomBytes(16).toString('hex')}`;
+    const now = new Date().toISOString();
+
+    db.insert(jobs)
+      .values({
+        id,
+        problemId,
+        status: 'pending',
+        solverOptionsJson: JSON.stringify(opts),
+        createdAt: now,
+      })
+      .run();
+
+    const queue = getJobQueue();
+    queue.enqueue(id);
+
+    const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
+    return NextResponse.json(job, { status: 201 });
+  } catch (err) {
+    console.error('[API] POST /api/jobs error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  const opts = {
-    alnsIterations: Math.min(Number(solverOptions?.['alnsIterations'] ?? 200), 5000),
-    populationSize: Math.min(Number(solverOptions?.['populationSize'] ?? 1000), 10000),
-    maxGenerations: Math.min(Number(solverOptions?.['maxGenerations'] ?? 500), config.maxGenerations),
-    maxTimeMs: Math.min(Number(solverOptions?.['maxTimeMs'] ?? 30000), config.maxTimeMs),
-    seed: Number(solverOptions?.['seed'] ?? 1),
-    warmStart: solverOptions?.['warmStart'] !== false,
-  };
-
-  const id = `job_${randomBytes(16).toString('hex')}`;
-  const now = new Date().toISOString();
-
-  db.insert(jobs)
-    .values({
-      id,
-      problemId,
-      status: 'pending',
-      solverOptionsJson: JSON.stringify(opts),
-      createdAt: now,
-    })
-    .run();
-
-  const queue = getJobQueue();
-  queue.enqueue(id);
-
-  const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
-  return NextResponse.json(job, { status: 201 });
 }
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
+  try {
+    await ensureSchema();
+    const db = getDb();
 
-  const url = new URL(request.url);
-  const status = url.searchParams.get('status');
-  const limit = Math.min(Number(url.searchParams.get('limit') ?? '50'), 100);
-  const offset = Number(url.searchParams.get('offset') ?? '0');
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status');
+    const limit = Math.min(Number(url.searchParams.get('limit') ?? '50'), 100);
+    const offset = Number(url.searchParams.get('offset') ?? '0');
 
-  let rows;
-  if (status) {
-    rows = db.select().from(jobs).where(eq(jobs.status, status as 'pending' | 'running' | 'completed' | 'failed' | 'cancelled')).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset).all();
-  } else {
-    rows = db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset).all();
+    let rows;
+    if (status) {
+      rows = db.select().from(jobs).where(eq(jobs.status, status as 'pending' | 'running' | 'completed' | 'failed' | 'cancelled')).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset).all();
+    } else {
+      rows = db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset).all();
+    }
+    return NextResponse.json({ jobs: rows, limit, offset });
+  } catch (err) {
+    console.error('[API] GET /api/jobs error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-  return NextResponse.json({ jobs: rows, limit, offset });
 }

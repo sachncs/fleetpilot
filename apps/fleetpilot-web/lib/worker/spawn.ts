@@ -1,7 +1,10 @@
 import { fork, type ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
-import { resolve } from 'node:path';
+import { resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { WorkerMessage, ProgressMessage, SolutionMessage, ErrorMessage } from './ipc';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface JobQueue {
   enqueue(jobId: string): void;
@@ -24,7 +27,7 @@ export function onWorkerMessage(handler: (msg: WorkerMessage) => void): () => vo
 export function startWorker(): void {
   if (worker) return;
 
-  const scriptPath = resolve(process.cwd(), 'lib/worker/process.ts');
+  const scriptPath = resolve(__dirname, 'process.ts');
 
   worker = fork(scriptPath, [], {
     execArgv: ['--import', 'tsx/esm'],

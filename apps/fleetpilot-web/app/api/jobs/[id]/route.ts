@@ -12,16 +12,21 @@ export async function GET(
   const auth = authenticate(_request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
-  const { id } = await params;
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await params;
 
-  const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
-  if (!job) {
-    return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
+    if (!job) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(job);
+  } catch (err) {
+    console.error('[API] GET /api/jobs/[id] error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  return NextResponse.json(job);
 }
 
 export async function DELETE(
@@ -31,18 +36,23 @@ export async function DELETE(
   const auth = authenticate(_request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
-  const { id } = await params;
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await params;
 
-  const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
-  if (!job) {
-    return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
+    if (!job) {
+      return NextResponse.json({ error: 'Job not found' }, { status: 404 });
+    }
+
+    if (job.status === 'pending' || job.status === 'running') {
+      db.update(jobs).set({ status: 'cancelled', completedAt: new Date().toISOString() }).where(eq(jobs.id, id)).run();
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[API] DELETE /api/jobs/[id] error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-
-  if (job.status === 'pending' || job.status === 'running') {
-    db.update(jobs).set({ status: 'cancelled', completedAt: new Date().toISOString() }).where(eq(jobs.id, id)).run();
-  }
-
-  return NextResponse.json({ ok: true });
 }

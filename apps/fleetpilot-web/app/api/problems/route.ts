@@ -10,25 +10,27 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
 
-  await ensureSchema();
-  const db = getDb();
+  try {
+    await ensureSchema();
+    const db = getDb();
 
-  const url = new URL(request.url);
-  const limit = Math.min(Number(url.searchParams.get('limit') ?? '50'), 100);
-  const offset = Number(url.searchParams.get('offset') ?? '0');
+    const url = new URL(request.url);
+    const limit = Math.min(Number(url.searchParams.get('limit') ?? '50'), 100);
+    const offset = Number(url.searchParams.get('offset') ?? '0');
 
-  const rows = db.select().from(problems).orderBy(desc(problems.createdAt)).limit(limit).offset(offset).all();
-  const total = db.select({ count: problems.id }).from(problems).all().length;
+    const rows = db.select().from(problems).orderBy(desc(problems.createdAt)).limit(limit).offset(offset).all();
+    const total = db.select({ count: problems.id }).from(problems).all().length;
 
-  return NextResponse.json({ problems: rows, total, limit, offset });
+    return NextResponse.json({ problems: rows, total, limit, offset });
+  } catch (err) {
+    console.error('[API] GET /api/problems error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
-
-  await ensureSchema();
-  const db = getDb();
 
   let body: unknown;
   try {
@@ -47,32 +49,40 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'problemJson is required' }, { status: 400 });
   }
 
-  const pj = problemJson as Record<string, unknown>;
-  const nodes = Array.isArray(pj['nodes'])
-    ? (pj['nodes'] as unknown[])
-    : pj['nodes']
-      ? Object.values(pj['nodes'] as Record<string, unknown>)
-      : [];
-  const customers = Array.isArray(pj['customers']) ? (pj['customers'] as unknown[]) : [];
-  const vehicles = Array.isArray(pj['vehicles']) ? (pj['vehicles'] as unknown[]) : [];
+  try {
+    await ensureSchema();
+    const db = getDb();
 
-  const id = `prob_${randomBytes(16).toString('hex')}`;
-  const now = new Date().toISOString();
+    const pj = problemJson as Record<string, unknown>;
+    const nodes = Array.isArray(pj['nodes'])
+      ? (pj['nodes'] as unknown[])
+      : pj['nodes']
+        ? Object.values(pj['nodes'] as Record<string, unknown>)
+        : [];
+    const customers = Array.isArray(pj['customers']) ? (pj['customers'] as unknown[]) : [];
+    const vehicles = Array.isArray(pj['vehicles']) ? (pj['vehicles'] as unknown[]) : [];
 
-  db.insert(problems)
-    .values({
-      id,
-      name: name ?? `Problem ${id.slice(-8)}`,
-      description: description ?? null,
-      problemJson: JSON.stringify(problemJson),
-      nodeCount: nodes.length,
-      customerCount: customers.length,
-      vehicleCount: vehicles.length,
-      createdAt: now,
-      updatedAt: now,
-    })
-    .run();
+    const id = `prob_${randomBytes(16).toString('hex')}`;
+    const now = new Date().toISOString();
 
-  const created = db.select().from(problems).where(eq(problems.id, id)).get();
-  return NextResponse.json(created, { status: 201 });
+    db.insert(problems)
+      .values({
+        id,
+        name: name ?? `Problem ${id.slice(-8)}`,
+        description: description ?? null,
+        problemJson: JSON.stringify(problemJson),
+        nodeCount: nodes.length,
+        customerCount: customers.length,
+        vehicleCount: vehicles.length,
+        createdAt: now,
+        updatedAt: now,
+      })
+      .run();
+
+    const created = db.select().from(problems).where(eq(problems.id, id)).get();
+    return NextResponse.json(created, { status: 201 });
+  } catch (err) {
+    console.error('[API] POST /api/problems error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

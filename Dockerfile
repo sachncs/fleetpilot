@@ -37,13 +37,13 @@ WORKDIR /app
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/samples ./samples
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/fleetpilot-web ./apps/fleetpilot-web
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chown -R node:node /app/data /app/apps/fleetpilot-web
 
 EXPOSE 3000
 
 USER node
 
-CMD ["npx", "tsx", "apps/fleetpilot-web/server.ts"]
+CMD ["node", "--import", "tsx/esm", "apps/fleetpilot-web/server.ts"]

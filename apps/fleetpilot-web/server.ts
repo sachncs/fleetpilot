@@ -41,7 +41,7 @@ async function main(): Promise<void> {
     handle(req, res);
   });
 
-  attachWebSocket(server);
+  const wss = attachWebSocket(server);
 
   server.listen(port, hostname, () => {
     console.log(`[FleetPilot] Ready on http://${hostname}:${port}`);
@@ -50,12 +50,20 @@ async function main(): Promise<void> {
   const shutdown = (): void => {
     console.log('\n[FleetPilot] Shutting down...');
     stopWorker();
+    wss.close();
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(1), 5000);
   };
 
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
+  process.on('unhandledRejection', (err) => {
+    console.error('[FleetPilot] Unhandled rejection:', err);
+  });
+  process.on('uncaughtException', (err) => {
+    console.error('[FleetPilot] Uncaught exception:', err);
+    shutdown();
+  });
 }
 
 main().catch((err) => {
