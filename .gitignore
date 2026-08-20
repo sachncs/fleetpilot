@@ -3,6 +3,7 @@ dist/
 coverage/
 docs/api/
 docs/md/
+data/
 *.log
 .DS_Store
 .vscode/

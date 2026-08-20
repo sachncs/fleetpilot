@@ -1,7 +1,5 @@
 # syntax=docker/dockerfile:1.7
 # FleetPilot — SaaS Docker image
-# Stage 1: build the library + web app.
-# Stage 2: runtime image with everything.
 
 ARG NODE_VERSION=20.20.0-alpine
 
@@ -11,16 +9,16 @@ FROM node:${NODE_VERSION} AS builder
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-COPY apps/vrp-web/package.json apps/vrp-web/
+COPY apps/fleetpilot-web/package.json apps/fleetpilot-web/
 RUN npm ci --no-audit --no-fund
 
-COPY tsconfig.json rollup.config.mjs eslint.config.mjs ./
+COPY tsconfig.json rollup.config.mjs ./
 COPY src ./src
 COPY samples ./samples
-COPY apps/vrp-web ./apps/vrp-web
+COPY apps/fleetpilot-web ./apps/fleetpilot-web
 
 RUN npm run build
-RUN npm run build -w vrp-web
+RUN npm run build -w fleetpilot-web
 
 # ---- Stage 2: runtime ---------------------------------------------------
 FROM node:${NODE_VERSION} AS runtime
@@ -40,13 +38,7 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/samples ./samples
-COPY --from=builder /app/apps/vrp-web/.next/standalone ./
-COPY --from=builder /app/apps/vrp-web/.next/static ./apps/vrp-web/.next/static
-COPY --from=builder /app/apps/vrp-web/public ./apps/vrp-web/public
-COPY --from=builder /app/apps/vrp-web/server.ts ./apps/vrp-web/server.ts
-COPY --from=builder /app/apps/vrp-web/lib ./apps/vrp-web/lib
-COPY --from=builder /app/apps/vrp-web/next.config.mjs ./apps/vrp-web/next.config.mjs
-COPY --from=builder /app/apps/vrp-web/tsconfig.json ./apps/vrp-web/tsconfig.json
+COPY --from=builder /app/apps/fleetpilot-web ./apps/fleetpilot-web
 
 RUN mkdir -p /app/data
 
@@ -54,4 +46,4 @@ EXPOSE 3000
 
 USER node
 
-CMD ["node", "apps/vrp-web/server.ts"]
+CMD ["npx", "tsx", "apps/fleetpilot-web/server.ts"]
