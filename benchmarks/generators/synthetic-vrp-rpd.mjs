@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Synthetic generator for paper-range VRP-RPD-style instances (Tier 6 filler).
+// Synthetic generator for paper-range FleetPilot-style instances (Tier 6 filler).
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';

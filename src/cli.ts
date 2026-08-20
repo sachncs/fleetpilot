@@ -10,7 +10,7 @@ import {
   Vehicle,
   MultiDepotProblem,
   Depot,
-  VrpRpdSolver,
+  FleetPilotSolver,
   ValidationError,
 } from './index.js';
 
@@ -204,9 +204,9 @@ function parseProblem(
 }
 
 function usage(): void {
-  console.log(`vrp-solver v${VERSION} — Route optimization for delivery fleets
+  console.log(`fleetpilot v${VERSION} — Route optimization for delivery fleets
 
-Usage: vrp-solver [options]
+Usage: fleetpilot [options]
 
 Required:
   --problem <file>          Path to problem JSON file
@@ -231,9 +231,9 @@ Info:
   --help                    Show this help message
 
 Examples:
-  vrp-solver --problem problem.json --output solution.json
-  vrp-solver --problem problem.json --max-time 30000 --progress
-  vrp-solver --problem samples/mumbai-20.json --seed 42
+  fleetpilot --problem problem.json --output solution.json
+  fleetpilot --problem problem.json --max-time 30000 --progress
+  fleetpilot --problem samples/mumbai-20.json --seed 42
 `);
 }
 
@@ -291,7 +291,7 @@ async function main(): Promise<void> {
   const problemArg = args['problem'];
   if (!problemArg || typeof problemArg !== 'string') {
     console.error('Error: --problem <file> is required');
-    console.error('Run vrp-solver --help for usage information');
+    console.error('Run fleetpilot --help for usage information');
     process.exit(1);
   }
 
@@ -329,7 +329,7 @@ async function main(): Promise<void> {
   console.error('Starting solver...');
 
   const solverProblem = problem instanceof MultiDepotProblem ? problem.toVrpProblem() : problem;
-  const solver = new VrpRpdSolver(solverProblem);
+  const solver = new FleetPilotSolver(solverProblem);
 
   const options: Parameters<typeof solver.solve>[0] = {
     alnsIterations: parseNumericArg(args['alnsiterations'], 'alns-iterations'),

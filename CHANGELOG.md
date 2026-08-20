@@ -50,7 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - **Island-model BRKGA** - Multi-population parallel evolution via `worker_threads` with `IslandMessenger` for elite migration between islands
-- **CLI** - Command-line solver with JSON input/output (`vrp-solver`)
+- **CLI** - Command-line solver with JSON input/output (`fleetpilot`)
 - **Solution serialization** - `serialize()` and `deserialize()` on `VrpSolution`
 - **Solver capabilities** - `maxTimeMs`, `targetMakespan`, progress callbacks
 - **Benchmark tests** - Performance and scalability validation
@@ -85,7 +85,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Converted entire codebase from JavaScript to TypeScript
 - Updated ALNS default parameters to paper specs
 - Enhanced `Solution` class with multi-objective tracking
-- `VrpRpdSolver` accepts optional `Logger` in constructor
+- `FleetPilotSolver` accepts optional `Logger` in constructor
 - Rollup build produces ESM + CJS + `.d.ts` type declarations
 - File names renamed to kebab-case per Google TypeScript Style Guide
 

@@ -85,15 +85,15 @@ See `../../runner/adapters.ts`. The Li & Lim adapter:
 5. Sets the depot node to the node with id 0.
 
 **Important:** In Li & Lim PDPTW, the temporal order is pickup → delivery.
-In VRP-RPD, the temporal order is delivery → pickup (the goods are
+In FleetPilot, the temporal order is delivery → pickup (the goods are
 delivered, processed, then picked up). The adapter flips the roles but
 **does not flip the temporal constraint** — the solver's
 `arrivalTime(P_c) >= arrivalTime(D_c) + processingTime` translates to
-`arrivalTime(VrpRPD_pickup) >= arrivalTime(VrpRPD_delivery) + processingTime`.
-The instance service times become VRP-RPD processing times.
+`arrivalTime(FleetPilot_pickup) >= arrivalTime(FleetPilot_delivery) + processingTime`.
+The instance service times become FleetPilot processing times.
 
 This inversion is intentional. The structural problem (paired nodes with
 ordering constraint + TW + capacity) is preserved; the temporal direction
-is the VRP-RPD convention. We do not claim the resulting makespan is
+is the FleetPilot convention. We do not claim the resulting makespan is
 comparable to the Li & Lim published BKS — see `docs/benchmarks.md` for the
 disclaimer.

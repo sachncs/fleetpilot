@@ -1,7 +1,7 @@
 {
-  "name": "vehicle-routing",
+  "name": "fleetpilot",
   "version": "1.2.0",
-  "description": "VRP-RPD solver for Indian logistics: route optimization with ALNS + BRKGA metaheuristics, time windows, multi-depot, and traffic-aware routing",
+  "description": "FleetPilot — Route optimization with ALNS + BRKGA metaheuristics, time windows, multi-depot, and traffic-aware routing",
   "type": "module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
@@ -19,7 +19,7 @@
     }
   },
   "bin": {
-    "vrp-solver": "./dist/cli.mjs"
+    "fleetpilot": "./dist/cli.mjs"
   },
   "files": [
     "dist",
@@ -57,8 +57,8 @@
     "sbom": "npm sbom --sbom-format=spdxjson --sbom-spec-version=1.0 --output-file sbom.spdx.json",
     "sbom:cyclonedx": "npx @cyclonedx/cyclonedx-npm --output-format JSON --output-file sbom.cdx.json",
     "audit": "npm audit --audit-level=high",
-    "docker:build": "docker build -t vehicle-routing:test .",
-    "docker:run": "docker run --rm -it -v \"${PWD}/samples:/app/samples:ro\" vehicle-routing:test",
+    "docker:build": "docker build -t fleetpilot:test .",
+    "docker:run": "docker run --rm -it -v \"${PWD}/samples:/app/samples:ro\" fleetpilot:test",
     "docker:smoke": "bash scripts/docker-smoke.sh",
     "benchmark:vroom": "tsx benchmarks/vroom-baseline.ts",
     "release": "bash scripts/release.sh",
@@ -88,7 +88,7 @@
   },
   "keywords": [
     "vrp",
-    "vehicle-routing",
+    "fleetpilot",
     "route-optimization",
     "logistics",
     "last-mile",

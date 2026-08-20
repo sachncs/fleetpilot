@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { Decoder, type Chromosome } from '../src/algorithms/brkga/decoder.js';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { VrpRpdSolver } from '../src/index.js';
+import { FleetPilotSolver } from '../src/index.js';
 
 describe('Benchmarks', () => {
   function generateGridProblem(size: number): VrpProblem {
@@ -33,7 +33,7 @@ describe('Benchmarks', () => {
 
   it('should solve 20-customer instance and produce feasible solution', async () => {
     const problem = generateGridProblem(40); // 40 nodes = 20 customers
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
 
     const solution = await solver.solve({
       alnsIterations: 100,
@@ -58,7 +58,7 @@ describe('Benchmarks', () => {
 
   it('should solve 50-customer instance and produce feasible solution', async () => {
     const problem = generateGridProblem(100); // 100 nodes = 50 customers
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
 
     const solution = await solver.solve({
       alnsIterations: 50,
@@ -74,7 +74,7 @@ describe('Benchmarks', () => {
 
   it('should respect target makespan early stopping', async () => {
     const problem = generateGridProblem(40); // 40 nodes = 20 customers
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
 
     const solution = await solver.solve({
       alnsIterations: 500,
@@ -90,7 +90,7 @@ describe('Benchmarks', () => {
 
   it('should handle timeout gracefully', async () => {
     const problem = generateGridProblem(40); // 40 nodes = 20 customers
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
 
     const solution = await solver.solve({
       alnsIterations: 500,

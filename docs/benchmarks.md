@@ -1,6 +1,6 @@
 # Benchmarks
 
-Reproducible benchmark suite for the VRP-RPD solver. Five canonical benchmark
+Reproducible benchmark suite for FleetPilot. Five canonical benchmark
 families plus a synthetic-Tier-6 filler. The suite is **not** a paper-parity
 claim — it is a fixed baseline for regression detection and a feature-coverage
 matrix.

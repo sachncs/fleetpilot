@@ -58,7 +58,7 @@ export class Route {
 }
 
 /**
- * Represents a full solution to the VRP-RPD problem.
+ * Represents a full solution to the FleetPilot problem.
  */
 export class VrpSolution {
   routes: Route[];

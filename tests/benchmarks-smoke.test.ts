@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
 
 import { ADAPTERS, type Family } from '../benchmarks/runner/adapters.js';
-import { VrpRpdSolver } from '../src/index.js';
+import { FleetPilotSolver } from '../src/index.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -57,7 +57,7 @@ describe('Benchmark smoke (smallest instance per family)', function () {
       const adapter = ADAPTERS[family];
       const parsed = adapter.parse(instancePath);
       const problem = adapter.toVrpProblem(parsed);
-      const solver = new VrpRpdSolver(problem);
+      const solver = new FleetPilotSolver(problem);
       const solution = await solver.solve({
         maxTimeMs: 10_000,
         alnsIterations: 50,

@@ -8,7 +8,7 @@ import type { KmlPlacemark } from './kml-placemark.js';
 export type { GeoJson, GeoJsonFeature, KmlPlacemark };
 
 /**
- * Exports VRP-RPD solutions to GIS formats (GeoJson, KML).
+ * Exports FleetPilot solutions to GIS formats (GeoJson, KML).
  */
 export class GISExporter {
   /**
@@ -156,7 +156,7 @@ export class GISExporter {
     let kml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     kml += '<kml xmlns="http://www.opengis.net/kml/2.2">\n';
     kml += '<Document>\n';
-    kml += '  <name>VRP-RPD Solution</name>\n';
+    kml += '  <name>FleetPilot Solution</name>\n';
 
     for (const pm of placemarks) {
       kml += '  <Placemark>\n';

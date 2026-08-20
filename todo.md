@@ -1,4 +1,4 @@
-# VRP-RPD Remediation Plan
+# FleetPilot Remediation Plan
 
 Itemized atomic plan. Each item is one commit-sized change, independently verifiable. Dependencies noted inline.
 
@@ -11,7 +11,7 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 ## WS-1 · Worker infrastructure (findings #1, #2, #17 — P0)
 
 - [x] **1.1** Add rollup entry for `src/worker.ts` → `dist/worker.js` — `rollup.config.mjs` — Verify: build emits it; 0.3 passes.
-- [x] **1.2** Resolve worker path from `import.meta.url`/`__dirname` (not `process.cwd()`), add `VRP_WORKER_PATH` env override — `src/index.ts`, `src/algorithms/brkga/brkga.ts` — Verify: parallel solve works from any cwd; override test passes.
+- [x] **1.2** Resolve worker path from `import.meta.url`/`__dirname` (not `process.cwd()`), add `FLEETPILOT_WORKER_PATH` env override — `src/index.ts`, `src/algorithms/brkga/brkga.ts` — Verify: parallel solve works from any cwd; override test passes.
 - [x] **1.3** Serialize full problem to worker (depots, time windows, cost/CO₂, traffic) — `src/worker-validation.ts`, `src/worker.ts` — Verify: parallel result == serial result on a TW+cost+CO₂ problem.
 - [x] **1.4** Real parallel integration test (spawn actual workers via override) — new `tests/parallel.integration.test.ts` — Verify: 2 workers actually run (assert via progress logging), result better than serial fallback.
 - [x] **1.5** Remove silent island fallback — rethrow instead of catch-and-degrade — `src/algorithms/brkga/brkga.ts:507` — Verify: missing worker now throws loudly; island tests updated to expect that.
@@ -20,7 +20,7 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 
 - [x] **2.1** Traffic fallback to Euclidean distance when segment unconfigured; fix the buggy assertion — `src/core/traffic-aware-problem.ts:54`, `tests/comprehensive.test.ts:233` — Verify: test now expects ~10, not 0.
 - [x] **2.2** BRKGA feasible-only hall-of-fame — `src/algorithms/brkga/brkga.ts` — Verify: test with infeasible candidates; returned solution `isFeasible()`.
-- [x] **2.3** Feasibility gate in `VrpRpdSolver.solve` → throw `InfeasibleSolutionError` — `src/index.ts:222` — Verify: impossible-problem test throws typed error.
+- [x] **2.3** Feasibility gate in `FleetPilotSolver.solve` → throw `InfeasibleSolutionError` — `src/index.ts:222` — Verify: impossible-problem test throws typed error.
 - [x] **2.4** Route pickups on the actual delivering vehicle — `src/algorithms/brkga/decoder.ts:139` — Verify: test asserts pickup shares route with its delivery.
 - [x] **2.5** Decoder throws (not drops) when a customer can't be placed — `decoder.ts` — Verify: over-capacity test throws `ValidationError`.
 - [x] **2.6** β-gene honesty: shrink to 3n (D1: small option) and document — `decoder.ts`, `brkga.ts` — Verify: no dead genes; chrom length matches docs.
@@ -68,7 +68,7 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 ## Decisions (gate dependent items)
 
 - **D1** β genes: shrink to 3n (chosen). Chromosome now honest (π, σ, α).
-- **D2** Islands: wire into `VrpRpdSolver` (chosen). `SolveOptions` carries `islands`/`migrationInterval`/`migrantFraction`.
+- **D2** Islands: wire into `FleetPilotSolver` (chosen). `SolveOptions` carries `islands`/`migrationInterval`/`migrantFraction`.
 - **D3** Demo/examples: delete demo, keep examples (chosen). `demo/` removed; `examples/transfer-example.ts` repaired.
 - **D4** Community docs: unlink (chosen). README Contributing/Security sections are now inline.
 - **D5** Multi-type files: extract public API only (chosen). `errors/*` extracted; cohesive public files kept as-is.

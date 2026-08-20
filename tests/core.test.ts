@@ -4,7 +4,7 @@ import { ALNS } from '../src/algorithms/alns/alns.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { VrpSolution, Route } from '../src/core/solution.js';
-import { VrpRpdSolver } from '../src/index.js';
+import { FleetPilotSolver } from '../src/index.js';
 
 describe('Problem', () => {
   it('should create a problem instance', () => {
@@ -238,7 +238,7 @@ describe('BRKGA', () => {
   });
 });
 
-describe('VrpRpdSolver', () => {
+describe('FleetPilotSolver', () => {
   it('should solve with both algorithms', async () => {
     const nodes: Record<number, LocationNode> = {
       0: new LocationNode(0, 0, 0, 'Depot'),
@@ -249,7 +249,7 @@ describe('VrpRpdSolver', () => {
     const vehicles = [new Vehicle(1, 5)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
     const solution = await solver.solve({ alnsIterations: 10, maxGenerations: 10 });
 
     expect(solution.isFeasible()).to.be.true;
@@ -268,7 +268,7 @@ describe('VrpRpdSolver', () => {
     const vehicles = [new Vehicle(1, 10)];
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
     const start = Date.now();
     const solution = await solver.solve({ maxTimeMs: 1 });
     const elapsed = Date.now() - start;
@@ -288,7 +288,7 @@ describe('VrpRpdSolver', () => {
     const problem = new VrpProblem(nodes, customers, vehicles, 0);
 
     const progressCalls: Array<{ stage: string; iteration: number }> = [];
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
     await solver.solve({
       alnsIterations: 50,
       maxGenerations: 100,

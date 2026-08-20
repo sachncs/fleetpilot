@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
 
 import type { VrpProblem, Vehicle, Customer, LocationNode } from '../src/core/problem.js';
-import type { VrpRpdSolver } from '../src/index.js';
+import type { FleetPilotSolver } from '../src/index.js';
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
 const distIndex = path.join(root, 'dist', 'index.mjs');
@@ -24,14 +24,14 @@ describe('Dist smoke test', () => {
 
   it('dist/index.mjs loads and solves a tiny problem', async () => {
     const mod = (await import(distIndex)) as unknown as {
-      VrpRpdSolver: typeof VrpRpdSolver;
+      FleetPilotSolver: typeof FleetPilotSolver;
       VrpProblem: typeof VrpProblem;
       Vehicle: typeof Vehicle;
       Customer: typeof Customer;
       LocationNode: typeof LocationNode;
     };
     const {
-      VrpRpdSolver: DistSolver,
+      FleetPilotSolver: DistSolver,
       VrpProblem: DistProblem,
       Vehicle: DistVehicle,
       Customer: DistCustomer,

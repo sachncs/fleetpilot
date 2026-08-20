@@ -22,7 +22,7 @@ export class Depot {
 }
 
 /**
- * Multi-depot VRP-RPD problem instance.
+ * Multi-depot FleetPilot problem instance.
  * Vehicles can start and end at different depots.
  */
 export class MultiDepotProblem {

@@ -20,7 +20,7 @@ export class LocationNode {
 
 /**
  * Represents a customer with a delivery and a pickup requirement.
- * In VRP-RPD, the resource is delivered to D_c, processed for p_c, and then picked up at P_c.
+ * In FleetPilot, the resource is delivered to D_c, processed for p_c, and then picked up at P_c.
  */
 export class Customer {
   /**

@@ -54,7 +54,7 @@ function updateLoad(load: RouteLoad, type: 'delivery' | 'pickup'): void {
  */
 export class Decoder {
   /**
-   * @param problem - The VRP-RPD instance this decoder translates chromosomes against
+   * @param problem - The FleetPilot instance this decoder translates chromosomes against
    */
   constructor(private readonly problem: VrpProblem) {}
 

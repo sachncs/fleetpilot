@@ -5,7 +5,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { VrpRpdSolver } from '../../src/index.js';
+import { FleetPilotSolver } from '../../src/index.js';
 import { ADAPTERS, type Family } from './adapters.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -131,7 +131,7 @@ async function main(): Promise<void> {
   const adapter = ADAPTERS[args.family];
   const parsed = adapter.parse(instancePath);
   const problem = adapter.toVrpProblem(parsed);
-  const solver = new VrpRpdSolver(problem);
+  const solver = new FleetPilotSolver(problem);
   const start = Date.now();
   let solution;
   try {

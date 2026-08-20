@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# docker-smoke.sh — Build the image and run vrp-solver inside, asserting
+# docker-smoke.sh — Build the image and run fleetpilot inside, asserting
 # the output is a valid JSON solution.
 #
 # Usage: scripts/docker-smoke.sh
@@ -7,15 +7,15 @@
 
 set -euo pipefail
 
-IMAGE="${IMAGE:-vehicle-routing:test}"
+IMAGE="${IMAGE:-fleetpilot:test}"
 SAMPLE="${SAMPLE:-samples/delhi-10.json}"
-TMP_OUT="$(mktemp -t vrpsmoke.XXXXXX.json)"
+TMP_OUT="$(mktemp -t fleetpilot-smoke.XXXXXX.json)"
 trap 'rm -f "$TMP_OUT"' EXIT
 
 echo ">> Building $IMAGE..."
 docker build -t "$IMAGE" .
 
-echo ">> Running vrp-solver inside $IMAGE on $SAMPLE..."
+echo ">> Running fleetpilot inside $IMAGE on $SAMPLE..."
 docker run --rm \
   -v "${PWD}/samples:/app/samples:ro" \
   "$IMAGE" \

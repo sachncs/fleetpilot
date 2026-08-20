@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Synthetic generator for DARP-style instances, mapped to VRP-RPD shape.
+// Synthetic generator for DARP-style instances, mapped to FleetPilot shape.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';

@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The `vehicle-routing` npm package is the only artifact covered by this policy.
+The `fleetpilot` npm package is the only artifact covered by this policy.
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -14,8 +14,8 @@ The `vehicle-routing` npm package is the only artifact covered by this policy.
 
 In scope:
 
-- The `vehicle-routing` package published to npm (ESM, CJS, type definitions, browser worker bundle).
-- The `vrp-solver` CLI binary shipped with the package.
+- The `fleetpilot` package published to npm (ESM, CJS, type definitions, browser worker bundle).
+- The `fleetpilot` CLI binary shipped with the package.
 - The `dist/worker.js` and `dist/worker.browser.js` worker bundles.
 
 Out of scope:

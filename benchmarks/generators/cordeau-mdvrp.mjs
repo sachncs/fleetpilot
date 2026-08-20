@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Synthetic generator for Cordeau MDVRP-style instances.
-// Writes JSON files in VRP-RPD shape so the adapter can be a passthrough.
+// Writes JSON files in FleetPilot shape so the adapter can be a passthrough.
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';

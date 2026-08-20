@@ -51,12 +51,12 @@ describe('CLI smoke against samples', () => {
     // it is covered by the dedicated time-window tests in tests/abort.test.ts
     // and tests/comprehensive.test.ts.
     if (name === 'time-windows.json') {
-      it(`vrp-solver solves ${name} (--max-time 10000) — SKIPPED (tight time windows)`, function () {
+      it(`fleetpilot solves ${name} (--max-time 10000) — SKIPPED (tight time windows)`, function () {
         this.skip();
       });
       continue;
     }
-    it(`vrp-solver solves ${name} (--max-time 10000)`, function () {
+    it(`fleetpilot solves ${name} (--max-time 10000)`, function () {
       this.timeout(60_000);
       const result = spawnSync(
         process.execPath,
@@ -79,7 +79,7 @@ describe('CLI smoke against samples', () => {
           cwd: root,
           encoding: 'utf8',
           timeout: 50_000,
-          env: { ...process.env, VRP_WORKER_PATH: '' },
+          env: { ...process.env, FLEETPILOT_WORKER_PATH: '' },
         },
       );
 

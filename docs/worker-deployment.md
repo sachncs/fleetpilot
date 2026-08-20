@@ -61,7 +61,7 @@ worker pool will leak if you don't also call `AbortController#abort()`. The
 bundle exports `AbortError` for explicit handling:
 
 ```typescript
-import { VrpRpdSolver, AbortError } from 'vehicle-routing';
+import { FleetPilotSolver, AbortError } from 'fleetpilot';
 
 try {
   const solution = await solver.solve({ signal: controller.signal });
@@ -80,17 +80,17 @@ The orchestrator locates the worker bundle via `import.meta.url` (Node) or
 relative URL (browser). When the package is bundled into a single file
 (e.g. via `esbuild --bundle`), the worker path resolution may break.
 
-Override the path with the `VRP_WORKER_PATH` environment variable:
+Override the path with the `FLEETPILOT_WORKER_PATH` environment variable:
 
 ```bash
-VRP_WORKER_PATH=/abs/path/to/dist/worker.js node your-solver.js
+FLEETPILOT_WORKER_PATH=/abs/path/to/dist/worker.js node your-solver.js
 ```
 
 For browser bundlers, the browser worker at `dist/worker.browser.js` is
 selected via the `worker` export condition:
 
 ```js
-import workerUrl from 'vehicle-routing/worker';
+import workerUrl from 'fleetpilot/worker';
 ```
 
 Vite and Webpack both honour this; Rollup users should add the `worker`
@@ -133,13 +133,13 @@ The `onProgress` callback receives `SolverProgress` events with `stage`
 `bestMakespan`, and `elapsedMs`. For production, consider:
 
 - Logging `stage`, `iteration`, `bestMakespan` to a structured logger.
-- Emitting Prometheus metrics: `vrp_solver_iterations_total`,
-  `vrp_solver_best_makespan`, `vrp_solver_elapsed_seconds`.
+- Emitting Prometheus metrics: `fleetpilot_solver_iterations_total`,
+  `fleetpilot_solver_best_makespan`, `fleetpilot_solver_elapsed_seconds`.
 - Sampling progress (every N iterations) to avoid log volume.
 
 ## 8. Anti-patterns
 
-- **Don't share `VrpRpdSolver` instances across requests.** Each instance
+- **Don't share `FleetPilotSolver` instances across requests.** Each instance
   owns a worker pool that is sized for that solve; sharing would deadlock.
 - **Don't set `parallel: true` and `islands: 2+` together.** The semantics
   overlap (parallel-mode already forks ALNS+BRKGA); the doubling buys nothing
@@ -152,10 +152,10 @@ The `onProgress` callback receives `SolverProgress` events with `stage`
 ```bash
 # Confirms the worker bundle exists and a parallel solve returns.
 node -e "
-  const { VrpRpdSolver, VrpProblem, LocationNode, Customer, Vehicle } = require('vehicle-routing');
+  const { FleetPilotSolver, VrpProblem, LocationNode, Customer, Vehicle } = require('fleetpilot');
   const nodes = { 0: new LocationNode(0,0,0,'D'), 1: new LocationNode(1,10,0,'D1'), 2: new LocationNode(2,20,0,'P1') };
   const problem = new VrpProblem(nodes, [new Customer(1,1,2,5)], [new Vehicle(1,10)]);
-  new VrpRpdSolver(problem).solve({ parallel: true, maxTimeMs: 5000 })
+  new FleetPilotSolver(problem).solve({ parallel: true, maxTimeMs: 5000 })
     .then(s => console.log('OK', s.makespan))
     .catch(e => { console.error('FAIL', e); process.exit(1); });
 "

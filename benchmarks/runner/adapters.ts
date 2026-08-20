@@ -77,7 +77,7 @@ export function liLimToVrpProblem(parsed: LiLimInstance): VrpProblem {
       if (!partner) {
         throw new Error(`Li & Lim node ${n.id} has no paired delivery node ${n.pairedNodeId}`);
       }
-      // VRP-RPD swap: n is the VRP-RPD delivery, partner is the VRP-RPD pickup.
+      // FleetPilot swap: n is the FleetPilot delivery, partner is the FleetPilot pickup.
       customers.push(
         new Customer(
           custId++,
@@ -199,19 +199,19 @@ export function solomonToVrpProblem(parsed: SolomonInstance): VrpProblem {
 }
 
 // ============================================================================
-// VRP-RPD native JSON (Cordeau, DARP, Salhi-Nagy, synthetic)
+// FleetPilot native JSON (Cordeau, DARP, Salhi-Nagy, synthetic)
 // ============================================================================
 
-export interface VrpRpdJsonNode {
+export interface FleetPilotJsonNode {
   id: number;
   x: number;
   y: number;
   name?: string;
 }
 
-export interface VrpRpdJsonShape {
+export interface FleetPilotJsonShape {
   depotNodeId: number;
-  nodes: Array<VrpRpdJsonNode> | Record<string, VrpRpdJsonNode>;
+  nodes: Array<FleetPilotJsonNode> | Record<string, FleetPilotJsonNode>;
   customers: Array<{
     id: number;
     deliveryNodeId: number;
@@ -231,12 +231,12 @@ export interface VrpRpdJsonShape {
   depots?: Array<{ id: number; x: number; y: number; name?: string }>;
 }
 
-export function parseVrpRpdJson(filePath: string): VrpRpdJsonShape {
-  const data = JSON.parse(readFileSync(filePath, 'utf8')) as VrpRpdJsonShape;
+export function parseFleetPilotJson(filePath: string): FleetPilotJsonShape {
+  const data = JSON.parse(readFileSync(filePath, 'utf8')) as FleetPilotJsonShape;
   return data;
 }
 
-export function vrpRpdJsonToVrpProblem(parsed: VrpRpdJsonShape): VrpProblem {
+export function fleetPilotJsonToVrpProblem(parsed: FleetPilotJsonShape): VrpProblem {
   const nodes: Record<number, LocationNode> = {};
   const nodeList = Array.isArray(parsed.nodes)
     ? parsed.nodes
@@ -298,8 +298,8 @@ export interface FamilyAdapter {
 export const ADAPTERS: Record<Family, FamilyAdapter> = {
   'lilim': { parse: parseLiLim as FamilyAdapter['parse'], toVrpProblem: liLimToVrpProblem as FamilyAdapter['toVrpProblem'] },
   'solomon': { parse: parseSolomon as FamilyAdapter['parse'], toVrpProblem: solomonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'cordeau': { parse: parseVrpRpdJson as FamilyAdapter['parse'], toVrpProblem: vrpRpdJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'darp': { parse: parseVrpRpdJson as FamilyAdapter['parse'], toVrpProblem: vrpRpdJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'salhi-nagy': { parse: parseVrpRpdJson as FamilyAdapter['parse'], toVrpProblem: vrpRpdJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'synthetic': { parse: parseVrpRpdJson as FamilyAdapter['parse'], toVrpProblem: vrpRpdJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
+  'cordeau': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
+  'darp': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
+  'salhi-nagy': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
+  'synthetic': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
 };

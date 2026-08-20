@@ -1,17 +1,17 @@
 'use client';
 
-// Solver client: invokes VrpRpdSolver on the browser. The main thread
+// Solver client: invokes FleetPilotSolver on the browser. The main thread
 // implementation is plenty fast for the smoke-sized problems the UI targets.
 // Runs in an async fire-and-forget so the UI stays responsive.
 
 import {
-  VrpRpdSolver,
+  FleetPilotSolver,
   VrpProblem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
   Vehicle,
-} from 'vehicle-routing';
+} from 'fleetpilot';
 
 import type { Problem } from '@/lib/problem-schema';
 import type { SolverSolution, SolverProgress, SolverSolveOptions } from '@/lib/problem-store';
@@ -61,7 +61,7 @@ export async function solveProblem(
   onProgress?: (progress: SolverProgress) => void,
 ): Promise<SolverSolution> {
   const vrpProblem = buildVrpProblem(problem);
-  const solver = new VrpRpdSolver(vrpProblem);
+  const solver = new FleetPilotSolver(vrpProblem);
   const solution = await solver.solve({
     alnsIterations: options.alnsIterations,
     populationSize: options.populationSize,

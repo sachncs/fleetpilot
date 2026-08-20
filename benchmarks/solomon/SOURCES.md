@@ -96,6 +96,6 @@ See `../../runner/adapters.ts`. The Solomon adapter:
    `capacity`).
 4. Sets the depot to node 0.
 
-This is the degenerate VRP-RPD where D = P, no resource constraint. It
+This is the degenerate FleetPilot where D = P, no resource constraint. It
 tests the time-window + capacity code paths without exercising the
 P/D pairing logic.

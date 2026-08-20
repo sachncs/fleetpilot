@@ -5,7 +5,7 @@ import { isBrowser } from './env.js';
  *
  * - Node.js: returns the relative path `./worker.js`. The Node worker
  *   `Worker` ctor resolves this against the script's `import.meta.url`,
- *   which is what the orchestrator does. The `VRP_WORKER_PATH` env var
+   *   which is what the orchestrator does. The `FLEETPILOT_WORKER_PATH` env var
  *   overrides to an absolute path (used by tests).
  * - Browser: returns the relative URL `./worker.browser.js`. The browser
  *   `Worker` ctor resolves this against the document's base URL.
@@ -20,7 +20,7 @@ export function getWorkerPath(): string | URL {
   if (isBrowser()) {
     return './worker.browser.js';
   }
-  const override = process.env['VRP_WORKER_PATH'];
+  const override = process.env['FLEETPILOT_WORKER_PATH'];
   if (override) return override;
   return './worker.js';
 }

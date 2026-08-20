@@ -103,7 +103,7 @@ export class BRKGA {
   protected readonly signal: AbortSignal | undefined;
 
   /**
-   * @param problem - VRP-RPD problem instance to solve
+   * @param problem - FleetPilot problem instance to solve
    * @param options - BRKGA configuration options
    */
   constructor(problem: VrpProblem, options: BRKGAOptions = {}) {

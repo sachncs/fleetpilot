@@ -26,10 +26,10 @@ export default function HomePage(): React.ReactElement {
   return (
     <main className="container mx-auto max-w-5xl py-16">
       <header className="mb-12 text-center">
-        <h1 className="mb-3 text-4xl font-bold tracking-tight">VRP-RPD Solver</h1>
+        <h1 className="mb-3 text-4xl font-bold tracking-tight">FleetPilot</h1>
         <p className="text-lg text-muted-foreground">
-          Interactively build and solve vehicle routing problems with resource-constrained pickup
-          and delivery on a real map.
+          Solve smarter. Route faster. FleetPilot optimizes vehicle routing with
+          resource-constrained pickup and delivery.
         </p>
       </header>
 
@@ -114,16 +114,7 @@ export default function HomePage(): React.ReactElement {
 
       <footer className="mt-16 text-center text-sm text-muted-foreground">
         <p>
-          Built with Next.js, shadcn/ui, and{' '}
-          <a
-            href="https://shadcn-map.vercel.app"
-            className="underline"
-            target="_blank"
-            rel="noreferrer"
-          >
-            shadcn-map
-          </a>
-          . Powered by the <code>vehicle-routing</code> package.
+          FleetPilot — Route optimization powered by ALNS + BRKGA metaheuristics.
         </p>
       </footer>
     </main>

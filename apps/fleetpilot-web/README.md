@@ -1,6 +1,6 @@
-# vrp-web
+# fleetpilot-web
 
-Interactive web UI for the `vehicle-routing` solver. Build a VRP-RPD problem
+Interactive web UI for the `fleetpilot` solver. Build a VRP-RPD problem
 on a real map, run the solver in the browser, and step through the solution
 on a replayable timeline.
 
@@ -14,7 +14,7 @@ on a replayable timeline.
 - `react-leaflet` + `leaflet-draw` for the drawing tools
 - `zod` for problem-JSON validation
 - `zustand` + `localStorage` for problem persistence
-- The `vehicle-routing` package is consumed as a workspace dependency
+- The `fleetpilot` package is consumed as a workspace dependency
   (`file:../..` in package.json)
 
 ## Develop
@@ -22,23 +22,23 @@ on a replayable timeline.
 From the repo root:
 
 ```bash
-npm install           # installs both the root package and apps/vrp-web
-npm run build         # builds the root package (vehicle-routing's dist/)
-npm run dev -w vrp-web  # runs the Next.js dev server on :3000
+npm install           # installs both the root package and apps/fleetpilot-web
+npm run build         # builds the root package (fleetpilot's dist/)
+npm run dev -w fleetpilot-web  # runs the Next.js dev server on :3000
 ```
 
-`npm run dev -w vrp-web` runs only the workspace's dev command. The solver
-package is symlinked into `node_modules/vehicle-routing` so changes to the
+`npm run dev -w fleetpilot-web` runs only the workspace's dev command. The solver
+package is symlinked into `node_modules/fleetpilot` so changes to the
 root source are picked up after `npm run build` (the solver ships
 hand-rolled dist/, not watched by the Next.js dev server).
 
 ## Build
 
 ```bash
-npm run build -w vrp-web
+npm run build -w fleetpilot-web
 ```
 
-Emits a `.next/` production build. Run with `npm run start -w vrp-web`.
+Emits a `.next/` production build. Run with `npm run start -w fleetpilot-web`.
 
 ## Pages
 
@@ -63,12 +63,12 @@ Emits a `.next/` production build. Run with `npm run start -w vrp-web`.
 | `components/solver/solve-button.tsx` | Solver trigger + progress |
 | `lib/problem-schema.ts` | zod schema |
 | `lib/problem-store.ts` | zustand store, localStorage-persisted |
-| `lib/solver-client.ts` | Wraps `VrpRpdSolver` for the browser |
+| `lib/solver-client.ts` | Wraps `FleetPilotSolver` for the browser |
 | `lib/geo-utils.ts` | lat/lng ↔ metres projection |
 
 ## Coordinates
 
-The `vehicle-routing` solver uses Euclidean `(x, y)`. The map uses lat/lng.
+The `fleetpilot` solver uses Euclidean `(x, y)`. The map uses lat/lng.
 `lib/geo-utils.ts` projects the first depot's lat/lng into a local
 tangent-plane metres coordinate, and rounds to 1 m precision. The
 projection origin is stored in the JSON as `referenceOrigin` so the
@@ -81,7 +81,7 @@ Web-Mercator-projected CRS.
 ## Persistence
 
 The problem + solver options are persisted to `localStorage` under the
-`vrp-problem-store` key. Refresh the page and your work is still there.
+`fleetpilot-problem-store` key. Refresh the page and your work is still there.
 
 ## Known limitations
 
@@ -90,7 +90,7 @@ The problem + solver options are persisted to `localStorage` under the
   clicks on the map to set a depot.
 - `parallel: true` and `islands` solver options are accepted but the
   solver runs in the main thread. For paper-quality config on
-  large instances, use the Node CLI (`vrp-solver`).
+  large instances, use the Node CLI (`fleetpilot`).
 - The CLI smoke test for `samples/time-windows.json` is skipped at
   the reduced CI config — see `tests/cli-samples.test.ts` for the
   reason.

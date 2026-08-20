@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { AbortError, VrpError } from '../src/errors/index.js';
 import * as rootExports from '../src/index.js';
-import { VrpRpdSolver } from '../src/index.js';
+import { FleetPilotSolver } from '../src/index.js';
 
 const { AbortError: RootAbortError, VrpError: RootVrpError } = rootExports;
 
@@ -45,13 +45,13 @@ describe('AbortError', () => {
   });
 });
 
-describe('VrpRpdSolver AbortSignal', () => {
+describe('FleetPilotSolver AbortSignal', () => {
   it('rejects with AbortError when signal is pre-aborted', async () => {
     const controller = new AbortController();
     controller.abort();
     let caught: unknown = null;
     try {
-      await new VrpRpdSolver(buildProblem()).solve({
+      await new FleetPilotSolver(buildProblem()).solve({
         alnsIterations: 5000,
         signal: controller.signal,
       });
@@ -62,7 +62,7 @@ describe('VrpRpdSolver AbortSignal', () => {
   });
 
   it('continues to completion when no signal is provided', async () => {
-    const solution = await new VrpRpdSolver(buildProblem()).solve({
+    const solution = await new FleetPilotSolver(buildProblem()).solve({
       alnsIterations: 100,
       populationSize: 30,
       maxGenerations: 20,

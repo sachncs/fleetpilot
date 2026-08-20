@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 import { expect } from 'chai';
 
-import { VrpRpdSolver } from '../../src/index.js';
+import { FleetPilotSolver } from '../../src/index.js';
 import { ADAPTERS, type Family } from '../runner/adapters.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -80,7 +80,7 @@ describe('Benchmark regression (within 1.3× of baseline)', function () {
       const adapter = ADAPTERS[family];
       const parsed = adapter.parse(instancePath);
       const problem = adapter.toVrpProblem(parsed);
-      const solver = new VrpRpdSolver(problem);
+      const solver = new FleetPilotSolver(problem);
       const solution = await solver.solve({
         maxTimeMs: baseline.config.maxTimeMs,
         alnsIterations: baseline.config.alnsIterations,

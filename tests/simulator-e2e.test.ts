@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 
 import { expect } from 'chai';
 
-import { VrpRpdSolver, VrpProblem, LocationNode, Customer, Vehicle } from '../src/index.js';
+import { FleetPilotSolver, VrpProblem, LocationNode, Customer, Vehicle } from '../src/index.js';
 
 interface SampleNode {
   id: number;
@@ -122,7 +122,7 @@ describe('Simulator end-to-end (data path)', () => {
 
   it('real solution produces valid route traces (positions in Delhi range)', async () => {
     const { problem, sample } = loadDelhiSample();
-    const solver = new VrpRpdSolver(problem);
+    const solver = new FleetPilotSolver(problem);
     const solution = await solver.solve({
       alnsIterations: 50,
       populationSize: 50,

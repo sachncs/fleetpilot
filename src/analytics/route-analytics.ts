@@ -13,7 +13,7 @@ export type { VehicleUtilization } from './vehicle-utilization.js';
 export type { WaitTimeAnalysis } from './wait-time-analysis.js';
 
 /**
- * Analytics engine for VRP-RPD solutions.
+ * Analytics engine for FleetPilot solutions.
  * Provides insights into vehicle utilization, wait times, and route efficiency.
  */
 export class RouteAnalytics {

@@ -156,8 +156,8 @@ if [ "$PUSH" -eq 1 ]; then
   echo "Tag ${TAG} pushed. publish.yml should fire shortly."
   echo
   echo "Verify the publish landed:"
-  echo "  npm view vehicle-routing@${NEW_VERSION} dist.unpackedSize"
-  echo "  npm view vehicle-routing dist.signatures"
+  echo "  npm view fleetpilot@${NEW_VERSION} dist.unpackedSize"
+  echo "  npm view fleetpilot dist.signatures"
   echo "  # Provenance attestation URL on the npm package page."
 else
   echo

@@ -91,7 +91,7 @@ function isWorkerResult(msg: object): msg is WorkerResult {
 }
 
 /**
- * Options accepted by `VrpRpdSolver.solve()`. All fields are optional; the
+ * Options accepted by `FleetPilotSolver.solve()`. All fields are optional; the
  * solver falls back to library defaults tuned for paper-quality results.
  */
 export interface SolveOptions {
@@ -147,18 +147,18 @@ export interface WorkerResult {
 }
 
 /**
- * Two-stage metaheuristic solver for VRP-RPD.
+ * Two-stage metaheuristic solver for FleetPilot.
  *
  * Stage 1: ALNS (Adaptive Large Neighborhood Search)
  * Stage 2: BRKGA (Biased Random-Key Genetic Algorithm)
  *
  * Paper: arXiv:2602.23685v2
  */
-export class VrpRpdSolver {
+export class FleetPilotSolver {
   private readonly logger: Logger;
 
   /**
-   * @param problem - VRP-RPD problem instance to solve
+   * @param problem - FleetPilot problem instance to solve
    */
   constructor(
     protected readonly problem: VrpProblem,

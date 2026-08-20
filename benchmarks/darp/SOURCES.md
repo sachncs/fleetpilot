@@ -28,12 +28,12 @@ parameter ranges described in the Cordeau-Laporte paper:
 - Service time = 5 min pickup + 5 min dropoff
 - Max ride time = 30 min
 
-The mapping to VRP-RPD uses the same D→P inversion as the Li & Lim
+The mapping to FleetPilot uses the same D→P inversion as the Li & Lim
 adapter: the synthetic generator writes directly to `VrpProblem` shape.
 
 ## File layout
 
-JSON in the **VRP-RPD native format**:
+JSON in the **FleetPilot native format**:
 
 ```json
 {

@@ -35,7 +35,7 @@ produces byte-identical files.
 
 ## File layout
 
-Each file is a JSON document in the **VRP-RPD native format** (since the
+Each file is a JSON document in the **FleetPilot native format** (since the
 synthetic generator writes directly to `VrpProblem` shape):
 
 ```json

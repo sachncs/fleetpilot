@@ -1,11 +1,11 @@
 <p align="center">
-  <h1 align="center">VRP-RPD Solver</h1>
+  <h1 align="center">FleetPilot</h1>
   <p align="center">Route optimization for Indian logistics — delivery fleets with resource-constrained pickup and delivery.</p>
   <p align="center">
     <a href="#installation"><img src="https://img.shields.io/badge/node-20%2B-brightgreen" alt="Node"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-ISC-green" alt="License"></a>
     <a href="https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints/actions"><img src="https://img.shields.io/github/actions/workflow/status/sachncs/vehicle-routing-problem-with-resource-constraints/ci.yml?branch=master" alt="CI"></a>
-    <a href="https://www.npmjs.com/package/vehicle-routing"><img src="https://img.shields.io/npm/v/vehicle-routing" alt="npm"></a>
+    <a href="https://www.npmjs.com/package/fleetpilot"><img src="https://img.shields.io/npm/v/fleetpilot" alt="npm"></a>
     <a href="https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints/stargazers"><img src="https://img.shields.io/github/stars/sachncs/vehicle-routing-problem-with-resource-constraints" alt="Stars"></a>
   </p>
 </p>
@@ -53,7 +53,7 @@ This implementation surpasses the baseline algorithms described in arXiv:2602.23
 ### From npm
 
 ```bash
-npm install vehicle-routing
+npm install fleetpilot
 ```
 
 ### From source
@@ -69,11 +69,11 @@ npm install
 ### CLI
 
 ```bash
-# Install globally to use the vrp-solver binary
-npm install -g vehicle-routing
+# Install globally to use the fleetpilot binary
+npm install -g fleetpilot
 
-vrp-solver --problem samples/delhi-10.json --output solution.json
-vrp-solver --problem samples/mumbai-20.json --progress
+fleetpilot --problem samples/delhi-10.json --output solution.json
+fleetpilot --problem samples/mumbai-20.json --progress
 ```
 
 | Option                  | Default         | Description                  |
@@ -92,7 +92,7 @@ vrp-solver --problem samples/mumbai-20.json --progress
 ### Node.js API (TypeScript)
 
 ```typescript
-import { VrpRpdSolver, VrpProblem, LocationNode, Customer, Vehicle } from 'vehicle-routing';
+import { FleetPilotSolver, VrpProblem, LocationNode, Customer, Vehicle } from 'fleetpilot';
 
 const nodes = {
   0: new LocationNode(0, 0, 0, 'Depot'),
@@ -103,7 +103,7 @@ const customers = [new Customer(1, 1, 2, 50)]; // id, del-node, pk-node, process
 const vehicles = [new Vehicle(1, 5)]; // id, capacity
 
 const problem = new VrpProblem(nodes, customers, vehicles, 0);
-const solver = new VrpRpdSolver(problem);
+const solver = new FleetPilotSolver(problem);
 
 const solution = await solver.solve({ maxTimeMs: 30000 });
 console.log(`Best makespan: ${solution.makespan.toFixed(2)} min`);
@@ -136,7 +136,7 @@ interface SolveOptions {
 
 ## Configuration
 
-No environment variables are required for core usage. Defaults are tuned for paper-quality results. `VRP_WORKER_PATH` overrides the worker bundle path used by `parallel: true` (handy for tests).
+No environment variables are required for core usage. Defaults are tuned for paper-quality results. `FLEETPILOT_WORKER_PATH` overrides the worker bundle path used by `parallel: true` (handy for tests).
 
 | Setting             | Default  | Description                            |
 | ------------------- | -------- | -------------------------------------- |
@@ -158,7 +158,7 @@ No environment variables are required for core usage. Defaults are tuned for pap
 
 | Symbol                                                                                                     | Type    | Description                                        |
 | ---------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------- |
-| `VrpRpdSolver`                                                                                             | class   | Orchestrator (ALNS → warm-start → BRKGA)           |
+| `FleetPilotSolver`                                                                                             | class   | Orchestrator (ALNS → warm-start → BRKGA)           |
 | `VrpProblem`                                                                                               | class   | Standard problem definition                        |
 | `TrafficAwareProblem`                                                                                      | class   | Problem with time-dependent travel times           |
 | `MultiDepotProblem`                                                                                        | class   | Multi-depot variant                                |
@@ -179,7 +179,7 @@ No environment variables are required for core usage. Defaults are tuned for pap
 ### With Time Windows
 
 ```typescript
-import { CustomerWithTimeWindows } from 'vehicle-routing';
+import { CustomerWithTimeWindows } from 'fleetpilot';
 
 // Deliver between 9 AM and 1 PM (360–480 min), pick up between 11 AM and 10 PM (420–600 min)
 const customer = new CustomerWithTimeWindows(
@@ -197,7 +197,7 @@ const customer = new CustomerWithTimeWindows(
 ### Traffic-Aware Routing
 
 ```typescript
-import { TrafficAwareProblem, TrafficModel } from 'vehicle-routing';
+import { TrafficAwareProblem, TrafficModel } from 'fleetpilot';
 
 const traffic = new TrafficModel();
 traffic.setSegment({
@@ -220,7 +220,7 @@ const problem = new TrafficAwareProblem(nodes, customers, vehicles, 0, traffic);
 ### Analytics & GIS Export
 
 ```typescript
-import { RouteAnalytics, GISExporter } from 'vehicle-routing';
+import { RouteAnalytics, GISExporter } from 'fleetpilot';
 
 const analytics = new RouteAnalytics(solution, problem);
 console.log(analytics.getSummary());
@@ -272,7 +272,7 @@ The solver is organized into four layers:
 | **Analytics**  | `src/analytics/`  | Post-solution analysis, Pareto front computation                     |
 | **Export**     | `src/export/`     | GIS serialization (GeoJSON, KML, CSV)                                |
 
-The `VrpRpdSolver` orchestrator runs a **two-stage metaheuristic**: ALNS first, then BRKGA warm-started from the ALNS solution. In parallel mode both run concurrently via `worker_threads` and the best result is returned.
+The `FleetPilotSolver` orchestrator runs a **two-stage metaheuristic**: ALNS first, then BRKGA warm-started from the ALNS solution. In parallel mode both run concurrently via `worker_threads` and the best result is returned.
 
 ```
 Problem ──► ALNS (adaptive destroy/repair) ──► warm-start ──► BRKGA (evolutionary) ──► Best Solution
@@ -429,7 +429,7 @@ npm run prepublishOnly     # build + test gate (run automatically before publish
 Artifacts:
 
 - `dist/index.mjs`, `dist/index.cjs`, `dist/index.d.ts` — library
-- `dist/cli.mjs` — `vrp-solver` binary
+- `dist/cli.mjs` — `fleetpilot` binary
 
 ## Release
 
@@ -513,27 +513,27 @@ samples/                               # Example problem files
 | Type check     | `tsc --noEmit`                                                              |
 | Format         | Prettier 3.9                                                                |
 | Docs           | TypeDoc + `typedoc-plugin-markdown`                                         |
-| CLI            | `dist/cli.mjs` (`vrp-solver` bin)                                           |
+| CLI            | `dist/cli.mjs` (`fleetpilot` bin)                                           |
 | Parallelism    | `worker_threads` (Node) / Web Worker (browser via `dist/worker.browser.js`) |
 | Dev runner     | Vite (dev mode only)                                                        |
 
 ## Roadmap
 
 - **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toVrpProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
-- **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, `apps/vrp-web/` interactive UI.
+- **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, `apps/fleetpilot-web/` interactive UI.
 - **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models; GPU acceleration for ALNS.
 
 ## Web UI
 
-`apps/vrp-web/` is a Next.js 14 + shadcn/ui + [shadcn-map](https://shadcn-map.vercel.app)
+`apps/fleetpilot-web/` is a Next.js 14 + shadcn/ui + [shadcn-map](https://shadcn-map.vercel.app)
 frontend that lets users drop a depot and customer stops on a real map, configure
 vehicles and time windows, and step through the solved routes on a replayable
-timeline. See `apps/vrp-web/README.md` for details.
+timeline. See `apps/fleetpilot-web/README.md` for details.
 
 ```bash
 npm install
 npm run build
-npm run dev -w vrp-web    # http://localhost:3000
+npm run dev -w fleetpilot-web    # http://localhost:3000
 ```
 
 ## Contributing

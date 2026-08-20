@@ -97,7 +97,7 @@ export class ALNS {
   protected temp: number;
 
   /**
-   * @param problem - VRP-RPD problem instance to solve
+   * @param problem - FleetPilot problem instance to solve
    * @param options - ALNS configuration options
    */
   constructor(problem: VrpProblem, options: ALNSOptions = {}) {

@@ -2,7 +2,7 @@
 
 // Problem + solution store. Browser-only (localStorage persistence).
 // Shape mirrors the sample JSON in samples/*.json so the data round-trips
-// with the CLI: vehicle-routing/read-from-file → build → solve → simulate.
+// with the CLI: fleetpilot/read-from-file → build → solve → simulate.
 
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
@@ -87,7 +87,7 @@ export const useProblemStore = create<ProblemStore>()(
         set({ problem: null, solution: null, status: 'idle', error: null, progress: null }),
     }),
     {
-      name: 'vrp-problem-store',
+      name: 'fleetpilot-problem-store',
       version: 1,
       partialize: (state) => ({
         problem: state.problem,

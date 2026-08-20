@@ -10,7 +10,7 @@ import {
   Vehicle,
 } from '../src/core/problem.js';
 import { TrafficAwareProblem, TrafficModel } from '../src/core/traffic-aware-problem.js';
-import { VrpRpdSolver } from '../src/index.js';
+import { FleetPilotSolver } from '../src/index.js';
 import { deserializeProblem, serializeProblem } from '../src/worker-data.js';
 
 const makeBaseProblem = () => {
@@ -90,7 +90,7 @@ describe('Worker serialization round-trip', () => {
 describe('Parallel worker integration', () => {
   it('solveParallel runs two real workers and returns a feasible solution', async () => {
     const problem = makeBaseProblem();
-    const solution = await new VrpRpdSolver(problem).solve({
+    const solution = await new FleetPilotSolver(problem).solve({
       parallel: true,
       alnsIterations: 20,
       populationSize: 30,
@@ -114,7 +114,7 @@ describe('Parallel worker integration', () => {
       [new Vehicle(1, 10, 0, 0, 1.5, 0.3)],
       0,
     );
-    const solution = await new VrpRpdSolver(problem).solve({
+    const solution = await new FleetPilotSolver(problem).solve({
       parallel: true,
       alnsIterations: 20,
       populationSize: 30,

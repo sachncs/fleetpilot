@@ -7,7 +7,7 @@ import {
   InfeasibleSolutionError,
   AlgorithmConvergenceError,
 } from '../src/errors/index.js';
-import { VrpRpdSolver } from '../src/index.js';
+import { FleetPilotSolver } from '../src/index.js';
 
 describe('Typed Errors', () => {
   it('VrpError is an Error', () => {
@@ -58,7 +58,7 @@ describe('Typed Errors', () => {
 
     let threw: unknown = null;
     try {
-      await new VrpRpdSolver(problem).solve({
+      await new FleetPilotSolver(problem).solve({
         alnsIterations: 20,
         populationSize: 20,
         maxGenerations: 10,

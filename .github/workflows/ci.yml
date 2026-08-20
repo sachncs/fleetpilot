@@ -66,11 +66,11 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run build
-      - name: Run vrp-solver against every samples/*.json
+      - name: Run fleetpilot against every samples/*.json
         run: npx mocha tests/cli-samples.test.ts --timeout 120000
 
   docker-smoke:
-    name: Docker smoke (vrp-solver in node:20-alpine)
+    name: Docker smoke (fleetpilot in node:20-alpine)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,21 +82,21 @@ jobs:
       - run: npm ci
       - name: Build image
         run: npm run docker:build
-      - name: Run vrp-solver inside image
+      - name: Run fleetpilot inside image
         run: |
           docker run --rm \
             -v "${{ github.workspace }}/samples:/app/samples:ro" \
-            --name vrp-smoke \
-            vehicle-routing:test \
-            vrp-solver --problem samples/delhi-10.json --max-time 5000 --alns-iterations 100 --population-size 500 --max-generations 200 --seed 1 > /tmp/solution.json
+            --name fleetpilot-smoke \
+            fleetpilot:test \
+            fleetpilot --problem samples/delhi-10.json --max-time 5000 --alns-iterations 100 --population-size 500 --max-generations 200 --seed 1 > /tmp/solution.json
           test -s /tmp/solution.json
           node -e "const s = require('/tmp/solution.json'); if (!s.feasible) process.exit(1)"
       - name: Image size check
         run: |
-          SIZE=$(docker image inspect vehicle-routing:test --format '{{.Size}}' | numfmt --to=iec)
+          SIZE=$(docker image inspect fleetpilot:test --format '{{.Size}}' | numfmt --to=iec)
           echo "Image size: $SIZE"
           # Fail if image exceeds 300 MB.
-          BYTES=$(docker image inspect vehicle-routing:test --format '{{.Size}}')
+          BYTES=$(docker image inspect fleetpilot:test --format '{{.Size}}')
           test "$BYTES" -lt 314572800
 
   build:

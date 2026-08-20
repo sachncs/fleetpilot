@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
-# Multi-stage build for vehicle-routing.
-# Stage 1: build the dist bundle.
-# Stage 2: minimal runtime image with the bundle + CLI.
+# FleetPilot — SaaS Docker image
+# Stage 1: build the library + web app.
+# Stage 2: runtime image with everything.
 
 ARG NODE_VERSION=20.20.0-alpine
 
@@ -10,42 +10,48 @@ FROM node:${NODE_VERSION} AS builder
 
 WORKDIR /app
 
-# Install full deps for build (rollup, typescript, etc).
 COPY package.json package-lock.json ./
+COPY apps/vrp-web/package.json apps/vrp-web/
 RUN npm ci --no-audit --no-fund
 
-# Copy source and build.
 COPY tsconfig.json rollup.config.mjs eslint.config.mjs ./
 COPY src ./src
-COPY tests ./tests
-COPY scripts ./scripts
 COPY samples ./samples
+COPY apps/vrp-web ./apps/vrp-web
 
-# Build dist (also runs prebuild:check-samples).
 RUN npm run build
+RUN npm run build -w vrp-web
 
 # ---- Stage 2: runtime ---------------------------------------------------
 FROM node:${NODE_VERSION} AS runtime
 
-LABEL org.opencontainers.image.title="vehicle-routing" \
-      org.opencontainers.image.description="VRP-RPD solver for Indian logistics" \
+LABEL org.opencontainers.image.title="fleetpilot" \
+      org.opencontainers.image.description="FleetPilot — Route optimization SaaS" \
       org.opencontainers.image.source="https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints" \
       org.opencontainers.image.licenses="ISC"
 
-# Sensible heap ceiling for the paper-default config.
 ENV NODE_OPTIONS="--max-old-space-size=1024" \
-    UV_THREADPOOL_SIZE=8
+    UV_THREADPOOL_SIZE=8 \
+    NODE_ENV=production \
+    DATABASE_URL=file:/app/data/fleetpilot.db
 
 WORKDIR /app
 
-# Copy only what we need to run: the bundle, CLI, samples, and package.json.
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/samples ./samples
+COPY --from=builder /app/apps/vrp-web/.next/standalone ./
+COPY --from=builder /app/apps/vrp-web/.next/static ./apps/vrp-web/.next/static
+COPY --from=builder /app/apps/vrp-web/public ./apps/vrp-web/public
+COPY --from=builder /app/apps/vrp-web/server.ts ./apps/vrp-web/server.ts
+COPY --from=builder /app/apps/vrp-web/lib ./apps/vrp-web/lib
+COPY --from=builder /app/apps/vrp-web/next.config.mjs ./apps/vrp-web/next.config.mjs
+COPY --from=builder /app/apps/vrp-web/tsconfig.json ./apps/vrp-web/tsconfig.json
 
-# Drop privileges to the unprivileged node user (already present in the base image).
+RUN mkdir -p /app/data
+
+EXPOSE 3000
+
 USER node
 
-# Default command: solve the bundled delhi-10 sample. Override with `docker run ... <args>`.
-ENTRYPOINT ["node", "dist/cli.mjs"]
-CMD ["--problem", "samples/delhi-10.json", "--max-time", "30000", "--seed", "1"]
+CMD ["node", "apps/vrp-web/server.ts"]
