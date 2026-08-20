@@ -4,7 +4,7 @@ import { getDb } from '@/lib/db';
 import { problems } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
 import { randomBytes } from 'node:crypto';
-import { desc } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
@@ -28,6 +28,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (auth instanceof NextResponse) return auth;
 
   await ensureSchema();
+  const db = getDb();
 
   let body: unknown;
   try {
@@ -72,6 +73,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     })
     .run();
 
-  const created = db.select().from(problems).where((p) => p.id === id).get();
+  const created = db.select().from(problems).where(eq(problems.id, id)).get();
   return NextResponse.json(created, { status: 201 });
 }

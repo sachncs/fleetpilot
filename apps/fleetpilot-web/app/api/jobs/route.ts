@@ -77,11 +77,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const limit = Math.min(Number(url.searchParams.get('limit') ?? '50'), 100);
   const offset = Number(url.searchParams.get('offset') ?? '0');
 
-  let query = db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset);
+  let rows;
   if (status) {
-    query = db.select().from(jobs).where(eq(jobs.status, status)).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset);
+    rows = db.select().from(jobs).where(eq(jobs.status, status as 'pending' | 'running' | 'completed' | 'failed' | 'cancelled')).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset).all();
+  } else {
+    rows = db.select().from(jobs).orderBy(desc(jobs.createdAt)).limit(limit).offset(offset).all();
   }
-
-  const rows = query.all();
   return NextResponse.json({ jobs: rows, limit, offset });
 }
