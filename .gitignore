@@ -4,6 +4,7 @@ coverage/
 docs/api/
 docs/md/
 data/
+*.tsbuildinfo
 *.log
 .DS_Store
 .vscode/

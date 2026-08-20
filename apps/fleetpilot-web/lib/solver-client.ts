@@ -1,58 +1,17 @@
 'use client';
 
-// Solver client: invokes FleetPilotSolver on the browser. The main thread
-// implementation is plenty fast for the smoke-sized problems the UI targets.
-// Runs in an async fire-and-forget so the UI stays responsive.
-
-import {
-  FleetPilotSolver,
-  VrpProblem,
-  LocationNode,
-  Customer,
-  CustomerWithTimeWindows,
-  Vehicle,
-} from 'fleetpilot';
+// Solver client: submits solve jobs to the FleetPilot API and streams
+// progress via WebSocket. Runs on the server-side worker process.
 
 import type { Problem } from '@/lib/problem-schema';
 import type { SolverSolution, SolverProgress, SolverSolveOptions } from '@/lib/problem-store';
 
-function isFiniteNumber(n: unknown): n is number {
-  return typeof n === 'number' && Number.isFinite(n);
-}
-
-function buildVrpProblem(p: Problem): VrpProblem {
-  const nodeList = Array.isArray(p.nodes) ? p.nodes : Object.values(p.nodes);
-  const nodes: Record<number, LocationNode> = {};
-  for (const n of nodeList) {
-    nodes[n.id] = new LocationNode(n.id, n.x, n.y, n.name ?? '');
+function getApiKey(): string | null {
+  try {
+    return localStorage.getItem('fleetpilot_api_key');
+  } catch {
+    return null;
   }
-  const customers: Customer[] = p.customers.map((c) => {
-    if (isFiniteNumber(c.earliestDeliveryTime) && isFiniteNumber(c.latestDeliveryTime)
-        && isFiniteNumber(c.earliestPickupTime) && isFiniteNumber(c.latestPickupTime)) {
-      return new CustomerWithTimeWindows(
-        c.id,
-        c.deliveryNodeId,
-        c.pickupNodeId,
-        c.processingTime,
-        c.earliestDeliveryTime,
-        c.latestDeliveryTime,
-        c.earliestPickupTime,
-        c.latestPickupTime,
-      );
-    }
-    return new Customer(c.id, c.deliveryNodeId, c.pickupNodeId, c.processingTime);
-  });
-  const vehicles: Vehicle[] = p.vehicles.map((v) => {
-    return new Vehicle(
-      v.id,
-      v.capacity,
-      v.startDepotId ?? p.depotNodeId,
-      v.endDepotId ?? p.depotNodeId,
-      v.costPerKm ?? 1,
-      v.co2PerKm ?? 1,
-    );
-  });
-  return new VrpProblem(nodes, customers, vehicles, p.depotNodeId);
 }
 
 export async function solveProblem(
@@ -60,40 +19,92 @@ export async function solveProblem(
   options: SolverSolveOptions,
   onProgress?: (progress: SolverProgress) => void,
 ): Promise<SolverSolution> {
-  const vrpProblem = buildVrpProblem(problem);
-  const solver = new FleetPilotSolver(vrpProblem);
-  const solution = await solver.solve({
-    alnsIterations: options.alnsIterations,
-    populationSize: options.populationSize,
-    maxGenerations: options.maxGenerations,
-    maxTimeMs: options.maxTimeMs,
-    seed: options.seed,
-    warmStart: options.warmStart,
-    onProgress: onProgress
-      ? (p) =>
-          onProgress({
-            stage: p.stage,
-            iteration: p.iteration,
-            maxGenerations: p.maxGenerations,
-            bestMakespan: p.bestMakespan,
-            elapsedMs: p.elapsedMs,
-          })
-      : undefined,
-  });
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    throw new Error('No API key found. Go to Settings to create one.');
+  }
 
-  return {
-    makespan: solution.makespan,
-    totalDistance: solution.totalDistance,
-    totalCost: solution.totalCost,
-    totalCo2: solution.totalCo2,
-    feasible: solution.isFeasible(),
-    routes: solution.routes.map((r) => ({
-      vehicleId: r.vehicleId,
-      nodes: r.nodes,
-    })),
-    nodeTimes: solution.nodeTimes,
-    nodeTimesEntries: Object.entries(solution.nodeTimes).map(
-      ([k, v]) => [Number(k), v] as [number, number],
-    ),
+  const authHeaders = {
+    Authorization: `Bearer ${apiKey}`,
+    'Content-Type': 'application/json',
   };
+
+  const createRes = await fetch('/api/problems', {
+    method: 'POST',
+    headers: authHeaders,
+    body: JSON.stringify({ name: 'UI Problem', problemJson: problem }),
+  });
+  if (!createRes.ok) {
+    const data = (await createRes.json()) as { error?: string };
+    throw new Error(data.error ?? 'Failed to create problem');
+  }
+  const created = (await createRes.json()) as { id: string };
+
+  const jobRes = await fetch('/api/jobs', {
+    method: 'POST',
+    headers: authHeaders,
+    body: JSON.stringify({
+      problemId: created.id,
+      solverOptions: {
+        alnsIterations: options.alnsIterations,
+        populationSize: options.populationSize,
+        maxGenerations: options.maxGenerations,
+        maxTimeMs: options.maxTimeMs,
+        seed: options.seed,
+        warmStart: options.warmStart,
+      },
+    }),
+  });
+  if (!jobRes.ok) {
+    const data = (await jobRes.json()) as { error?: string };
+    throw new Error(data.error ?? 'Failed to submit job');
+  }
+  const job = (await jobRes.json()) as { id: string };
+
+  return new Promise<SolverSolution>((resolve, reject) => {
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/progress/${job.id}`);
+
+    ws.onmessage = (event) => {
+      const msg = JSON.parse(event.data as string) as
+        | { type: 'progress'; stage: string; iteration: number; maxGenerations: number; bestMakespan: number; elapsedMs: number }
+        | { type: 'solution'; solutionJson: string; makespan: number; totalDistance: number; totalCost: number; totalCo2: number; feasible: boolean }
+        | { type: 'error'; error: string };
+
+      if (msg.type === 'progress' && onProgress) {
+        onProgress({
+          stage: msg.stage as SolverProgress['stage'],
+          iteration: msg.iteration,
+          maxGenerations: msg.maxGenerations,
+          bestMakespan: msg.bestMakespan,
+          elapsedMs: msg.elapsedMs,
+        });
+      } else if (msg.type === 'solution') {
+        const solData = JSON.parse(msg.solutionJson) as {
+          routes?: Array<{ vehicleId: number; nodes: number[] }>;
+          nodeTimes?: Record<string, number>;
+        };
+        resolve({
+          makespan: msg.makespan,
+          totalDistance: msg.totalDistance,
+          totalCost: msg.totalCost,
+          totalCo2: msg.totalCo2,
+          feasible: msg.feasible,
+          routes: solData.routes ?? [],
+          nodeTimes: solData.nodeTimes ?? {},
+          nodeTimesEntries: Object.entries(solData.nodeTimes ?? {}).map(
+            ([k, v]) => [Number(k), v] as [number, number],
+          ),
+        });
+        ws.close();
+      } else if (msg.type === 'error') {
+        reject(new Error(msg.error));
+        ws.close();
+      }
+    };
+
+    ws.onerror = () => {
+      reject(new Error('WebSocket connection failed'));
+    };
+  });
 }

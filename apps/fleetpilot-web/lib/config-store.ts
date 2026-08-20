@@ -15,7 +15,7 @@ export interface FleetPilotConfig {
 }
 
 function getDefaultDataDir(): string {
-  return resolve(__dirname, '../data');
+  return resolve(__dirname, '../../../data');
 }
 
 function getConfigPath(dataDir: string): string {
