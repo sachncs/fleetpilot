@@ -11,7 +11,7 @@ export type { SerializedRoute, SerializedSolution } from './core/solution.js';
 
 // Errors
 export {
-  VrpError,
+  Error,
   ValidationError,
   InfeasibleSolutionError,
   AlgorithmConvergenceError,

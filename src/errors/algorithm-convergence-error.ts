@@ -1,7 +1,7 @@
-import { VrpError } from './vrp-error.js';
+import { Error } from './error.js';
 
 /** Thrown when ALNS or BRKGA cannot produce a feasible result within its iteration budget. */
-export class AlgorithmConvergenceError extends VrpError {
+export class AlgorithmConvergenceError extends Error {
   /**
    * @param message - Description of the convergence failure
    */

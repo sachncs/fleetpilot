@@ -1,7 +1,7 @@
-import { VrpError } from './vrp-error.js';
+import { Error } from './error.js';
 
 /** Thrown when no feasible solution exists (capacity / time-window / pickup-before-delivery violated). */
-export class InfeasibleSolutionError extends VrpError {
+export class InfeasibleSolutionError extends Error {
   /**
    * @param message - Description of why the solution is infeasible
    */

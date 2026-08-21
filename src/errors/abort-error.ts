@@ -1,7 +1,7 @@
-import { VrpError } from './vrp-error.js';
+import { Error } from './error.js';
 
 /** Thrown when an operation is aborted via an `AbortSignal`. */
-export class AbortError extends VrpError {
+export class AbortError extends Error {
   /**
    * @param message - Description of the abort
    */
