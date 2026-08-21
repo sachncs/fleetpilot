@@ -3,7 +3,7 @@
 import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Play, Pause, RotateCcw } from 'lucide-react';
+import { Loader2, Play, Pause, RotateCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -94,14 +94,9 @@ export default function SimulatePage(): React.ReactElement {
 
   if (!problem || !solution) {
     return (
-      <div className="flex h-screen flex-col">
+      <div className="flex h-full min-h-0 flex-col">
         <header className="flex items-center justify-between border-b bg-background px-4 py-3">
           <div className="flex items-center gap-3">
-            <Button asChild variant="ghost" size="sm">
-              <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Home
-              </Link>
-            </Button>
             <h1 className="text-lg font-semibold">Simulate</h1>
           </div>
         </header>
@@ -132,14 +127,9 @@ export default function SimulatePage(): React.ReactElement {
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <header className="flex items-center justify-between border-b bg-background px-4 py-3">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Home
-            </Link>
-          </Button>
           <h1 className="text-lg font-semibold">Simulate</h1>
           <Badge variant={solution.feasible ? 'success' : 'destructive'}>
             {solution.feasible ? 'Feasible' : 'Infeasible'}

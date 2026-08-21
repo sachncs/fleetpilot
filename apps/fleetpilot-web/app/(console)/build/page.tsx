@@ -4,7 +4,6 @@ import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import {
-  ArrowLeft,
   Loader2,
   Play,
   Sparkles,
@@ -49,14 +48,9 @@ export default function BuildPage(): React.ReactElement {
   const canSimulate = solution !== null && solution.feasible;
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full min-h-0 flex-col">
       <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-background px-4 py-3">
         <div className="flex items-center gap-3">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Home
-            </Link>
-          </Button>
           <h1 className="text-lg font-semibold">Build problem</h1>
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge variant="outline">{nodeCount} nodes</Badge>

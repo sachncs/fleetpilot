@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Sidebar } from '@/components/layout/sidebar';
 import { ProblemList } from '@/components/dashboard/problem-list';
 import { JobList } from '@/components/dashboard/job-list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -66,9 +65,7 @@ export default function DashboardPage(): React.ReactElement {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
+    <div className="overflow-auto p-6">
         <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <Button asChild>
@@ -120,7 +117,6 @@ export default function DashboardPage(): React.ReactElement {
             </CardContent>
           </Card>
         </div>
-      </main>
-    </div>
+      </div>
   );
 }

@@ -3,7 +3,6 @@
 import * as React from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { Sidebar } from '@/components/layout/sidebar';
 import { SolutionCard } from '@/components/dashboard/solution-card';
 import { JobList } from '@/components/dashboard/job-list';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -54,9 +53,7 @@ export default function ProblemDetailPage(): React.ReactElement {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
+    <div className="overflow-auto p-6">
         <div className="mb-6 flex items-center gap-3">
           <Button asChild variant="ghost" size="sm">
             <Link href="/dashboard"><ArrowLeft className="mr-1 h-4 w-4" /> Dashboard</Link>
@@ -143,7 +140,6 @@ export default function ProblemDetailPage(): React.ReactElement {
             )}
           </>
         )}
-      </main>
-    </div>
+      </div>
   );
 }

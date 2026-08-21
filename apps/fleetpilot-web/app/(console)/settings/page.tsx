@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { Sidebar } from '@/components/layout/sidebar';
 import { ApiKeyManager } from '@/components/settings/api-key-manager';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -25,9 +24,7 @@ export default function SettingsPage(): React.ReactElement {
   };
 
   return (
-    <div className="flex h-screen">
-      <Sidebar />
-      <main className="flex-1 overflow-auto p-6">
+    <div className="overflow-auto p-6">
         <h1 className="mb-6 text-2xl font-bold">Settings</h1>
 
         <div className="max-w-2xl space-y-6">
@@ -56,7 +53,6 @@ export default function SettingsPage(): React.ReactElement {
 
           {apiKey && <ApiKeyManager apiKey={apiKey} />}
         </div>
-      </main>
-    </div>
+      </div>
   );
 }
