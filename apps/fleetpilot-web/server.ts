@@ -7,7 +7,7 @@ import { seedDefaultApiKey } from './lib/db/seed';
 import { startWorker, onWorkerMessage, stopWorker } from './lib/worker/spawn';
 import { getPubSub } from './lib/ws/pubsub';
 import { attachWebSocket } from './lib/ws/server';
-import { config } from './lib/config';
+import { config, reloadConfig } from './lib/config';
 import { isFirstRun } from './lib/config-store';
 import { runOnboarding } from './lib/onboarding';
 
@@ -16,6 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 async function main(): Promise<void> {
   if (isFirstRun()) {
     await runOnboarding();
+    reloadConfig();
   }
 
   const dev = process.env['NODE_ENV'] !== 'production';
