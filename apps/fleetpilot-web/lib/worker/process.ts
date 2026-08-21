@@ -46,7 +46,7 @@ async function run() {
         throw new Error(`Problem ${job.problem_id} not found`);
       }
 
-      const { FleetPilotSolver, VrpProblem, LocationNode, Customer, CustomerWithTimeWindows, Vehicle } = await import('fleetpilot');
+      const { FleetPilotSolver, Problem, LocationNode, Customer, CustomerWithTimeWindows, Vehicle } = await import('fleetpilot');
 
       const probData = JSON.parse(problem.problem_json) as Record<string, unknown>;
       const nodeList = Array.isArray(probData['nodes'])
@@ -85,10 +85,10 @@ async function run() {
         );
       });
 
-      const vrpProblem = new VrpProblem(nodes, customers, vehicles, probData['depotNodeId'] as number);
+      const solverProblem = new Problem(nodes, customers, vehicles, probData['depotNodeId'] as number);
       const opts = JSON.parse(job.solver_options_json) as Record<string, unknown>;
 
-      const solver = new FleetPilotSolver(vrpProblem);
+      const solver = new FleetPilotSolver(solverProblem);
       const solution = await solver.solve({
         alnsIterations: opts['alnsIterations'] as number,
         populationSize: opts['populationSize'] as number,

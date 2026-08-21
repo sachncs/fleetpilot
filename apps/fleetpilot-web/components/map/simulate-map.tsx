@@ -81,20 +81,20 @@ function truckHtml(color: string, label: number, heading: number, atStop: boolea
   const shadow = atStop
     ? 'box-shadow: 0 0 0 8px rgba(59,130,246,0.35), 0 0 0 2px rgba(0,0,0,0.4);'
     : 'box-shadow: 0 0 0 2px rgba(0,0,0,0.4);';
-  return `<div class="vrp-truck-outer">
-    <div class="vrp-truck-rotation" style="transform: rotate(${heading}deg)">
-      <div class="vrp-truck-pointer" style="background:${color}"></div>
-      <div class="vrp-truck-body" style="background:${color};${shadow}">${label}</div>
+  return `<div class="fleet-truck-outer">
+    <div class="fleet-truck-rotation" style="transform: rotate(${heading}deg)">
+      <div class="fleet-truck-pointer" style="background:${color}"></div>
+      <div class="fleet-truck-body" style="background:${color};${shadow}">${label}</div>
     </div>
   </div>`;
 }
 
 function stopHtml(color: string): string {
-  return `<div class="vrp-stop" style="background:${color}"></div>`;
+  return `<div class="fleet-stop" style="background:${color}"></div>`;
 }
 
 function depotHtml(): string {
-  return `<div class="vrp-depot">D</div>`;
+  return `<div class="fleet-depot">D</div>`;
 }
 
 interface TruckMarkerProps {
@@ -119,7 +119,7 @@ function TruckMarker({
   const icon = React.useMemo(
     () =>
       L.divIcon({
-        className: 'vrp-head-marker',
+        className: 'fleet-head-marker',
         html: truckHtml(color, label, heading, atStop),
         iconSize: [40, 40],
         iconAnchor: [20, 20],

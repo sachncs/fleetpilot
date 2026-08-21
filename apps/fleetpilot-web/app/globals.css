@@ -66,11 +66,11 @@
 }
 
 /* Truck (head) marker — animated, points in the direction of travel */
-.vrp-head-marker {
+.fleet-head-marker {
   background: transparent !important;
   border: none !important;
 }
-.vrp-truck-outer {
+.fleet-truck-outer {
   width: 40px;
   height: 40px;
   position: relative;
@@ -79,14 +79,14 @@
   justify-content: center;
   pointer-events: none;
 }
-.vrp-truck-rotation {
+.fleet-truck-rotation {
   width: 40px;
   height: 40px;
   position: relative;
   transform-origin: 50% 50%;
   transition: transform 120ms linear;
 }
-.vrp-truck-body {
+.fleet-truck-body {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -104,7 +104,7 @@
   box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
   box-sizing: border-box;
 }
-.vrp-truck-pointer {
+.fleet-truck-pointer {
   position: absolute;
   top: 0;
   left: 50%;
@@ -113,7 +113,7 @@
   margin-left: -5px;
   clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
 }
-.vrp-stop {
+.fleet-stop {
   width: 18px;
   height: 18px;
   border: 3px solid white;
@@ -121,7 +121,7 @@
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
   box-sizing: border-box;
 }
-.vrp-depot {
+.fleet-depot {
   width: 22px;
   height: 22px;
   background: #0f172a;
@@ -136,11 +136,11 @@
   font-weight: 700;
   box-sizing: border-box;
 }
-.vrp-default-marker {
+.fleet-default-marker {
   background: transparent !important;
   border: none !important;
 }
-.vrp-custom-marker {
+.fleet-custom-marker {
   background: transparent !important;
   border: none !important;
 }

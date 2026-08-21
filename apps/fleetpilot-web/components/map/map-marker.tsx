@@ -5,7 +5,7 @@ import { Marker, type MarkerProps } from 'react-leaflet';
 import L from 'leaflet';
 
 const DEFAULT_ICON = L.divIcon({
-  className: 'vrp-default-marker',
+  className: 'fleet-default-marker',
   html: `<div style="background:#3b82f6;width:18px;height:18px;border-radius:50%;border:2px solid white;box-shadow:0 0 0 1px rgba(0,0,0,0.15);"></div>`,
   iconSize: [18, 18],
   iconAnchor: [9, 9],
@@ -35,7 +35,7 @@ export const MapMarker: React.FC<MapMarkerProps> = ({
     if (icon === undefined) return DEFAULT_ICON;
     if (typeof icon === 'string') {
       return L.divIcon({
-        className: `vrp-custom-marker ${className ?? ''}`,
+        className: `fleet-custom-marker ${className ?? ''}`,
         html: icon,
         iconSize: iconSize ?? [24, 24],
         iconAnchor: iconAnchor ?? [12, 12],

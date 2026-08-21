@@ -69,7 +69,7 @@ export function BuildMap({
 
       const marker = L.marker([latLng.lat, latLng.lng], {
         icon: L.divIcon({
-          className: 'vrp-draw-marker',
+          className: 'fleet-draw-marker',
           iconSize: [24, 24],
           iconAnchor: [12, 12],
         }),
