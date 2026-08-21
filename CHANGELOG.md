@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2026-08-22
+
+### Changed
+
+- **Breaking rename** — the public API now uses unprefixed names, restoring the pre-1.0 naming:
+
+  | 1.x                      | 2.0.0       |
+  | ------------------------ | ----------- |
+  | `VrpProblem`             | `Problem`   |
+  | `VrpSolution`            | `Solution`  |
+  | `VrpError`               | `Error`     |
+  | `MultiDepotProblem.toVrpProblem()` | `MultiDepotProblem.toProblem()` |
+  | `src/errors/vrp-error.ts`| `src/errors/error.ts`           |
+  | `.vrp-*` CSS classes (`apps/fleetpilot-web`) | `.fleet-*` |
+
+- `Error` extends `globalThis.Error` so the class declaration avoids the
+  class-binding TDZ violation of `extends Error`; all typed errors
+  (`ValidationError`, `InfeasibleSolutionError`, `AlgorithmConvergenceError`,
+  `AbortError`) still derive from it.
+- Benchmark runner adapters expose `toProblem()` instead of `toVrpProblem()`.
+- All repository references (package.json `repository.url`, README badges,
+  clone instructions, Dockerfile OCI `source` label) now point to
+  `github.com/sachncs/fleetpilot`.
+- Product prose in the README leads with FleetPilot; VRP variant acronyms
+  remain only where they cite published benchmark suites.
+
+### Migration
+
+```diff
+-import { FleetPilotSolver, VrpProblem } from 'fleetpilot';
+-const problem = new VrpProblem(nodes, customers, vehicles, 0);
++import { FleetPilotSolver, Problem } from 'fleetpilot';
++const problem = new Problem(nodes, customers, vehicles, 0);
+```
+
+Catch library failures via the specific typed errors or `Error` imported
+from `fleetpilot` rather than the native global.
+
 ## [1.2.0] - 2026-08-10
 
 ### Added
