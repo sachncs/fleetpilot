@@ -525,16 +525,27 @@ samples/                               # Example problem files
 
 ## Web UI
 
-`apps/fleetpilot-web/` is a Next.js 14 + shadcn/ui + [shadcn-map](https://shadcn-map.vercel.app)
-frontend that lets users drop a depot and customer stops on a real map, configure
-vehicles and time windows, and step through the solved routes on a replayable
-timeline. See `apps/fleetpilot-web/README.md` for details.
+`apps/fleetpilot-web/` is a Next.js 16 + shadcn/ui frontend that lets users drop
+a depot and customer stops on a real map, configure vehicles and time windows,
+and step through the solved routes on a replayable timeline.
 
 ```bash
 npm install
 npm run build
+
+# Development
 npm run dev -w fleetpilot-web    # http://localhost:3000
+
+# Production (custom server with WebSocket progress streaming)
+npm run start:prod -w fleetpilot-web
+
+# Docker
+docker compose up --build        # mounts ./data for SQLite persistence
 ```
+
+On first launch an interactive setup wizard runs (skipped automatically in
+non-interactive environments such as Docker) and prints a generated API key
+used by the REST API.
 
 ## Contributing
 
