@@ -24,7 +24,7 @@ Itemized atomic plan. Each item is one commit-sized change, independently verifi
 - [x] **2.4** Route pickups on the actual delivering vehicle — `src/algorithms/brkga/decoder.ts:139` — Verify: test asserts pickup shares route with its delivery.
 - [x] **2.5** Decoder throws (not drops) when a customer can't be placed — `decoder.ts` — Verify: over-capacity test throws `ValidationError`.
 - [x] **2.6** β-gene honesty: shrink to 3n (D1: small option) and document — `decoder.ts`, `brkga.ts` — Verify: no dead genes; chrom length matches docs.
-- [x] **2.7** `VrpProblem` validation: shared node ownership, TW ordering, integer ids — `src/core/problem.ts` — Verify: new validation tests.
+- [x] **2.7** `Problem` validation: shared node ownership, TW ordering, integer ids — `src/core/problem.ts` — Verify: new validation tests.
 - [x] **2.8** `MultiDepotProblem` validation parity — `src/core/multi-depot-problem.ts` — Verify: tests.
 - [x] **2.9** CLI NaN guards — `src/cli.ts:233` — Verify: CLI test errors cleanly on `NaN`.
 

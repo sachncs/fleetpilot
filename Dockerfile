@@ -25,7 +25,7 @@ FROM node:${NODE_VERSION} AS runtime
 
 LABEL org.opencontainers.image.title="fleetpilot" \
       org.opencontainers.image.description="FleetPilot — Route optimization SaaS" \
-      org.opencontainers.image.source="https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints" \
+      org.opencontainers.image.source="https://github.com/sachncs/fleetpilot" \
       org.opencontainers.image.licenses="ISC"
 
 ENV NODE_OPTIONS="--max-old-space-size=1024" \

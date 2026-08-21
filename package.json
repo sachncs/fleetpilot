@@ -1,6 +1,6 @@
 {
   "name": "fleetpilot",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "FleetPilot — Route optimization with ALNS + BRKGA metaheuristics, time windows, multi-depot, and traffic-aware routing",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -89,7 +89,7 @@
     "statements": 85
   },
   "keywords": [
-    "vrp",
+    "pickup-and-delivery",
     "fleetpilot",
     "route-optimization",
     "logistics",
@@ -104,7 +104,7 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints.git"
+    "url": "https://github.com/sachncs/fleetpilot.git"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "12.3.0",

@@ -4,15 +4,15 @@
   <p align="center">
     <a href="#installation"><img src="https://img.shields.io/badge/node-20%2B-brightgreen" alt="Node"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-ISC-green" alt="License"></a>
-    <a href="https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints/actions"><img src="https://img.shields.io/github/actions/workflow/status/sachncs/vehicle-routing-problem-with-resource-constraints/ci.yml?branch=master" alt="CI"></a>
+    <a href="https://github.com/sachncs/fleetpilot/actions"><img src="https://img.shields.io/github/actions/workflow/status/sachncs/fleetpilot/ci.yml?branch=master" alt="CI"></a>
     <a href="https://www.npmjs.com/package/fleetpilot"><img src="https://img.shields.io/npm/v/fleetpilot" alt="npm"></a>
-    <a href="https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints/stargazers"><img src="https://img.shields.io/github/stars/sachncs/vehicle-routing-problem-with-resource-constraints" alt="Stars"></a>
+    <a href="https://github.com/sachncs/fleetpilot/stargazers"><img src="https://img.shields.io/github/stars/sachncs/fleetpilot" alt="Stars"></a>
   </p>
 </p>
 
-**Vehicle Routing Problem with Resource-Constrained Pickup and Delivery (VRP-RPD) — a two-stage metaheuristic (ALNS + BRKGA) solver for Indian logistics fleets.**
+**FleetPilot — a two-stage metaheuristic (ALNS + BRKGA) route-optimization solver for resource-constrained pickup and delivery in Indian logistics fleets.**
 
-This library solves VRP-RPD where goods must be delivered, processed, and then picked up, potentially by different vehicles across multiple trips. It uses a two-stage metaheuristic — Adaptive Large Neighborhood Search followed by Biased Random-Key Genetic Algorithm — to find high-quality routes fast.
+FleetPilot solves problems where goods must be delivered, processed, and then picked up, potentially by different vehicles across multiple trips. It uses a two-stage metaheuristic — Adaptive Large Neighborhood Search followed by Biased Random-Key Genetic Algorithm — to find high-quality routes fast.
 
 **Built for Indian logistics:** Supports time windows, multi-depot operations, traffic-aware routing, inter-vehicle transfers at hub nodes, multi-objective optimization (cost, distance, CO₂), and island-model parallel BRKGA via `worker_threads`.
 
@@ -37,7 +37,7 @@ This implementation surpasses the baseline algorithms described in arXiv:2602.23
 - **ALNS** — Adaptive Large Neighborhood Search — 6 destroy + 4 repair operators, adaptive weight selection
 - **BRKGA** — Biased Random-Key Genetic Algorithm — 4n chromosome, elite / mutant / crossover evolution
 - **Warm-start** — ALNS solution seeds 15% of BRKGA population for faster convergence
-- **Time windows** — Earliest / latest delivery and pickup constraints (VRPTW)
+- **Time windows** — Earliest / latest delivery and pickup constraints
 - **Multi-depot** — Vehicles can start / end at different depots
 - **Traffic-aware** — Time-dependent travel speeds via traffic model
 - **Inter-vehicle transfers** — Exchange resources at hub nodes
@@ -59,8 +59,8 @@ npm install fleetpilot
 ### From source
 
 ```bash
-git clone https://github.com/sachncs/vehicle-routing-problem-with-resource-constraints.git
-cd vehicle-routing-problem-with-resource-constraints
+git clone https://github.com/sachncs/fleetpilot.git
+cd fleetpilot
 npm install
 ```
 
@@ -92,7 +92,7 @@ fleetpilot --problem samples/mumbai-20.json --progress
 ### Node.js API (TypeScript)
 
 ```typescript
-import { FleetPilotSolver, VrpProblem, LocationNode, Customer, Vehicle } from 'fleetpilot';
+import { FleetPilotSolver, Problem, LocationNode, Customer, Vehicle } from 'fleetpilot';
 
 const nodes = {
   0: new LocationNode(0, 0, 0, 'Depot'),
@@ -102,7 +102,7 @@ const nodes = {
 const customers = [new Customer(1, 1, 2, 50)]; // id, del-node, pk-node, processing-minutes
 const vehicles = [new Vehicle(1, 5)]; // id, capacity
 
-const problem = new VrpProblem(nodes, customers, vehicles, 0);
+const problem = new Problem(nodes, customers, vehicles, 0);
 const solver = new FleetPilotSolver(problem);
 
 const solution = await solver.solve({ maxTimeMs: 30000 });
@@ -159,7 +159,7 @@ No environment variables are required for core usage. Defaults are tuned for pap
 | Symbol                                                                                                     | Type    | Description                                        |
 | ---------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------- |
 | `FleetPilotSolver`                                                                                             | class   | Orchestrator (ALNS → warm-start → BRKGA)           |
-| `VrpProblem`                                                                                               | class   | Standard problem definition                        |
+| `Problem`                                                                                               | class   | Standard problem definition                        |
 | `TrafficAwareProblem`                                                                                      | class   | Problem with time-dependent travel times           |
 | `MultiDepotProblem`                                                                                        | class   | Multi-depot variant                                |
 | `Customer` / `CustomerWithTimeWindows`                                                                     | class   | Customer with optional delivery / pickup windows   |
@@ -169,10 +169,10 @@ No environment variables are required for core usage. Defaults are tuned for pap
 | `SolutionComparator`                                                                                       | class   | Pareto-front comparison                            |
 | `GISExporter`                                                                                              | class   | `.toGeoJson()` / `.toKml()` / `.toCsv()`           |
 | `TrafficModel`                                                                                             | class   | Time-dependent segment factors                     |
-| `VrpError` → `ValidationError` \| `InfeasibleSolutionError` \| `AlgorithmConvergenceError` \| `AbortError` | classes | Typed error hierarchy                              |
+| `Error` → `ValidationError` \| `InfeasibleSolutionError` \| `AlgorithmConvergenceError` \| `AbortError` | classes | Typed error hierarchy                              |
 | `SolutionWithTransfers` / `ProblemWithTransfers` / `TransferHub` / `TransferManager`                       | classes | Inter-vehicle resource transfers at hub nodes      |
 | `TransferAwareInsertionOperators` / `TransferAwareRemovalOperators`                                        | objects | ALNS operators that respect transfer constraints   |
-| `MultiDepotProblem` (extends `VrpProblem`) + `Depot`                                                       | classes | Vehicles start/end at different depots             |
+| `MultiDepotProblem` (extends `Problem`) + `Depot`                                                       | classes | Vehicles start/end at different depots             |
 
 ## Examples
 
@@ -290,7 +290,7 @@ Problem ──► ALNS (adaptive destroy/repair) ──► warm-start ──► 
 - **Biased crossover (BRKGA)** — Each child inherits each gene from the elite parent with probability 0.7.
 - **Message-passing IPC** — Worker threads communicate via a typed request-response protocol supporting `evolve`, `inject`, and `finish` commands.
 - **Logger DI** — A minimal `Logger` interface allows silent library use or custom logging without coupling to a framework.
-- **Error hierarchy** — `VrpError` → `ValidationError` | `InfeasibleSolutionError` | `AlgorithmConvergenceError`.
+- **Error hierarchy** — `Error` → `ValidationError` | `InfeasibleSolutionError` | `AlgorithmConvergenceError`.
 
 ## Key Implementation Details
 
@@ -334,7 +334,7 @@ Cross-route resource dependencies require iterative schedule computation. The lo
 
 ## The Math
 
-### Problem Formulation (VRP-RPD)
+### Problem Formulation
 
 Each customer `c` has a delivery node `D_c`, a pickup node `P_c`, and a processing time `p_c`. The resource constraint is:
 
@@ -445,7 +445,7 @@ git tag v0.1.X && git push origin v0.1.X
 ```
 src/
 ├── core/                              # Problem & solution definitions
-│   ├── problem.ts                     #   - VRP-RPD problem
+│   ├── problem.ts                     #   - Routing problem
 │   ├── solution.ts                    #   - Solution routing
 │   ├── multi-depot-problem.ts         #   - Multi-depot
 │   ├── traffic-aware-problem.ts       #   - Traffic model
@@ -473,7 +473,7 @@ src/
 │   ├── geo-json.ts / geo-json-feature.ts
 │   └── kml-placemark.ts
 ├── errors/                            # Typed error classes (one per file)
-│   ├── vrp-error.ts
+│   ├── error.ts
 │   ├── validation-error.ts
 │   ├── infeasible-solution-error.ts
 │   ├── algorithm-convergence-error.ts
@@ -519,7 +519,7 @@ samples/                               # Example problem files
 
 ## Roadmap
 
-- **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toVrpProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
+- **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
 - **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, `apps/fleetpilot-web/` interactive UI.
 - **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models; GPU acceleration for ALNS.
 

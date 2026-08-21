@@ -152,9 +152,9 @@ The `onProgress` callback receives `SolverProgress` events with `stage`
 ```bash
 # Confirms the worker bundle exists and a parallel solve returns.
 node -e "
-  const { FleetPilotSolver, VrpProblem, LocationNode, Customer, Vehicle } = require('fleetpilot');
+  const { FleetPilotSolver, Problem, LocationNode, Customer, Vehicle } = require('fleetpilot');
   const nodes = { 0: new LocationNode(0,0,0,'D'), 1: new LocationNode(1,10,0,'D1'), 2: new LocationNode(2,20,0,'P1') };
-  const problem = new VrpProblem(nodes, [new Customer(1,1,2,5)], [new Vehicle(1,10)]);
+  const problem = new Problem(nodes, [new Customer(1,1,2,5)], [new Vehicle(1,10)]);
   new FleetPilotSolver(problem).solve({ parallel: true, maxTimeMs: 5000 })
     .then(s => console.log('OK', s.makespan))
     .catch(e => { console.error('FAIL', e); process.exit(1); });
