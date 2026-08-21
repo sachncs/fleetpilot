@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { resolve, dirname } from 'node:path';
+import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import next from 'next';
 import { ensureSchema } from './lib/db/migrate';

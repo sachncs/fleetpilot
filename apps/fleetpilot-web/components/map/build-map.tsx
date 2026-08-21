@@ -77,7 +77,6 @@ export function BuildMap({
       (marker.options as { markerId?: number }).markerId = nextId;
       layer.addLayer(marker);
 
-      const [x, y] = latLngToMetres(referenceOrigin, latLng.lat, latLng.lng);
       const nodes = (layer.getLayers() as L.Marker[]).flatMap((m) => {
         const id = (m.options as { markerId?: number }).markerId;
         if (typeof id !== 'number') return [];

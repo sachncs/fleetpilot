@@ -4,7 +4,7 @@ import * as React from 'react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Sparkles, RotateCcw } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 import { useProblemStore } from '@/lib/problem-store';
 import { solveProblem } from '@/lib/solver-client';

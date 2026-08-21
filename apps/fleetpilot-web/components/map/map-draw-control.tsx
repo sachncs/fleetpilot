@@ -2,7 +2,6 @@
 
 import * as React from 'react';
 import { useMap, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
 
 import { cn } from '@/lib/utils';
 

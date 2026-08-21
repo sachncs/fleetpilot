@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import L from 'leaflet';
-import { Marker, useMap } from 'react-leaflet';
+import { Marker } from 'react-leaflet';
 
 import { Map } from '@/components/map/map';
 import { MapTileLayer } from '@/components/map/map-tile-layer';

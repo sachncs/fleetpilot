@@ -2,7 +2,7 @@ import { fork, type ChildProcess } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { WorkerMessage, ProgressMessage, SolutionMessage, ErrorMessage } from './ipc';
+import type { WorkerMessage } from './ipc';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 

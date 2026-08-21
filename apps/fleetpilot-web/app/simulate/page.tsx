@@ -90,7 +90,7 @@ export default function SimulatePage(): React.ReactElement {
     if (solution && currentTime !== 0) {
       setCurrentTime(0);
     }
-  }, [solution]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [solution]);
 
   if (!problem || !solution) {
     return (
