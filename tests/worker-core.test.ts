@@ -1,10 +1,10 @@
 import { expect } from 'chai';
 
-import { VrpProblem, LocationNode, Customer } from '../src/core/problem.js';
+import { Problem, LocationNode, Customer } from '../src/core/problem.js';
 import { runWorkerTask, type WorkerIO } from '../src/worker-core.js';
 import { serializeProblem } from '../src/worker-data.js';
 
-function makeProblem(): VrpProblem {
+function makeProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -16,7 +16,7 @@ function makeProblem(): VrpProblem {
   const vehicles = [
     { id: 1, capacity: 10, startDepotId: 0, endDepotId: 0, costPerKm: 1, co2PerKm: 1 },
   ];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
 function makeIO(): {

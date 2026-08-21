@@ -3,11 +3,11 @@ import { expect } from 'chai';
 import { ALNS } from '../../src/algorithms/alns/alns.js';
 import { BRKGA } from '../../src/algorithms/brkga/brkga.js';
 import { type Chromosome } from '../../src/algorithms/brkga/decoder.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
-import type { VrpSolution } from '../../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
+import type { Solution } from '../../src/core/solution.js';
 import { runWorkerTask, type WorkerIO } from '../../src/worker-core.js';
 
-function makeProblem(): VrpProblem {
+function makeProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -22,10 +22,10 @@ function makeProblem(): VrpProblem {
     new Customer(2, 3, 4, 10),
     new Customer(3, 5, 6, 10),
   ];
-  return new VrpProblem(nodes, customers, [new Vehicle(1, 30)], 0);
+  return new Problem(nodes, customers, [new Vehicle(1, 30)], 0);
 }
 
-function buildWarmStart(problem: VrpProblem): VrpSolution {
+function buildWarmStart(problem: Problem): Solution {
   return new ALNS(problem, { maxIterations: 5 }).solve();
 }
 
@@ -72,7 +72,7 @@ describe('BRKGA island-mode warm-start (regression: warmStartolution typo)', () 
     expect(data.type).to.equal('island-brkga');
     expect(data.islandId).to.equal(0);
     expect(data.options['warmStartolution']).to.be.undefined;
-    const forwarded = data.options['warmStartSolution'] as VrpSolution | null | undefined;
+    const forwarded = data.options['warmStartSolution'] as Solution | null | undefined;
     expect(forwarded).to.exist;
     expect(forwarded!.routes.length).to.equal(warmStart.routes.length);
     expect(forwarded!.makespan).to.equal(warmStart.makespan);

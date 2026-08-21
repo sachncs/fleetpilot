@@ -6,7 +6,7 @@ import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { Decoder } from '../src/algorithms/brkga/decoder.js';
 import { Depot, MultiDepotProblem } from '../src/core/multi-depot-problem.js';
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
@@ -16,7 +16,7 @@ import {
   ProblemWithTransfers,
   SolutionWithTransfers,
 } from '../src/core/solution-with-transfers.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Solution, Route } from '../src/core/solution.js';
 import { TrafficAwareProblem, TrafficModel } from '../src/core/traffic-aware-problem.js';
 import { TransferHub } from '../src/core/transfer-hub.js';
 import { VehicleWithCapabilities } from '../src/core/vehicle-with-capabilities.js';
@@ -31,7 +31,7 @@ describe('Comprehensive - Problem Validation', () => {
   it('rejects non-existent pickup node', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
     const customers = [new Customer(1, 1, 99, 10)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)]))
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('non-existent pickup node');
@@ -44,7 +44,7 @@ describe('Comprehensive - Problem Validation', () => {
       2: new LocationNode(2, 20, 0),
     };
     const customers = [new Customer(1, 1, 2, 10)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)], 999))
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)], 999))
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('does not exist in nodes');
@@ -53,7 +53,7 @@ describe('Comprehensive - Problem Validation', () => {
   it('rejects NaN coordinates', () => {
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           { 0: new LocationNode(0, NaN, 0) },
           [new Customer(1, 0, 0, 10)],
           [new Vehicle(1, 5)],
@@ -64,7 +64,7 @@ describe('Comprehensive - Problem Validation', () => {
   it('rejects Infinity coordinates', () => {
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           { 0: new LocationNode(0, Infinity, 0) },
           [new Customer(1, 0, 0, 10)],
           [new Vehicle(1, 5)],
@@ -78,7 +78,7 @@ describe('Comprehensive - Problem Validation', () => {
       1: new LocationNode(1, 10, 0),
       2: new LocationNode(2, 20, 0),
     };
-    expect(() => new VrpProblem(nodes, [new Customer(1, 1, 2, 10)], [new Vehicle(1, 0)])).to.throw(
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 10)], [new Vehicle(1, 0)])).to.throw(
       ValidationError,
     );
   });
@@ -91,7 +91,7 @@ describe('Comprehensive - Problem Validation', () => {
       3: new LocationNode(3, 30, 0),
     };
     const customers = [new Customer(1, 1, 2, 10), new Customer(2, 2, 3, 10)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)]))
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('shared between customers 1 and 2');
@@ -99,28 +99,28 @@ describe('Comprehensive - Problem Validation', () => {
 
   it('allows a customer to deliver and pick up at the same node', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    const problem = new VrpProblem(nodes, [new Customer(1, 1, 1, 10)], [new Vehicle(1, 5)]);
+    const problem = new Problem(nodes, [new Customer(1, 1, 1, 10)], [new Vehicle(1, 5)]);
     expect(problem.customers.length).to.equal(1);
   });
 
   it('rejects non-integer node ids', () => {
     const nodes = { 1.5: new LocationNode(1.5, 10, 0) };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)]),
+      () => new Problem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)]),
     ).to.throw(ValidationError);
   });
 
   it('rejects non-integer customer ids', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)]),
+      () => new Problem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)]),
     ).to.throw(ValidationError);
   });
 
   it('rejects inverted delivery time window', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
     const customers = [new CustomerWithTimeWindows(1, 1, 1, 10, 100, 0, 0, 200)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)]))
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('delivery window is inverted');
@@ -129,7 +129,7 @@ describe('Comprehensive - Problem Validation', () => {
   it('rejects inverted pickup time window', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
     const customers = [new CustomerWithTimeWindows(1, 1, 1, 10, 0, 200, 100, 0)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)]))
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)]))
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('pickup window is inverted');
@@ -143,21 +143,21 @@ describe('Comprehensive - Problem Validation', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const depot = 1.5 as unknown as number;
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 10)], depot)).to.throw(
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 10)], depot)).to.throw(
       ValidationError,
     );
   });
 
   it('getDistance returns 0 for missing node ids', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    const problem = new VrpProblem(nodes, [new Customer(1, 0, 0, 10)], [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, [new Customer(1, 0, 0, 10)], [new Vehicle(1, 10)], 0);
     expect(problem.getDistance(999, 1)).to.equal(0);
     expect(problem.getDistance(0, 999)).to.equal(0);
   });
 
   it('getTravelTime returns distance divided by speed', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    const problem = new VrpProblem(nodes, [new Customer(1, 0, 0, 10)], [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, [new Customer(1, 0, 0, 10)], [new Vehicle(1, 10)], 0);
     expect(problem.getTravelTime(0, 1, 2)).to.equal(5);
   });
 });
@@ -165,7 +165,7 @@ describe('Comprehensive - Problem Validation', () => {
 describe('Comprehensive - Solution Edge Cases', () => {
   it('creates empty routes for each vehicle when none provided', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(problem);
+    const solution = new Solution(problem);
     expect(solution.routes.length).to.equal(problem.vehicles.length);
   });
 
@@ -202,16 +202,16 @@ describe('Comprehensive - Solution Edge Cases', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new Vehicle(1, 1)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     expect(solution.checkCapacity()).to.be.true;
 
     const tooMuch = [new Route(1, [1, 1])];
-    const overloaded = new VrpSolution(problem, tooMuch);
+    const overloaded = new Solution(problem, tooMuch);
     overloaded.calculateSchedule();
     expect(overloaded.checkCapacity()).to.be.false;
   });
@@ -224,10 +224,10 @@ describe('Comprehensive - Solution Edge Cases', () => {
     };
     const customers = [new CustomerWithTimeWindows(1, 1, 2, 10, 0, 1, 0, 100)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     expect(solution.checkCapacity()).to.be.true;
@@ -237,7 +237,7 @@ describe('Comprehensive - Solution Edge Cases', () => {
   it('getObjectives returns correct values', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
 
     solution.totalDistance = 100;
     solution.totalCost = 200;
@@ -253,12 +253,12 @@ describe('Comprehensive - Solution Edge Cases', () => {
 
   it('serialize without routes works', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(problem);
+    const solution = new Solution(problem);
     const data = solution.serialize();
     expect(data.routes.length).to.equal(problem.vehicles.length);
     expect(data.makespan).to.equal(Infinity);
 
-    const restored = VrpSolution.deserialize(data, problem);
+    const restored = Solution.deserialize(data, problem);
     expect(restored.routes.length).to.equal(problem.vehicles.length);
   });
 });
@@ -486,7 +486,7 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
   it('random removal with k=0 removes nothing', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const result = RemovalOperators.random(solution, 0, testRandom);
@@ -497,7 +497,7 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
   it('random removal with negative k removes nothing', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const result = RemovalOperators.random(solution, -1, testRandom);
@@ -507,7 +507,7 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
   it('shaw removal with k=0 removes nothing', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const result = RemovalOperators.shaw(solution, 0, testRandom);
@@ -516,7 +516,7 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
 
   it('greedy insertion with empty solution still works', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(problem);
+    const solution = new Solution(problem);
     const result = InsertionOperators.greedyInsertion(solution, problem.customers);
     expect(result.isComplete()).to.be.true;
   });
@@ -524,7 +524,7 @@ describe('Comprehensive - Algorithm Edge Cases', () => {
   it('worst removal with k=1 removes one customer', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const result = RemovalOperators.worst(solution, 1);
@@ -569,7 +569,7 @@ describe('Comprehensive - BRKGA Edge Cases', () => {
 describe('Comprehensive - Solution Feasibility', () => {
   it('detects incomplete solution (missing delivery)', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(problem, [new Route(1, [2])]); // only pickup
+    const solution = new Solution(problem, [new Route(1, [2])]); // only pickup
     solution.calculateSchedule();
     expect(solution.isComplete()).to.be.false;
     expect(solution.isFeasible()).to.be.false;
@@ -585,9 +585,9 @@ describe('Comprehensive - Solution Feasibility', () => {
     };
     const customers = [new Customer(1, 1, 2, 5), new Customer(2, 3, 4, 5)];
     const vehicles = [new Vehicle(1, 1)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = [new Route(1, [1, 3, 2, 4])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
     expect(solution.checkCapacity()).to.be.false;
     expect(solution.isFeasible()).to.be.false;
@@ -598,7 +598,7 @@ describe('Comprehensive - GIS Export', () => {
   it('toKml produces valid output', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -610,7 +610,7 @@ describe('Comprehensive - GIS Export', () => {
   it('toCsv produces tabular route data', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, [1, 2]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);

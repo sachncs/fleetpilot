@@ -4,8 +4,8 @@ import { ALNS } from '../../src/algorithms/alns/alns.js';
 import { RemovalOperators } from '../../src/algorithms/alns/operators.js';
 import { BRKGA } from '../../src/algorithms/brkga/brkga.js';
 import { Decoder, type Chromosome } from '../../src/algorithms/brkga/decoder.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
-import { VrpSolution, Route } from '../../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
+import { Solution, Route } from '../../src/core/solution.js';
 import { createBasicProblem, createTwoVehicleProblem } from '../helpers.js';
 
 const testRandom: () => number = () => Math.random();
@@ -21,13 +21,13 @@ describe('Decoder edge cases', () => {
     };
     const customers = [new Customer(1, 1, 2, 1), new Customer(2, 3, 4, 200)];
     const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     routes[1]!.nodes.push(3, 4);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);
@@ -52,7 +52,7 @@ describe('Decoder edge cases', () => {
       new Customer(3, 5, 6, 10),
     ];
     const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10), new Vehicle(3, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const chromosome: Chromosome = {
@@ -114,13 +114,13 @@ describe('ALNS deep branches', () => {
 });
 
 describe('Shaw and cluster with k > 1', () => {
-  function buildSolution(): VrpSolution {
+  function buildSolution(): Solution {
     const problem = createTwoVehicleProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     for (const c of problem.customers) {
       routes[c.id - 1]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
     return solution;
   }
@@ -174,12 +174,12 @@ describe('Decoder encode with various customer states', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);
@@ -202,13 +202,13 @@ describe('Decoder encode with various customer states', () => {
       new Customer(3, 5, 6, 10),
     ];
     const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     routes[1]!.nodes.push(3, 4, 5, 6);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);

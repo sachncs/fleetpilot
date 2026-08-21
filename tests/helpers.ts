@@ -1,13 +1,13 @@
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
   Vehicle,
 } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Solution, Route } from '../src/core/solution.js';
 
-export function createBasicProblem(): VrpProblem {
+export function createBasicProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -17,10 +17,10 @@ export function createBasicProblem(): VrpProblem {
   };
   const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
   const vehicles = [new Vehicle(1, 10)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
-export function createTwoVehicleProblem(): VrpProblem {
+export function createTwoVehicleProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -30,10 +30,10 @@ export function createTwoVehicleProblem(): VrpProblem {
   };
   const customers = [new Customer(1, 1, 2, 10), new Customer(2, 3, 4, 10)];
   const vehicles = [new Vehicle(1, 10, 0, 0, 1, 1), new Vehicle(2, 10, 0, 0, 2, 2)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
-export function createThreeCustomerProblem(): VrpProblem {
+export function createThreeCustomerProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -49,10 +49,10 @@ export function createThreeCustomerProblem(): VrpProblem {
     new Customer(3, 5, 6, 30),
   ];
   const vehicles = [new Vehicle(1, 20)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
-export function createTimeWindowProblem(): VrpProblem {
+export function createTimeWindowProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -65,10 +65,10 @@ export function createTimeWindowProblem(): VrpProblem {
     new Customer(2, 3, 4, 10),
   ];
   const vehicles = [new Vehicle(1, 20)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
-export function createSingleCustomerProblem(): VrpProblem {
+export function createSingleCustomerProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -76,12 +76,12 @@ export function createSingleCustomerProblem(): VrpProblem {
   };
   const customers = [new Customer(1, 1, 2, 50)];
   const vehicles = [new Vehicle(1, 5)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
-export function createKnownSolution(problem: VrpProblem): VrpSolution {
+export function createKnownSolution(problem: Problem): Solution {
   const routes = problem.vehicles.map((v) => new Route(v.id, []));
-  const solution = new VrpSolution(problem, routes);
+  const solution = new Solution(problem, routes);
   for (const c of problem.customers) {
     const route = solution.routes[0];
     if (route) {
@@ -93,7 +93,7 @@ export function createKnownSolution(problem: VrpProblem): VrpSolution {
   return solution;
 }
 
-export function assertFeasible(solution: VrpSolution): void {
+export function assertFeasible(solution: Solution): void {
   if (!solution.isComplete()) {
     throw new Error('Solution is not complete');
   }

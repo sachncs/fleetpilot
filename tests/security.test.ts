@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
 import { GISExporter } from '../src/export/index.js';
 import { isWorkerData, validateWorkerData } from '../src/worker-validation.js';
 
@@ -14,8 +14,8 @@ describe('Security S1 - KML XML escaping', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const solution = new VrpSolution(problem, [new Route(1, [1, 2])]);
+    const problem = new Problem(nodes, customers, vehicles, 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -40,8 +40,8 @@ describe('Security S1 - KML XML escaping', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const solution = new VrpSolution(problem, [new Route(1, [1, 2])]);
+    const problem = new Problem(nodes, customers, vehicles, 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -77,8 +77,8 @@ describe('Security S2 - CSV escaping', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
-    const solution = new VrpSolution(problem, [new Route(1, [1, 2])]);
+    const problem = new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -95,8 +95,8 @@ describe('Security S2 - CSV escaping', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
-    const solution = new VrpSolution(problem, [new Route(1, [1, 2])]);
+    const problem = new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -113,8 +113,8 @@ describe('Security S2 - CSV escaping', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
-    const solution = new VrpSolution(problem, [new Route(1, [1, 2])]);
+    const problem = new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -134,8 +134,8 @@ describe('Security S2 - CSV escaping', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
-    const solution = new VrpSolution(problem, [new Route(1, [1, 2])]);
+    const problem = new Problem(nodes, customers, vehicles, 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -152,7 +152,7 @@ describe('Security S2 - CSV escaping', () => {
 
 describe('Security S3 - Problem constructor validation', () => {
   it('rejects empty nodes', () => {
-    expect(() => new VrpProblem({}, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0)).to.throw(
+    expect(() => new Problem({}, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0)).to.throw(
       'nodes cannot be empty',
     );
   });
@@ -161,7 +161,7 @@ describe('Security S3 - Problem constructor validation', () => {
     const nodes: Record<number, LocationNode> = {
       0: new LocationNode(0, 0, 0, 'Depot'),
     };
-    expect(() => new VrpProblem(nodes, [], [new Vehicle(1, 10)], 0)).to.throw(
+    expect(() => new Problem(nodes, [], [new Vehicle(1, 10)], 0)).to.throw(
       'customers cannot be empty',
     );
   });
@@ -172,7 +172,7 @@ describe('Security S3 - Problem constructor validation', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(() => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [], 0)).to.throw(
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [], 0)).to.throw(
       'vehicles cannot be empty',
     );
   });
@@ -184,7 +184,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
     ).to.throw('invalid coordinates');
   });
 
@@ -195,7 +195,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
     ).to.throw('invalid coordinates');
   });
 
@@ -206,7 +206,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
     ).to.throw('negative coordinates');
   });
 
@@ -218,7 +218,7 @@ describe('Security S3 - Problem constructor validation', () => {
     };
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           nodes,
           [new Customer(1, 1, 2, 50), new Customer(1, 1, 2, 50)],
           [new Vehicle(1, 10)],
@@ -235,7 +235,7 @@ describe('Security S3 - Problem constructor validation', () => {
     };
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           nodes,
           [new Customer(1, 1, 2, 50)],
           [new Vehicle(1, 10), new Vehicle(1, 10)],
@@ -251,7 +251,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 999, 2, 50)], [new Vehicle(1, 10)], 0),
+      () => new Problem(nodes, [new Customer(1, 999, 2, 50)], [new Vehicle(1, 10)], 0),
     ).to.throw('non-existent delivery node');
   });
 
@@ -262,7 +262,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 999, 50)], [new Vehicle(1, 10)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 999, 50)], [new Vehicle(1, 10)], 0),
     ).to.throw('non-existent pickup node');
   });
 
@@ -273,7 +273,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 999),
+      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 999),
     ).to.throw('Depot node 999 does not exist');
   });
 
@@ -284,7 +284,7 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, -1)], [new Vehicle(1, 10)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 2, -1)], [new Vehicle(1, 10)], 0),
     ).to.throw('negative processingTime');
   });
 
@@ -295,10 +295,10 @@ describe('Security S3 - Problem constructor validation', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 0)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 0)], 0),
     ).to.throw('positive capacity');
     expect(
-      () => new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, -5)], 0),
+      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, -5)], 0),
     ).to.throw('positive capacity');
   });
 });

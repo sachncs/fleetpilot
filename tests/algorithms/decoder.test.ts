@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 
 import { Decoder, type Chromosome } from '../../src/algorithms/brkga/decoder.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
-import { VrpSolution, Route } from '../../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
+import { Solution, Route } from '../../src/core/solution.js';
 import { ValidationError } from '../../src/errors/index.js';
 import { createBasicProblem, createSingleCustomerProblem, assertFeasible } from '../helpers.js';
 
@@ -42,7 +42,7 @@ describe('BRKGA Decoder', () => {
     };
     const customers = [new Customer(1, 1, 2, 10), new Customer(2, 3, 4, 10)];
     const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const chromosome: Chromosome = {
@@ -78,7 +78,7 @@ describe('BRKGA Decoder', () => {
     const problem = createBasicProblem();
     const decoder = new Decoder(problem);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -94,7 +94,7 @@ describe('BRKGA Decoder', () => {
     const problem = createBasicProblem();
     const decoder = new Decoder(problem);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const original = new VrpSolution(problem, routes);
+    const original = new Solution(problem, routes);
     for (const c of problem.customers) {
       original.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -121,7 +121,7 @@ describe('BRKGA Decoder', () => {
       new Customer(3, 5, 6, 5),
     ];
     const vehicles = [new Vehicle(1, 1), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const chromosome: Chromosome = {
@@ -153,7 +153,7 @@ describe('BRKGA Decoder', () => {
       new Customer(3, 5, 6, 5),
     ];
     const vehicles = [new Vehicle(1, 1), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const chromosome: Chromosome = {
@@ -183,7 +183,7 @@ describe('BRKGA Decoder', () => {
     };
     const customers = [new Customer(1, 1, 2, 5), new Customer(2, 3, 4, 5)];
     const vehicles = [new Vehicle(1, 1)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const chromosome: Chromosome = {
@@ -228,13 +228,13 @@ describe('BRKGA Decoder', () => {
     };
     const customers = [new Customer(1, 1, 2, 10), new Customer(2, 3, 4, 10)];
     const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
     routes[1]!.nodes.push(3, 4);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);
@@ -256,12 +256,12 @@ describe('BRKGA Decoder', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);
@@ -276,12 +276,12 @@ describe('BRKGA Decoder', () => {
     };
     const customers = [new Customer(1, 1, 2, 1000)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const decoder = new Decoder(problem);
 
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const chromosome = decoder.encode(solution);

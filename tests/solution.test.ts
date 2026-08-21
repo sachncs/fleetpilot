@@ -1,14 +1,14 @@
 import { expect } from 'chai';
 
-import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Problem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
 
 import { createBasicProblem, createTwoVehicleProblem } from './helpers.js';
 
 describe('Solution evaluation methods', () => {
   it('evaluateMakespanWithRoute returns the new makespan for a candidate route', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -27,7 +27,7 @@ describe('Solution evaluation methods', () => {
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const c = problem.customers[0]!;
     routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const candidate = routes[0]!;
@@ -38,7 +38,7 @@ describe('Solution evaluation methods', () => {
 
   it('evaluateMakespanWithRoute: longer route -> strictly larger makespan', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -60,7 +60,7 @@ describe('Solution evaluation methods', () => {
 
   it('evaluateMakespanWithTwoRoutes returns the combined makespan', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -77,7 +77,7 @@ describe('Solution evaluation methods', () => {
 
   it('evaluateMakespanWithTwoRoutes: takes max of both route return times', () => {
     const problem = createTwoVehicleProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -96,7 +96,7 @@ describe('Solution evaluation methods', () => {
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const c = problem.customers[0]!;
     routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const result = solution.evaluateRouteReturnTime(routes[0]!, {});
@@ -108,7 +108,7 @@ describe('Solution evaluation methods', () => {
 
   it('evaluateRouteReturnTime: empty route returns travel-from-depot-to-depot', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -124,7 +124,7 @@ describe('Solution evaluation methods', () => {
     const c2 = problem.customers[1]!;
 
     // Incremental: append one node at a time, updating after each.
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -136,7 +136,7 @@ describe('Solution evaluation methods', () => {
     const incrementalMakespan = solution.makespan;
 
     // Full recalculation on a fresh solution with same routes.
-    const solution2 = new VrpSolution(problem, [
+    const solution2 = new Solution(problem, [
       new Route(1, [c1.deliveryNodeId, c1.pickupNodeId, c2.deliveryNodeId, c2.pickupNodeId]),
     ]);
     solution2.calculateSchedule();
@@ -150,7 +150,7 @@ describe('Solution evaluation methods', () => {
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const c = problem.customers[0]!;
     routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     const distance = solution.calculateRouteDistance(routes[0]!);
     expect(distance).to.be.greaterThan(0);
   });
@@ -162,10 +162,10 @@ describe('Solution evaluation methods', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     const customers = [new CustomerWithTimeWindows(1, 1, 2, 10, 0, 1000, 50, 2000)];
-    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, customers, [new Vehicle(1, 10)], 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
     expect(solution.checkTimeWindows()).to.be.true;
   });
@@ -177,17 +177,17 @@ describe('Solution evaluation methods', () => {
       2: new LocationNode(2, 20, 0, 'P1'),
     };
     const customers = [new CustomerWithTimeWindows(1, 1, 2, 10, 0, 5, 0, 5)];
-    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, customers, [new Vehicle(1, 10)], 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     routes[0]!.nodes.push(1, 2);
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
     expect(solution.checkTimeWindows()).to.be.false;
   });
 
   it('getObjectives returns distance, cost, and CO2', () => {
     const problem = createTwoVehicleProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -219,7 +219,7 @@ describe('Solution evaluation methods', () => {
 
   it('Solution.clone produces an independent solution', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -234,7 +234,7 @@ describe('Solution evaluation methods', () => {
     for (const c of problem.customers) {
       routes[0]!.nodes.push(c.deliveryNodeId);
     }
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
     expect(solution.checkCapacity()).to.be.true;
   });
@@ -242,13 +242,13 @@ describe('Solution evaluation methods', () => {
   it('isFeasible returns false if any check fails', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     expect(solution.isFeasible()).to.be.false;
   });
 
   it('serialize then deserialize round-trips', () => {
     const problem = createBasicProblem();
-    const solution = new VrpSolution(
+    const solution = new Solution(
       problem,
       problem.vehicles.map((v) => new Route(v.id, [])),
     );
@@ -257,7 +257,7 @@ describe('Solution evaluation methods', () => {
     }
     solution.calculateSchedule();
     const data = solution.serialize();
-    const restored = VrpSolution.deserialize(data, problem);
+    const restored = Solution.deserialize(data, problem);
     expect(restored.routes).to.have.lengthOf(solution.routes.length);
     expect(restored.makespan).to.equal(solution.makespan);
     expect(restored.totalDistance).to.equal(solution.totalDistance);

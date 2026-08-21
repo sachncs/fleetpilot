@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { ALNS } from '../src/algorithms/alns/alns.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
@@ -23,14 +23,14 @@ const makeBaseProblem = () => {
   };
   const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
   const vehicles = [new Vehicle(1, 10)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 };
 
 describe('Worker serialization round-trip', () => {
   it('preserves vehicle depots, cost, and CO2', () => {
     const problem = makeBaseProblem();
     const vehicle = new Vehicle(7, 10, 1, 2, 3.5, 0.25);
-    const withVehicle = new VrpProblem(problem.nodes, problem.customers, [vehicle], 0);
+    const withVehicle = new Problem(problem.nodes, problem.customers, [vehicle], 0);
     const rebuilt = deserializeProblem(
       serializeProblem(withVehicle, { type: 'ALNS', options: {} }),
     );
@@ -46,7 +46,7 @@ describe('Worker serialization round-trip', () => {
   it('preserves customer time windows', () => {
     const problem = makeBaseProblem();
     const twCustomer = new CustomerWithTimeWindows(3, 1, 2, 50, 100, 200, 300, 400);
-    const withTw = new VrpProblem(problem.nodes, [twCustomer], problem.vehicles, 0);
+    const withTw = new Problem(problem.nodes, [twCustomer], problem.vehicles, 0);
     const rebuilt = deserializeProblem(serializeProblem(withTw, { type: 'BRKGA', options: {} }));
     expect(rebuilt.customers[0]).to.be.instanceOf(CustomerWithTimeWindows);
     const c = rebuilt.customers[0] as unknown as CustomerWithTimeWindows;
@@ -108,7 +108,7 @@ describe('Parallel worker integration', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(
+    const problem = new Problem(
       nodes,
       [new CustomerWithTimeWindows(1, 1, 2, 50, 0, 10000, 0, 10000)],
       [new Vehicle(1, 10, 0, 0, 1.5, 0.3)],

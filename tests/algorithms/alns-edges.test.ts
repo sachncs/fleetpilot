@@ -2,7 +2,7 @@ import { expect } from 'chai';
 
 import { ALNS } from '../../src/algorithms/alns/alns.js';
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   CustomerWithTimeWindows,
   Vehicle,
@@ -10,7 +10,7 @@ import {
 import { ValidationError } from '../../src/errors/index.js';
 import { createBasicProblem, createSingleCustomerProblem } from '../helpers.js';
 
-function makeProblemWithTwCustomers(): VrpProblem {
+function makeProblemWithTwCustomers(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -26,7 +26,7 @@ function makeProblemWithTwCustomers(): VrpProblem {
     new CustomerWithTimeWindows(3, 5, 6, 10, 0, 1000, 50, 1500),
   ];
   const vehicles = [new Vehicle(1, 10)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
 describe('ALNS validation', () => {

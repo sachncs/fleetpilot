@@ -2,13 +2,13 @@ import { expect } from 'chai';
 
 import { RemovalOperators, InsertionOperators } from '../../src/algorithms/alns/operators.js';
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
   Vehicle,
 } from '../../src/core/problem.js';
-import { VrpSolution, Route } from '../../src/core/solution.js';
+import { Solution, Route } from '../../src/core/solution.js';
 import {
   createBasicProblem,
   createSingleCustomerProblem,
@@ -22,7 +22,7 @@ describe('ALNS Removal Operators', () => {
   it('random removes exactly k customers', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -45,7 +45,7 @@ describe('ALNS Removal Operators', () => {
   it('worst removes the highest-cost customer', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -131,9 +131,9 @@ describe('ALNS Removal Operators', () => {
       new CustomerWithTimeWindows(1, 1, 2, 10, 200, 400, 300, 500),
       new Customer(2, 3, 4, 10),
     ];
-    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 20)], 0);
+    const problem = new Problem(nodes, customers, [new Vehicle(1, 20)], 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -148,7 +148,7 @@ describe('ALNS Removal Operators', () => {
   it('removes delivery and pickup from same route correctly', () => {
     const problem = createSingleCustomerProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     const c = problem.customers[0]!;
     solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     solution.calculateSchedule();
@@ -159,9 +159,9 @@ describe('ALNS Removal Operators', () => {
     expect(partial.routes[0]!.nodes.includes(c.pickupNodeId)).to.be.false;
   });
 
-  function createKnownSolution(problem: VrpProblem): VrpSolution {
+  function createKnownSolution(problem: Problem): Solution {
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       const route = solution.routes[0];
       if (route) {
@@ -177,7 +177,7 @@ describe('ALNS Insertion Operators', () => {
   it('greedyInsertion restores completeness after removal', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -191,7 +191,7 @@ describe('ALNS Insertion Operators', () => {
   it('greedyInsertion places customer in cheapest position', () => {
     const problem = createTwoVehicleProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
     }
@@ -229,7 +229,7 @@ describe('ALNS Insertion Operators', () => {
   it('all insertion operators handle empty customer list', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const greedy = InsertionOperators.greedyInsertion(solution, []);
@@ -281,9 +281,9 @@ describe('ALNS Insertion Operators', () => {
     }
   });
 
-  function createKnownSolution(problem: VrpProblem): VrpSolution {
+  function createKnownSolution(problem: Problem): Solution {
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     for (const c of problem.customers) {
       const route = solution.routes[0];
       if (route) {

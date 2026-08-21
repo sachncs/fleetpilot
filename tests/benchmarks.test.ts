@@ -1,11 +1,11 @@
 import { expect } from 'chai';
 
 import { Decoder, type Chromosome } from '../src/algorithms/brkga/decoder.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { FleetPilotSolver } from '../src/index.js';
 
 describe('Benchmarks', () => {
-  function generateGridProblem(size: number): VrpProblem {
+  function generateGridProblem(size: number): Problem {
     const nodes: Record<number, LocationNode> = {};
     const gridDim = Math.ceil(Math.sqrt(size + 1));
 
@@ -28,7 +28,7 @@ describe('Benchmarks', () => {
 
     const vehicles = [new Vehicle(1, size * 2), new Vehicle(2, size * 2), new Vehicle(3, size * 2)];
 
-    return new VrpProblem(nodes, customers, vehicles, 0);
+    return new Problem(nodes, customers, vehicles, 0);
   }
 
   it('should solve 20-customer instance and produce feasible solution', async () => {

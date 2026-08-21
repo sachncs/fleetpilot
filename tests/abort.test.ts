@@ -1,13 +1,13 @@
 import { expect } from 'chai';
 
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { AbortError, VrpError } from '../src/errors/index.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { AbortError, Error } from '../src/errors/index.js';
 import * as rootExports from '../src/index.js';
 import { FleetPilotSolver } from '../src/index.js';
 
-const { AbortError: RootAbortError, VrpError: RootVrpError } = rootExports;
+const { AbortError: RootAbortError, Error: RootVrpError } = rootExports;
 
-function buildProblem(): VrpProblem {
+function buildProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -22,12 +22,12 @@ function buildProblem(): VrpProblem {
     new Customer(2, 3, 4, 10),
     new Customer(3, 5, 6, 10),
   ];
-  return new VrpProblem(nodes, customers, [new Vehicle(1, 30)], 0);
+  return new Problem(nodes, customers, [new Vehicle(1, 30)], 0);
 }
 
 describe('AbortError', () => {
-  it('extends VrpError', () => {
-    expect(new AbortError()).to.be.instanceOf(VrpError);
+  it('extends Error', () => {
+    expect(new AbortError()).to.be.instanceOf(Error);
   });
 
   it('has a descriptive default message', () => {
@@ -40,7 +40,7 @@ describe('AbortError', () => {
     const instance = new RootAbortError('custom');
     expect(instance.message).to.equal('custom');
     expect(instance).to.be.instanceOf(AbortError);
-    expect(instance).to.be.instanceOf(VrpError);
+    expect(instance).to.be.instanceOf(Error);
     expect(instance).to.be.instanceOf(RootVrpError);
   });
 });

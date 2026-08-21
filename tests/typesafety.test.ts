@@ -4,9 +4,9 @@ import { ALNS } from '../src/algorithms/alns/alns.js';
 import { InsertionOperators } from '../src/algorithms/alns/operators.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
 import { RouteAnalytics } from '../src/analytics/route-analytics.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import { ProblemWithTransfers } from '../src/core/solution-with-transfers.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Solution, Route } from '../src/core/solution.js';
 import { TransferHub } from '../src/core/transfer-hub.js';
 import {
   VehicleWithCapabilities,
@@ -63,10 +63,10 @@ describe('T3 - nodeTimes string key access', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const analytics = new RouteAnalytics(solution, problem);
@@ -84,10 +84,10 @@ describe('T3 - nodeTimes string key access', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -107,10 +107,10 @@ describe('T3 - nodeTimes string key access', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const exporter = new GISExporter(solution, problem);
@@ -160,7 +160,7 @@ describe('T5 - Safe indexed access in algorithms', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
     const solver = new ALNS(problem, { maxIterations: 2 });
 
     // Access protected method for testing
@@ -178,7 +178,7 @@ describe('T5 - Safe indexed access in algorithms', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const brkga = new BRKGA(problem, { populationSize: 3, maxGenerations: 3 });
     const solution = await brkga.solve();
@@ -193,9 +193,9 @@ describe('T5 - Safe indexed access in algorithms', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    const problem = new VrpProblem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
 
-    const empty = new VrpSolution(problem, [new Route(1, [])]);
+    const empty = new Solution(problem, [new Route(1, [])]);
     const solution = InsertionOperators.regret2Insertion(empty, problem.customers);
 
     expect(solution.isComplete()).to.be.true;

@@ -1,8 +1,8 @@
 import { expect } from 'chai';
 
-import { VrpProblem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
+import { Problem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../src/core/problem.js';
 import {
-  VrpError,
+  Error,
   ValidationError,
   InfeasibleSolutionError,
   AlgorithmConvergenceError,
@@ -10,29 +10,29 @@ import {
 import { FleetPilotSolver } from '../src/index.js';
 
 describe('Typed Errors', () => {
-  it('VrpError is an Error', () => {
-    const err = new VrpError('base');
+  it('Error is an Error', () => {
+    const err = new Error('base');
     expect(err).to.be.an.instanceOf(Error);
-    expect(err.name).to.equal('VrpError');
+    expect(err.name).to.equal('Error');
     expect(err.message).to.equal('base');
   });
 
-  it('ValidationError is a VrpError', () => {
+  it('ValidationError is a Error', () => {
     const err = new ValidationError('bad input');
-    expect(err).to.be.an.instanceOf(VrpError);
+    expect(err).to.be.an.instanceOf(Error);
     expect(err.name).to.equal('ValidationError');
     expect(err.message).to.equal('bad input');
   });
 
-  it('InfeasibleSolutionError is a VrpError', () => {
+  it('InfeasibleSolutionError is a Error', () => {
     const err = new InfeasibleSolutionError('infeasible');
-    expect(err).to.be.an.instanceOf(VrpError);
+    expect(err).to.be.an.instanceOf(Error);
     expect(err.name).to.equal('InfeasibleSolutionError');
   });
 
-  it('AlgorithmConvergenceError is a VrpError', () => {
+  it('AlgorithmConvergenceError is a Error', () => {
     const err = new AlgorithmConvergenceError('no convergence');
-    expect(err).to.be.an.instanceOf(VrpError);
+    expect(err).to.be.an.instanceOf(Error);
     expect(err.name).to.equal('AlgorithmConvergenceError');
   });
 
@@ -54,7 +54,7 @@ describe('Typed Errors', () => {
       2: new LocationNode(2, 0, 10, 'P1'),
     };
     const customers = [new CustomerWithTimeWindows(1, 1, 2, 5, 0, 0, 0, 1000)];
-    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, customers, [new Vehicle(1, 10)], 0);
 
     let threw: unknown = null;
     try {

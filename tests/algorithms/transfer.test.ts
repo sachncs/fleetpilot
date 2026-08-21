@@ -4,7 +4,7 @@ import {
   TransferAwareRemovalOperators,
   TransferAwareInsertionOperators,
 } from '../../src/algorithms/alns/transfer-aware-operators.js';
-import { VrpProblem, LocationNode, Customer } from '../../src/core/problem.js';
+import { Problem, LocationNode, Customer } from '../../src/core/problem.js';
 import { SolutionWithTransfers } from '../../src/core/solution-with-transfers.js';
 import { Route } from '../../src/core/solution.js';
 import { TransferHub } from '../../src/core/transfer-hub.js';
@@ -26,7 +26,7 @@ describe('Transfer-Aware Operators', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -51,7 +51,7 @@ describe('Transfer-Aware Operators', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -80,7 +80,7 @@ describe('Transfer-Aware Operators', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 50, 0, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -106,7 +106,7 @@ describe('Transfer-Aware Operators', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -131,7 +131,7 @@ describe('Transfer-Aware Operators', () => {
     };
     const customers = [new Customer(1, 1, 2, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 100, 0, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -156,7 +156,7 @@ describe('Transfer-Aware Operators', () => {
     };
     const customers = [new Customer(1, 2, 3, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(1, 50, 0, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -348,7 +348,7 @@ describe('TransferManager', () => {
 
 describe('randomWithTransfers correlates transfers to customers via customerIds', () => {
   function buildTwoCustomerSolution(): {
-    problem: VrpProblem;
+    problem: Problem;
     solution: SolutionWithTransfers;
     vehicles: VehicleWithCapabilities[];
   } {
@@ -362,7 +362,7 @@ describe('randomWithTransfers correlates transfers to customers via customerIds'
     };
     const customers = [new Customer(1, 1, 2, 5), new Customer(2, 3, 4, 5)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(5, 25, 5, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -452,7 +452,7 @@ describe('SolutionWithTransfers.scheduleTransfer stamps customerIds', () => {
     };
     const customers = [new Customer(1, 1, 2, 5)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 25, 5, 'Hub')];
     const solution = new SolutionWithTransfers(
@@ -480,7 +480,7 @@ describe('SolutionWithTransfers.scheduleTransfer stamps customerIds', () => {
     };
     const customers = [new Customer(1, 1, 2, 5)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = vehicles.map((v) => new Route(v.id, []));
     const hubs = [new TransferHub(3, 25, 5, 'Hub')];
     const solution = new SolutionWithTransfers(

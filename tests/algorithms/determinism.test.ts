@@ -3,12 +3,12 @@ import { expect } from 'chai';
 import { ALNS } from '../../src/algorithms/alns/alns.js';
 import { TransferAwareRemovalOperators } from '../../src/algorithms/alns/transfer-aware-operators.js';
 import { BRKGA } from '../../src/algorithms/brkga/brkga.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../../src/core/problem.js';
 import { SolutionWithTransfers } from '../../src/core/solution-with-transfers.js';
 import { Route } from '../../src/core/solution.js';
 import { VehicleWithCapabilities } from '../../src/core/vehicle-with-capabilities.js';
 
-function buildProblem(): VrpProblem {
+function buildProblem(): Problem {
   const nodes = {
     0: new LocationNode(0, 0, 0, 'Depot'),
     1: new LocationNode(1, 10, 0, 'D1'),
@@ -23,7 +23,7 @@ function buildProblem(): VrpProblem {
     new Customer(2, 3, 4, 10),
     new Customer(3, 5, 6, 10),
   ];
-  return new VrpProblem(nodes, customers, [new Vehicle(1, 30)], 0);
+  return new Problem(nodes, customers, [new Vehicle(1, 30)], 0);
 }
 
 describe('ALNS deterministic seeded RNG', () => {
@@ -49,7 +49,7 @@ describe('ALNS deterministic seeded RNG', () => {
       new Customer(2, 3, 4, 10),
       new Customer(3, 5, 6, 10),
     ];
-    const problem = new VrpProblem(nodes, customers, [new Vehicle(1, 10)], 0);
+    const problem = new Problem(nodes, customers, [new Vehicle(1, 10)], 0);
 
     const a = new ALNS(problem, { maxIterations: 3, seed: 1 }).solve();
     const b = new ALNS(problem, { maxIterations: 3, seed: 9999 }).solve();
@@ -110,7 +110,7 @@ describe('TransferAwareRemovalOperators RNG plumbing', () => {
     };
     const customers = [new Customer(1, 1, 2, 10), new Customer(2, 3, 4, 10)];
     const vehicles = [new VehicleWithCapabilities(1, 10), new VehicleWithCapabilities(2, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
     const routes = vehicles.map((v) => new Route(v.id, [1, 2]));
     const solution = new SolutionWithTransfers(problem, routes);
 

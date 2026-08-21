@@ -6,7 +6,7 @@ import { readFileSync } from 'node:fs';
 
 import { expect } from 'chai';
 
-import { FleetPilotSolver, VrpProblem, LocationNode, Customer, Vehicle } from '../src/index.js';
+import { FleetPilotSolver, Problem, LocationNode, Customer, Vehicle } from '../src/index.js';
 
 interface SampleNode {
   id: number;
@@ -37,7 +37,7 @@ function loadDelhiSample() {
     (c) => new Customer(c.id, c.deliveryNodeId, c.pickupNodeId, c.processingTime),
   );
   const vehicles = sample.vehicles.map((v) => new Vehicle(v.id, v.capacity));
-  return { problem: new VrpProblem(nodes, customers, vehicles, sample.depotNodeId), sample };
+  return { problem: new Problem(nodes, customers, vehicles, sample.depotNodeId), sample };
 }
 
 function ensureReferenceOrigin(p: Sample): Sample {

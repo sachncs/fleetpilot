@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { ALNS } from '../src/algorithms/alns/alns.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 import type { Logger } from '../src/logger.js';
 
 describe('Logger Injection', () => {
@@ -18,7 +18,7 @@ describe('Logger Injection', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const alns = new ALNS(problem, { maxIterations: 1, logger });
     expect(() => alns.solve()).to.not.throw();
@@ -32,7 +32,7 @@ describe('Logger Injection', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     // Should not throw or log anything
     const alns = new ALNS(problem, { maxIterations: 1 });

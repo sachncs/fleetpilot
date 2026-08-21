@@ -1,36 +1,36 @@
 import { expect } from 'chai';
 
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
 import { ValidationError } from '../src/errors/index.js';
 
 describe('Edge Cases', () => {
   it('rejects empty nodes', () => {
-    expect(() => new VrpProblem({}, [], [new Vehicle(1, 5)])).to.throw(ValidationError);
+    expect(() => new Problem({}, [], [new Vehicle(1, 5)])).to.throw(ValidationError);
   });
 
   it('rejects empty customers', () => {
     expect(
-      () => new VrpProblem({ 0: new LocationNode(0, 0, 0) }, [], [new Vehicle(1, 5)]),
+      () => new Problem({ 0: new LocationNode(0, 0, 0) }, [], [new Vehicle(1, 5)]),
     ).to.throw(ValidationError);
   });
 
   it('rejects empty vehicles', () => {
     expect(
-      () => new VrpProblem({ 0: new LocationNode(0, 0, 0) }, [new Customer(1, 0, 0, 10)], []),
+      () => new Problem({ 0: new LocationNode(0, 0, 0) }, [new Customer(1, 0, 0, 10)], []),
     ).to.throw(ValidationError);
   });
 
   it('rejects duplicate customer IDs', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 1, 1) };
     const customers = [new Customer(1, 1, 1, 10), new Customer(1, 1, 1, 10)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5)])).to.throw(ValidationError);
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)])).to.throw(ValidationError);
   });
 
   it('rejects duplicate vehicle IDs', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 1, 1) };
     const customers = [new Customer(1, 1, 1, 10)];
-    expect(() => new VrpProblem(nodes, customers, [new Vehicle(1, 5), new Vehicle(1, 5)])).to.throw(
+    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5), new Vehicle(1, 5)])).to.throw(
       ValidationError,
     );
   });
@@ -38,7 +38,7 @@ describe('Edge Cases', () => {
   it('rejects negative coordinates', () => {
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           { 0: new LocationNode(0, -1, 0) },
           [new Customer(1, 0, 0, 10)],
           [new Vehicle(1, 5)],
@@ -49,7 +49,7 @@ describe('Edge Cases', () => {
   it('rejects zero capacity', () => {
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 1, 1) },
           [new Customer(1, 1, 1, 10)],
           [new Vehicle(1, 0)],
@@ -60,7 +60,7 @@ describe('Edge Cases', () => {
   it('rejects negative processing time', () => {
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 1, 1) },
           [new Customer(1, 1, 1, -5)],
           [new Vehicle(1, 5)],
@@ -71,7 +71,7 @@ describe('Edge Cases', () => {
   it('rejects non-existent delivery node', () => {
     expect(
       () =>
-        new VrpProblem(
+        new Problem(
           { 0: new LocationNode(0, 0, 0) },
           [new Customer(1, 99, 0, 10)],
           [new Vehicle(1, 5)],
@@ -87,10 +87,10 @@ describe('Edge Cases', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     expect(solution.isComplete()).to.be.true;
@@ -106,10 +106,10 @@ describe('Edge Cases', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const cloned = solution.clone();
@@ -127,10 +127,10 @@ describe('Edge Cases', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     const m1 = solution.calculateSchedule();
     const m2 = solution.calculateSchedule();
 
@@ -145,10 +145,10 @@ describe('Edge Cases', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     if (solution.isFeasible()) {

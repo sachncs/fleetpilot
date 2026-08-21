@@ -2,8 +2,8 @@ import { expect } from 'chai';
 
 import { ALNS } from '../src/algorithms/alns/alns.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
 
 describe('Smoke Tests', () => {
   const nodes: Record<number, LocationNode> = {
@@ -13,7 +13,7 @@ describe('Smoke Tests', () => {
   };
   const customers = [new Customer(1, 1, 2, 50)];
   const vehicles = [new Vehicle(1, 5)];
-  const problem = new VrpProblem(nodes, customers, vehicles, 0);
+  const problem = new Problem(nodes, customers, vehicles, 0);
 
   it('creating problem instance', () => {
     expect(problem).to.exist;
@@ -21,7 +21,7 @@ describe('Smoke Tests', () => {
 
   it('calculating schedule', () => {
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     const makespan = solution.calculateSchedule();
     expect(makespan).to.be.greaterThan(0);
   });

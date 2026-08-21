@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
 
 const makeProblem = () => {
   const nodes = {
@@ -13,7 +13,7 @@ const makeProblem = () => {
   };
   const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
   const vehicles = [new Vehicle(1, 10)];
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 };
 
 describe('Island-Model BRKGA', () => {

@@ -2,8 +2,8 @@ import { expect } from 'chai';
 
 import { ALNS } from '../src/algorithms/alns/alns.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
 
 describe('Algorithm Correctness', () => {
   const makeProblem = () => {
@@ -16,7 +16,7 @@ describe('Algorithm Correctness', () => {
     };
     const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    return new VrpProblem(nodes, customers, vehicles, 0);
+    return new Problem(nodes, customers, vehicles, 0);
   };
 
   it('ALNS generateInitialSolution is always complete', () => {
@@ -68,7 +68,7 @@ describe('Algorithm Correctness', () => {
   it('BRKGA never returns an infeasible candidate as best', async () => {
     const problem = makeProblem();
     const route = new Route(1, [1, 2]);
-    const infeasible = new VrpSolution(problem, [route]);
+    const infeasible = new Solution(problem, [route]);
     infeasible.calculateSchedule();
     expect(infeasible.isFeasible()).to.be.false;
 

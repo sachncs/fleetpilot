@@ -2,8 +2,8 @@ import { expect } from 'chai';
 
 import { ALNS } from '../src/algorithms/alns/alns.js';
 import { BRKGA } from '../src/algorithms/brkga/brkga.js';
-import { VrpProblem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
-import { VrpSolution, Route } from '../src/core/solution.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
 import { FleetPilotSolver } from '../src/index.js';
 
 describe('Problem', () => {
@@ -16,7 +16,7 @@ describe('Problem', () => {
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
 
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     expect(problem.customers.length).to.equal(1);
     expect(problem.vehicles.length).to.equal(1);
@@ -31,7 +31,7 @@ describe('Problem', () => {
     const customers = [new Customer(1, 1, 1, 50)];
     const vehicles = [new Vehicle(1, 5)];
 
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     expect(problem.getDistance(0, 1)).to.be.closeTo(5, 0.000005);
   });
@@ -46,10 +46,10 @@ describe('Solution', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
 
     expect(solution.routes.length).to.equal(1);
     expect(solution.isComplete()).to.be.true;
@@ -63,10 +63,10 @@ describe('Solution', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     const makespan = solution.calculateSchedule();
 
     expect(makespan).to.be.greaterThan(0);
@@ -81,10 +81,10 @@ describe('Solution', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 1)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
 
     expect(solution.checkCapacity()).to.be.true;
   });
@@ -97,10 +97,10 @@ describe('Solution', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1])]; // Missing pickup
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
 
     expect(solution.isComplete()).to.be.false;
   });
@@ -117,7 +117,7 @@ describe('ALNS', () => {
     };
     const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const alns = new ALNS(problem, { maxIterations: 500 });
     const initialSolution = alns.generateInitialSolution();
@@ -149,7 +149,7 @@ describe('ALNS', () => {
       new Customer(4, 7, 8, 40),
     ];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     // Use many iterations so stagnation + restart triggers
     const alns = new ALNS(problem, { maxIterations: 2000 });
@@ -186,7 +186,7 @@ describe('ALNS', () => {
       new Customer(6, 11, 12, 35),
     ];
     const vehicles = [new Vehicle(1, 200)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const alns = new ALNS(problem, { maxIterations: 1000 });
     const solution = alns.solve();
@@ -207,7 +207,7 @@ describe('BRKGA', () => {
     };
     const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const brkga = new BRKGA(problem, { populationSize: 10, maxGenerations: 10 });
     const solution = await brkga.solve();
@@ -227,7 +227,7 @@ describe('BRKGA', () => {
     };
     const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 200)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     // Low max generations to hit stagnation early → immigrant injection
     const brkga = new BRKGA(problem, { populationSize: 10, maxGenerations: 50 });
@@ -247,7 +247,7 @@ describe('FleetPilotSolver', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const solver = new FleetPilotSolver(problem);
     const solution = await solver.solve({ alnsIterations: 10, maxGenerations: 10 });
@@ -266,7 +266,7 @@ describe('FleetPilotSolver', () => {
     };
     const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
     const vehicles = [new Vehicle(1, 10)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const solver = new FleetPilotSolver(problem);
     const start = Date.now();
@@ -285,7 +285,7 @@ describe('FleetPilotSolver', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const progressCalls: Array<{ stage: string; iteration: number }> = [];
     const solver = new FleetPilotSolver(problem);
@@ -312,17 +312,17 @@ describe('Solution serialization', () => {
     };
     const customers = [new Customer(1, 1, 2, 50)];
     const vehicles = [new Vehicle(1, 5)];
-    const problem = new VrpProblem(nodes, customers, vehicles, 0);
+    const problem = new Problem(nodes, customers, vehicles, 0);
 
     const routes = [new Route(1, [1, 2])];
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.calculateSchedule();
 
     const serialized = solution.serialize();
     expect(serialized.routes).to.have.lengthOf(1);
     expect(serialized.makespan).to.equal(solution.makespan);
 
-    const deserialized = VrpSolution.deserialize(serialized, problem);
+    const deserialized = Solution.deserialize(serialized, problem);
     expect(deserialized.isComplete()).to.be.true;
     expect(deserialized.makespan).to.equal(solution.makespan);
     expect(deserialized.routes[0]?.nodes).to.deep.equal([1, 2]);
