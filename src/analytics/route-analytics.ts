@@ -1,5 +1,5 @@
-import type { VrpProblem } from '../core/problem.js';
-import type { VrpSolution } from '../core/solution.js';
+import type { Problem } from '../core/problem.js';
+import type { Solution } from '../core/solution.js';
 import { isCustomerWithTimeWindows } from '../core/solution.js';
 
 import type { LoadOverTime } from './load-over-time.js';
@@ -22,8 +22,8 @@ export class RouteAnalytics {
    * @param problem - Problem instance the solution solves
    */
   constructor(
-    private readonly solution: VrpSolution,
-    private readonly problem: VrpProblem,
+    private readonly solution: Solution,
+    private readonly problem: Problem,
   ) {}
 
   /**

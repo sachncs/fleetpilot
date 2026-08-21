@@ -1,5 +1,5 @@
-import type { Customer, VrpProblem } from '../../core/problem.js';
-import { VrpSolution, Route } from '../../core/solution.js';
+import type { Customer, Problem } from '../../core/problem.js';
+import { Solution, Route } from '../../core/solution.js';
 import { AbortError, ValidationError } from '../../errors/index.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
@@ -70,7 +70,7 @@ export interface ALNSOptions {
  * - 32 parallel instances per GPU
  */
 export class ALNS {
-  protected readonly problem: VrpProblem;
+  protected readonly problem: Problem;
   protected readonly maxIterations: number;
   protected readonly initialTemp: number;
   protected coolingRate: number;
@@ -100,7 +100,7 @@ export class ALNS {
    * @param problem - FleetPilot problem instance to solve
    * @param options - ALNS configuration options
    */
-  constructor(problem: VrpProblem, options: ALNSOptions = {}) {
+  constructor(problem: Problem, options: ALNSOptions = {}) {
     this.problem = problem;
 
     // Validate options
@@ -162,16 +162,16 @@ export class ALNS {
   /**
    * @returns Initial feasible solution built with greedy insertion
    */
-  generateInitialSolution(): VrpSolution {
+  generateInitialSolution(): Solution {
     const routes = this.problem.vehicles.map((v) => new Route(v.id, []));
-    const emptySolution = new VrpSolution(this.problem, routes);
+    const emptySolution = new Solution(this.problem, routes);
     return InsertionOperators.greedyInsertion(emptySolution, this.problem.customers);
   }
 
   /**
    * @returns Best solution found after maxIterations
    */
-  solve(): VrpSolution {
+  solve(): Solution {
     const startTime = Date.now();
     let currentSolution = this.generateInitialSolution();
     let bestSolution = currentSolution.clone();
@@ -201,11 +201,11 @@ export class ALNS {
       const insertionOpKey = this.insertionOps[iIdx];
       if (!removalOpKey || !insertionOpKey) continue;
       const removalOp: (
-        s: VrpSolution,
+        s: Solution,
         k: number,
         random: () => number,
-      ) => { solution: VrpSolution; removed: Customer[] } = RemovalOperators[removalOpKey];
-      const insertionOp: (s: VrpSolution, c: readonly Customer[]) => VrpSolution =
+      ) => { solution: Solution; removed: Customer[] } = RemovalOperators[removalOpKey];
+      const insertionOp: (s: Solution, c: readonly Customer[]) => Solution =
         InsertionOperators[insertionOpKey];
 
       this.usage.removal[rIdx] = (this.usage.removal[rIdx] ?? 0) + 1;

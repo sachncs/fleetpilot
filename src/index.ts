@@ -1,12 +1,12 @@
 // Core (new names)
 export {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
   Vehicle,
 } from './core/problem.js';
-export { VrpSolution, Route } from './core/solution.js';
+export { Solution, Route } from './core/solution.js';
 export type { SerializedRoute, SerializedSolution } from './core/solution.js';
 
 // Errors
@@ -78,8 +78,8 @@ import type { ALNSOptions, ALNSProgress } from './algorithms/alns/alns.js';
 import { ALNS } from './algorithms/alns/alns.js';
 import { BRKGA } from './algorithms/brkga/brkga.js';
 import type { BRKGAOptions, BRKGAProgress } from './algorithms/brkga/brkga.js';
-import type { VrpProblem } from './core/problem.js';
-import { VrpSolution, Route } from './core/solution.js';
+import type { Problem } from './core/problem.js';
+import { Solution, Route } from './core/solution.js';
 import { AlgorithmConvergenceError, InfeasibleSolutionError } from './errors/index.js';
 import type { Logger } from './logger.js';
 import { defaultLogger } from './logger.js';
@@ -138,7 +138,7 @@ export interface SolverProgress {
 
 /**
  * Result returned from a worker thread when `parallel: true` is used.
- * Equivalent to the in-process `VrpSolution.serialize()` output.
+ * Equivalent to the in-process `Solution.serialize()` output.
  */
 export interface WorkerResult {
   makespan: number;
@@ -161,7 +161,7 @@ export class FleetPilotSolver {
    * @param problem - FleetPilot problem instance to solve
    */
   constructor(
-    protected readonly problem: VrpProblem,
+    protected readonly problem: Problem,
     options?: { logger?: Logger },
   ) {
     this.logger = options?.logger ?? defaultLogger;
@@ -171,7 +171,7 @@ export class FleetPilotSolver {
    * @param options - Solver configuration
    * @returns Best solution found across both stages
    */
-  async solve(options: SolveOptions = {}): Promise<VrpSolution> {
+  async solve(options: SolveOptions = {}): Promise<Solution> {
     if (options.parallel) {
       return this.solveParallel(options);
     }
@@ -254,7 +254,7 @@ export class FleetPilotSolver {
     return best;
   }
 
-  protected async solveParallel(options: SolveOptions = {}): Promise<VrpSolution> {
+  protected async solveParallel(options: SolveOptions = {}): Promise<Solution> {
     this.logger.log('Starting Parallel Solving (ALNS + BRKGA)...');
 
     const workerPromises = [
@@ -287,7 +287,7 @@ export class FleetPilotSolver {
     if (!best) {
       throw new AlgorithmConvergenceError('No solution returned from workers');
     }
-    const solution = new VrpSolution(
+    const solution = new Solution(
       this.problem,
       best.routes.map((r) => new Route(r.vehicleId, r.nodes)),
     );

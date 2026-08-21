@@ -1,6 +1,6 @@
 import { ValidationError } from '../errors/index.js';
 
-import { VrpProblem, type LocationNode, type Customer, type Vehicle } from './problem.js';
+import { Problem, type LocationNode, type Customer, type Vehicle } from './problem.js';
 import { validateProblemBase } from './validate-problem-base.js';
 
 /**
@@ -136,10 +136,10 @@ export class MultiDepotProblem {
    * that do not natively support multi-depot. The first depot's ID is used
    * as the default; vehicles retain their `startDepotId` / `endDepotId`.
    * @param depotNodeId - Optional override depot ID (default: first depot)
-   * @returns A `VrpProblem` with the same nodes / customers / vehicles
+   * @returns A `Problem` with the same nodes / customers / vehicles
    */
-  toVrpProblem(depotNodeId?: number): VrpProblem {
+  toProblem(depotNodeId?: number): Problem {
     const defaultDepot = depotNodeId ?? this.depots[0]?.id ?? 0;
-    return new VrpProblem(this.nodes, this.customers, this.vehicles, defaultDepot);
+    return new Problem(this.nodes, this.customers, this.vehicles, defaultDepot);
   }
 }

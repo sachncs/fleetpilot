@@ -3,7 +3,7 @@ import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
@@ -125,7 +125,7 @@ function parseVehicles(data: Record<string, unknown>, fallbackDepot: number): Ve
   });
 }
 
-function parseBaseProblem(data: unknown): VrpProblem {
+function parseBaseProblem(data: unknown): Problem {
   if (typeof data !== 'object' || data === null) {
     throw new ValidationError('Problem must be a JSON object');
   }
@@ -136,7 +136,7 @@ function parseBaseProblem(data: unknown): VrpProblem {
       ? record['depotNodeId']
       : 0;
   const vehicles = parseVehicles(record, depotNodeId);
-  return new VrpProblem(nodes, customers, vehicles, depotNodeId);
+  return new Problem(nodes, customers, vehicles, depotNodeId);
 }
 
 function parseMultiDepotProblem(data: unknown): MultiDepotProblem {
@@ -195,7 +195,7 @@ function isMultiDepotShape(data: unknown): boolean {
 function parseProblem(
   data: unknown,
   kind: 'base' | 'multi-depot' | 'auto',
-): VrpProblem | MultiDepotProblem {
+): Problem | MultiDepotProblem {
   if (kind === 'auto') {
     return isMultiDepotShape(data) ? parseMultiDepotProblem(data) : parseBaseProblem(data);
   }
@@ -301,7 +301,7 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  let problem: VrpProblem | MultiDepotProblem;
+  let problem: Problem | MultiDepotProblem;
   try {
     const raw = readFileSync(problemPath, 'utf-8');
     const kind = args['problemkind'] ?? 'auto';
@@ -328,7 +328,7 @@ async function main(): Promise<void> {
   );
   console.error('Starting solver...');
 
-  const solverProblem = problem instanceof MultiDepotProblem ? problem.toVrpProblem() : problem;
+  const solverProblem = problem instanceof MultiDepotProblem ? problem.toProblem() : problem;
   const solver = new FleetPilotSolver(solverProblem);
 
   const options: Parameters<typeof solver.solve>[0] = {

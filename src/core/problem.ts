@@ -92,7 +92,7 @@ import { validateProblemBase } from './validate-problem-base.js';
 /**
  * Main problem instance.
  */
-export class VrpProblem {
+export class Problem {
   readonly distanceMatrix: Readonly<Record<number, Readonly<Record<number, number>>>>;
 
   /**

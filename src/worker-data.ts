@@ -1,5 +1,5 @@
 import {
-  VrpProblem,
+  Problem,
   LocationNode,
   Customer,
   CustomerWithTimeWindows,
@@ -30,7 +30,7 @@ export interface WorkerMeta {
  * @param meta - Algorithm type, options, and island metadata
  * @returns Structured data safe for worker_threads structured clone
  */
-export function serializeProblem(problem: VrpProblem, meta: WorkerMeta): WorkerData {
+export function serializeProblem(problem: Problem, meta: WorkerMeta): WorkerData {
   const nodes: Record<number, { id: number; x: number; y: number; name: string }> = {};
   for (const [id, node] of Object.entries(problem.nodes)) {
     nodes[Number(id)] = { id: node.id, x: node.x, y: node.y, name: node.name };
@@ -105,7 +105,7 @@ export function serializeProblem(problem: VrpProblem, meta: WorkerMeta): WorkerD
  * @param data - Worker data produced by serializeProblem
  * @returns A problem instance preserving vehicles, time windows, and traffic
  */
-export function deserializeProblem(data: WorkerData): VrpProblem {
+export function deserializeProblem(data: WorkerData): Problem {
   const nodes: Record<number, LocationNode> = {};
   for (const [id, node] of Object.entries(data.nodes)) {
     nodes[Number(id)] = new LocationNode(node.id, node.x, node.y, node.name);
@@ -154,5 +154,5 @@ export function deserializeProblem(data: WorkerData): VrpProblem {
     );
   }
 
-  return new VrpProblem(nodes, customers, vehicles, data.depotNodeId);
+  return new Problem(nodes, customers, vehicles, data.depotNodeId);
 }

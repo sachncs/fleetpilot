@@ -2,7 +2,7 @@ import { ALNS } from './algorithms/alns/alns.js';
 import { BRKGA } from './algorithms/brkga/brkga.js';
 import type { Chromosome } from './algorithms/brkga/decoder.js';
 import type { WireIndividual } from './algorithms/brkga/island-messenger.js';
-import type { VrpSolution } from './core/solution.js';
+import type { Solution } from './core/solution.js';
 import { deserializeProblem } from './worker-data.js';
 import type { WorkerData, WorkerResult } from './worker-validation.js';
 
@@ -33,7 +33,7 @@ export async function runWorkerTask(data: WorkerData, io: WorkerIO): Promise<voi
   const problem = deserializeProblem(data);
 
   try {
-    let solution: VrpSolution;
+    let solution: Solution;
 
     if (data.type === 'island-brkga') {
       const brkga = new BRKGA(problem, data.options);

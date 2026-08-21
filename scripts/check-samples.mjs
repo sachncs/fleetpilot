@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// check-samples.mjs — Validate every samples/*.json is a parseable VRP problem.
+// check-samples.mjs — Validate every samples/*.json is a parseable routing problem.
 // Runs as `npm run check-samples` (chained by `prebuild`).
 // Exits non-zero if any sample fails.
 

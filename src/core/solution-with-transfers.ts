@@ -1,7 +1,7 @@
-import { VrpProblem } from './problem.js';
+import { Problem } from './problem.js';
 import type { Customer, LocationNode } from './problem.js';
 import type { ResourceTransfer } from './resource-transfer-types.js';
-import { VrpSolution } from './solution.js';
+import { Solution } from './solution.js';
 import type { Route } from './solution.js';
 import type { TransferHub } from './transfer-hub.js';
 import { TransferManager } from './transfer-manager.js';
@@ -10,7 +10,7 @@ import { VehicleWithCapabilities, VehicleFleetManager } from './vehicle-with-cap
 /**
  * Extended solution with inter-vehicle resource transfers.
  */
-export class SolutionWithTransfers extends VrpSolution {
+export class SolutionWithTransfers extends Solution {
   readonly transferManager: TransferManager;
   readonly fleetManager: VehicleFleetManager;
   transfers: ResourceTransfer[] = [];
@@ -22,7 +22,7 @@ export class SolutionWithTransfers extends VrpSolution {
    * @param vehicles - Fleet vehicles with transfer capabilities
    */
   constructor(
-    problem: VrpProblem,
+    problem: Problem,
     routes: Route[] = [],
     transferHubs: TransferHub[] = [],
     vehicles: VehicleWithCapabilities[] = [],
@@ -312,7 +312,7 @@ export class SolutionWithTransfers extends VrpSolution {
 /**
  * Problem instance with transfer hub support.
  */
-export class ProblemWithTransfers extends VrpProblem {
+export class ProblemWithTransfers extends Problem {
   /**
    * @param nodes - Available nodes by ID
    * @param customers - Customers to serve

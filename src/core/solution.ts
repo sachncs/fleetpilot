@@ -1,5 +1,5 @@
 import { isCustomerWithTimeWindows } from './is-customer-with-time-windows.js';
-import type { VrpProblem } from './problem.js';
+import type { Problem } from './problem.js';
 
 export { isCustomerWithTimeWindows };
 
@@ -60,7 +60,7 @@ export class Route {
 /**
  * Represents a full solution to the FleetPilot problem.
  */
-export class VrpSolution {
+export class Solution {
   routes: Route[];
   makespan: number;
   nodeTimes: Record<number | string, number>;
@@ -70,11 +70,11 @@ export class VrpSolution {
   totalCo2: number;
 
   /**
-   * @param problem - VrpProblem instance this solution solves
+   * @param problem - Problem instance this solution solves
    * @param routes - Vehicle routes; empty routes are created if not provided
    */
   constructor(
-    public readonly problem: VrpProblem,
+    public readonly problem: Problem,
     routes: Route[] = [],
   ) {
     this.routes = routes.length > 0 ? routes : problem.vehicles.map((v) => new Route(v.id, []));
@@ -659,8 +659,8 @@ export class VrpSolution {
   /**
    * @returns Deep copy of this solution
    */
-  clone(): VrpSolution {
-    const cloned = new VrpSolution(
+  clone(): Solution {
+    const cloned = new Solution(
       this.problem,
       this.routes.map((r) => r.clone()),
     );
@@ -707,11 +707,11 @@ export class VrpSolution {
   }
 
   /**
-   * Reconstructs a VrpSolution from a serialized object and a problem instance.
+   * Reconstructs a Solution from a serialized object and a problem instance.
    */
-  static deserialize(data: SerializedSolution, problem: VrpProblem): VrpSolution {
+  static deserialize(data: SerializedSolution, problem: Problem): Solution {
     const routes = data.routes.map((r) => new Route(r.vehicleId, [...r.nodes]));
-    const solution = new VrpSolution(problem, routes);
+    const solution = new Solution(problem, routes);
     solution.makespan = data.makespan;
     solution.totalDistance = data.totalDistance;
     solution.totalCost = data.totalCost;
@@ -723,7 +723,7 @@ export class VrpSolution {
 }
 
 /**
- * JSON-serializable representation of a Route produced by `VrpSolution.serialize()`.
+ * JSON-serializable representation of a Route produced by `Solution.serialize()`.
  */
 export interface SerializedRoute {
   vehicleId: number;
@@ -731,9 +731,9 @@ export interface SerializedRoute {
 }
 
 /**
- * JSON-serializable representation of a VrpSolution produced by
- * `VrpSolution.serialize()`. The problem instance is NOT included;
- * pass it to `VrpSolution.deserialize(data, problem)` to round-trip.
+ * JSON-serializable representation of a Solution produced by
+ * `Solution.serialize()`. The problem instance is NOT included;
+ * pass it to `Solution.deserialize(data, problem)` to round-trip.
  */
 export interface SerializedSolution {
   routes: SerializedRoute[];

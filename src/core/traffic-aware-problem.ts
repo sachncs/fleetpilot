@@ -1,5 +1,5 @@
 import type { LocationNode, Customer, Vehicle } from './problem.js';
-import { VrpProblem } from './problem.js';
+import { Problem } from './problem.js';
 
 /**
  * Traffic data for a road segment between two nodes.
@@ -180,7 +180,7 @@ export class TrafficModel {
  * Traffic-aware problem instance.
  * Extends base Problem with real-time traffic data.
  */
-export class TrafficAwareProblem extends VrpProblem {
+export class TrafficAwareProblem extends Problem {
   /**
    * @param nodes - Available nodes by ID
    * @param customers - Customers to serve

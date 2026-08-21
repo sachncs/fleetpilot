@@ -1,5 +1,5 @@
-import type { VrpProblem } from '../../core/problem.js';
-import type { VrpSolution } from '../../core/solution.js';
+import type { Problem } from '../../core/problem.js';
+import type { Solution } from '../../core/solution.js';
 import { AbortError, AlgorithmConvergenceError, ValidationError } from '../../errors/index.js';
 import type { Logger } from '../../logger.js';
 import { defaultLogger } from '../../logger.js';
@@ -29,7 +29,7 @@ export interface BRKGAOptions {
   mutantFraction?: number;
   crossoverProb?: number;
   maxGenerations?: number;
-  warmStartSolution?: VrpSolution | undefined;
+  warmStartSolution?: Solution | undefined;
   warmStartProportion?: number;
   logger?: Logger;
   /** Maximum time in milliseconds before aborting */
@@ -65,7 +65,7 @@ export interface BRKGAOptions {
 export interface Individual {
   chromosome: Chromosome;
   fitness: number | null;
-  solution: VrpSolution | null;
+  solution: Solution | null;
 }
 
 /**
@@ -80,7 +80,7 @@ export interface Individual {
  * - Warm-start: 15% from ALNS solution
  */
 export class BRKGA {
-  protected readonly problem: VrpProblem;
+  protected readonly problem: Problem;
   protected readonly populationSize: number;
   protected readonly eliteFraction: number;
   protected readonly mutantFraction: number;
@@ -90,7 +90,7 @@ export class BRKGA {
   protected readonly chromosomeSize: number;
 
   // Warm-start configuration
-  protected readonly warmStartSolution: VrpSolution | null;
+  protected readonly warmStartSolution: Solution | null;
   protected readonly warmStartProportion: number;
   protected readonly logger: Logger;
   protected readonly maxTimeMs: number;
@@ -106,7 +106,7 @@ export class BRKGA {
    * @param problem - FleetPilot problem instance to solve
    * @param options - BRKGA configuration options
    */
-  constructor(problem: VrpProblem, options: BRKGAOptions = {}) {
+  constructor(problem: Problem, options: BRKGAOptions = {}) {
     this.problem = problem;
 
     // Validate options
@@ -182,7 +182,7 @@ export class BRKGA {
   /**
    * @returns Best solution found after convergence or max generations
    */
-  async solve(): Promise<VrpSolution> {
+  async solve(): Promise<Solution> {
     const startTime = Date.now();
     if (this.islands > 1) {
       return this.solveIslands(startTime);
@@ -314,7 +314,7 @@ export class BRKGA {
     return nextPopulation;
   }
 
-  protected runSingleIsland(startTime: number): VrpSolution {
+  protected runSingleIsland(startTime: number): Solution {
     let population = this.initializePopulation();
     let hallOfFame: Individual | null = null;
     let generationsWithoutImprovement = 0;
@@ -412,8 +412,8 @@ export class BRKGA {
     return hallOfFame?.solution ?? this.decodeFeasibleRandom();
   }
 
-  private decodeFeasibleRandom(): VrpSolution {
-    let solution: VrpSolution | null = null;
+  private decodeFeasibleRandom(): Solution {
+    let solution: Solution | null = null;
     for (let attempt = 0; attempt < 20; attempt++) {
       const candidate = this.decoder.decode(this.randomIndividual().chromosome);
       if (candidate.isFeasible()) return candidate;
@@ -422,7 +422,7 @@ export class BRKGA {
     return solution ?? this.decoder.decode(this.randomIndividual().chromosome);
   }
 
-  protected async solveIslands(startTime: number): Promise<VrpSolution> {
+  protected async solveIslands(startTime: number): Promise<Solution> {
     const islandPopulationSize = Math.max(10, Math.floor(this.populationSize / this.islands));
 
     // Lazy-import Node-only modules so the static graph stays browser-friendly.
@@ -618,7 +618,7 @@ export class BRKGA {
    * @param population - Current population to search
    * @returns Best feasible solution in the population
    */
-  getBestSolution(population: Individual[]): VrpSolution | null {
+  getBestSolution(population: Individual[]): Solution | null {
     const sorted = [...population].sort(
       (a, b) => (a.fitness ?? Infinity) - (b.fitness ?? Infinity),
     );

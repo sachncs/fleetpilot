@@ -1,5 +1,5 @@
-import type { VrpProblem } from '../core/problem.js';
-import type { VrpSolution } from '../core/solution.js';
+import type { Problem } from '../core/problem.js';
+import type { Solution } from '../core/solution.js';
 
 import type { ComparisonResult } from './comparison-result.js';
 import type { ParetoFront } from './pareto-front.js';
@@ -20,8 +20,8 @@ export class SolutionComparator {
    * @param problem - Problem instance the solutions solve
    */
   constructor(
-    private readonly solutions: VrpSolution[],
-    private readonly problem: VrpProblem,
+    private readonly solutions: Solution[],
+    private readonly problem: Problem,
   ) {}
 
   /**

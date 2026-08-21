@@ -1,5 +1,5 @@
-import type { VrpProblem, Customer, Vehicle } from '../../core/problem.js';
-import { VrpSolution, Route } from '../../core/solution.js';
+import type { Problem, Customer, Vehicle } from '../../core/problem.js';
+import { Solution, Route } from '../../core/solution.js';
 import { ValidationError } from '../../errors/index.js';
 
 /**
@@ -56,22 +56,22 @@ export class Decoder {
   /**
    * @param problem - The FleetPilot instance this decoder translates chromosomes against
    */
-  constructor(private readonly problem: VrpProblem) {}
+  constructor(private readonly problem: Problem) {}
 
   /**
-   * Translates a chromosome into a VrpSolution by greedily scheduling
+   * Translates a chromosome into a Solution by greedily scheduling
    * deliveries (priority order) then pickups (delivery-vehicle order).
    *
    * @param chromosome - 3n-gene chromosome (priorities, assignments, dependencies)
    * @returns A solution; may be infeasible — caller checks `isFeasible()`
    * @throws `ValidationError` if a customer cannot be placed within any vehicle's capacity
    */
-  decode(chromosome: Chromosome): VrpSolution {
+  decode(chromosome: Chromosome): Solution {
     const numCustomers = this.problem.customers.length;
     const numVehicles = this.problem.vehicles.length;
 
     const routes = this.problem.vehicles.map((v: Vehicle) => new Route(v.id, []));
-    const solution = new VrpSolution(this.problem, routes);
+    const solution = new Solution(this.problem, routes);
 
     // Precompute vehicle assignments and route load trackers
     const assignedVehicle: number[] = [];
@@ -210,7 +210,7 @@ export class Decoder {
   /**
    * Creates a chromosome from a solution (for warm-start).
    */
-  encode(solution: VrpSolution): Chromosome {
+  encode(solution: Solution): Chromosome {
     const n = this.problem.customers.length;
 
     const priorities: number[] = Array.from<number>({ length: n }).fill(0);
