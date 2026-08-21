@@ -11,14 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - **Breaking rename** — the public API now uses unprefixed names, restoring the pre-1.0 naming:
 
-  | 1.x                      | 2.0.0       |
-  | ------------------------ | ----------- |
-  | `VrpProblem`             | `Problem`   |
-  | `VrpSolution`            | `Solution`  |
-  | `VrpError`               | `Error`     |
-  | `MultiDepotProblem.toVrpProblem()` | `MultiDepotProblem.toProblem()` |
-  | `src/errors/vrp-error.ts`| `src/errors/error.ts`           |
-  | `.vrp-*` CSS classes (`apps/fleetpilot-web`) | `.fleet-*` |
+  | 1.x                                          | 2.0.0                           |
+  | -------------------------------------------- | ------------------------------- |
+  | `VrpProblem`                                 | `Problem`                       |
+  | `VrpSolution`                                | `Solution`                      |
+  | `VrpError`                                   | `Error`                         |
+  | `MultiDepotProblem.toVrpProblem()`           | `MultiDepotProblem.toProblem()` |
+  | `src/errors/vrp-error.ts`                    | `src/errors/error.ts`           |
+  | `.vrp-*` CSS classes (`apps/fleetpilot-web`) | `.fleet-*`                      |
 
 - `Error` extends `globalThis.Error` so the class declaration avoids the
   class-binding TDZ violation of `extends Error`; all typed errors
