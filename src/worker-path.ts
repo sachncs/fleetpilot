@@ -5,7 +5,7 @@ import { isBrowser } from './env.js';
  *
  * - Node.js: returns the relative path `./worker.js`. The Node worker
  *   `Worker` ctor resolves this against the script's `import.meta.url`,
-   *   which is what the orchestrator does. The `FLEETPILOT_WORKER_PATH` env var
+ *   which is what the orchestrator does. The `FLEETPILOT_WORKER_PATH` env var
  *   overrides to an absolute path (used by tests).
  * - Browser: returns the relative URL `./worker.browser.js`. The browser
  *   `Worker` ctor resolves this against the document's base URL.

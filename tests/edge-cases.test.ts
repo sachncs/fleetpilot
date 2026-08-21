@@ -10,9 +10,9 @@ describe('Edge Cases', () => {
   });
 
   it('rejects empty customers', () => {
-    expect(
-      () => new Problem({ 0: new LocationNode(0, 0, 0) }, [], [new Vehicle(1, 5)]),
-    ).to.throw(ValidationError);
+    expect(() => new Problem({ 0: new LocationNode(0, 0, 0) }, [], [new Vehicle(1, 5)])).to.throw(
+      ValidationError,
+    );
   });
 
   it('rejects empty vehicles', () => {

@@ -1,12 +1,7 @@
 import { expect } from 'chai';
 
 import { ALNS } from '../../src/algorithms/alns/alns.js';
-import {
-  Problem,
-  LocationNode,
-  CustomerWithTimeWindows,
-  Vehicle,
-} from '../../src/core/problem.js';
+import { Problem, LocationNode, CustomerWithTimeWindows, Vehicle } from '../../src/core/problem.js';
 import { ValidationError } from '../../src/errors/index.js';
 import { createBasicProblem, createSingleCustomerProblem } from '../helpers.js';
 

@@ -183,9 +183,9 @@ describe('Security S3 - Problem constructor validation', () => {
       1: new LocationNode(1, NaN, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
-    ).to.throw('invalid coordinates');
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0)).to.throw(
+      'invalid coordinates',
+    );
   });
 
   it('rejects Infinity coordinates', () => {
@@ -194,9 +194,9 @@ describe('Security S3 - Problem constructor validation', () => {
       1: new LocationNode(1, Infinity, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
-    ).to.throw('invalid coordinates');
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0)).to.throw(
+      'invalid coordinates',
+    );
   });
 
   it('rejects negative coordinates', () => {
@@ -205,9 +205,9 @@ describe('Security S3 - Problem constructor validation', () => {
       1: new LocationNode(1, -10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0),
-    ).to.throw('negative coordinates');
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0)).to.throw(
+      'negative coordinates',
+    );
   });
 
   it('rejects duplicate customer IDs', () => {
@@ -283,9 +283,9 @@ describe('Security S3 - Problem constructor validation', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1, 2, -1)], [new Vehicle(1, 10)], 0),
-    ).to.throw('negative processingTime');
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, -1)], [new Vehicle(1, 10)], 0)).to.throw(
+      'negative processingTime',
+    );
   });
 
   it('rejects zero or negative capacity', () => {
@@ -294,12 +294,12 @@ describe('Security S3 - Problem constructor validation', () => {
       1: new LocationNode(1, 10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 0)], 0),
-    ).to.throw('positive capacity');
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, -5)], 0),
-    ).to.throw('positive capacity');
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 0)], 0)).to.throw(
+      'positive capacity',
+    );
+    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, -5)], 0)).to.throw(
+      'positive capacity',
+    );
   });
 });
 

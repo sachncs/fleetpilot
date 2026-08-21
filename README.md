@@ -156,22 +156,22 @@ No environment variables are required for core usage. Defaults are tuned for pap
 
 ## API
 
-| Symbol                                                                                                     | Type    | Description                                        |
-| ---------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------- |
-| `FleetPilotSolver`                                                                                             | class   | Orchestrator (ALNS → warm-start → BRKGA)           |
+| Symbol                                                                                                  | Type    | Description                                        |
+| ------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------- |
+| `FleetPilotSolver`                                                                                      | class   | Orchestrator (ALNS → warm-start → BRKGA)           |
 | `Problem`                                                                                               | class   | Standard problem definition                        |
-| `TrafficAwareProblem`                                                                                      | class   | Problem with time-dependent travel times           |
-| `MultiDepotProblem`                                                                                        | class   | Multi-depot variant                                |
-| `Customer` / `CustomerWithTimeWindows`                                                                     | class   | Customer with optional delivery / pickup windows   |
-| `Vehicle` / `VehicleWithCapabilities`                                                                      | class   | Vehicle with capacity and directional capabilities |
-| `LocationNode`                                                                                             | class   | Node with coordinates                              |
-| `RouteAnalytics`                                                                                           | class   | Post-solution summary metrics                      |
-| `SolutionComparator`                                                                                       | class   | Pareto-front comparison                            |
-| `GISExporter`                                                                                              | class   | `.toGeoJson()` / `.toKml()` / `.toCsv()`           |
-| `TrafficModel`                                                                                             | class   | Time-dependent segment factors                     |
+| `TrafficAwareProblem`                                                                                   | class   | Problem with time-dependent travel times           |
+| `MultiDepotProblem`                                                                                     | class   | Multi-depot variant                                |
+| `Customer` / `CustomerWithTimeWindows`                                                                  | class   | Customer with optional delivery / pickup windows   |
+| `Vehicle` / `VehicleWithCapabilities`                                                                   | class   | Vehicle with capacity and directional capabilities |
+| `LocationNode`                                                                                          | class   | Node with coordinates                              |
+| `RouteAnalytics`                                                                                        | class   | Post-solution summary metrics                      |
+| `SolutionComparator`                                                                                    | class   | Pareto-front comparison                            |
+| `GISExporter`                                                                                           | class   | `.toGeoJson()` / `.toKml()` / `.toCsv()`           |
+| `TrafficModel`                                                                                          | class   | Time-dependent segment factors                     |
 | `Error` → `ValidationError` \| `InfeasibleSolutionError` \| `AlgorithmConvergenceError` \| `AbortError` | classes | Typed error hierarchy                              |
-| `SolutionWithTransfers` / `ProblemWithTransfers` / `TransferHub` / `TransferManager`                       | classes | Inter-vehicle resource transfers at hub nodes      |
-| `TransferAwareInsertionOperators` / `TransferAwareRemovalOperators`                                        | objects | ALNS operators that respect transfer constraints   |
+| `SolutionWithTransfers` / `ProblemWithTransfers` / `TransferHub` / `TransferManager`                    | classes | Inter-vehicle resource transfers at hub nodes      |
+| `TransferAwareInsertionOperators` / `TransferAwareRemovalOperators`                                     | objects | ALNS operators that respect transfer constraints   |
 | `MultiDepotProblem` (extends `Problem`) + `Depot`                                                       | classes | Vehicles start/end at different depots             |
 
 ## Examples

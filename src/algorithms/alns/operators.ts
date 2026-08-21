@@ -370,11 +370,7 @@ export const InsertionOperators = {
  * General regret-k insertion.
  * @param k - Which best insertion to compare against (2 = second-best, 3 = third-best, etc.)
  */
-function regretInsertion(
-  solution: Solution,
-  customers: readonly Customer[],
-  k: number,
-): Solution {
+function regretInsertion(solution: Solution, customers: readonly Customer[], k: number): Solution {
   const newSolution = solution.clone();
   const remaining = [...customers];
 

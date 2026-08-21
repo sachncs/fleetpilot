@@ -105,16 +105,16 @@ describe('Comprehensive - Problem Validation', () => {
 
   it('rejects non-integer node ids', () => {
     const nodes = { 1.5: new LocationNode(1.5, 10, 0) };
-    expect(
-      () => new Problem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)]),
-    ).to.throw(ValidationError);
+    expect(() => new Problem(nodes, [new Customer(1, 1.5, 1.5, 10)], [new Vehicle(1, 5)])).to.throw(
+      ValidationError,
+    );
   });
 
   it('rejects non-integer customer ids', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    expect(
-      () => new Problem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)]),
-    ).to.throw(ValidationError);
+    expect(() => new Problem(nodes, [new Customer(1.5, 1, 1, 10)], [new Vehicle(1, 5)])).to.throw(
+      ValidationError,
+    );
   });
 
   it('rejects inverted delivery time window', () => {
