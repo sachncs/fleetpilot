@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 # FleetPilot — SaaS Docker image
 
-ARG NODE_VERSION=20.20.0-alpine
+ARG NODE_VERSION=26-alpine
 
 # ---- Stage 1: builder ---------------------------------------------------
 FROM node:${NODE_VERSION} AS builder

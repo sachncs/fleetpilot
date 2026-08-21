@@ -17,7 +17,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - run: npm run lint -- --max-warnings 0
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - run: npm run typecheck
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22.x, 24.x]
+        node-version: [24.x, 26.x]
     steps:
       - uses: actions/checkout@v7
       - name: Setup Node.js ${{ matrix.node-version }}
@@ -62,7 +62,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - run: npm run build
@@ -77,7 +77,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - name: Build image
@@ -107,7 +107,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - run: npm run build
@@ -125,7 +125,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - run: npm run build
@@ -145,7 +145,7 @@ jobs:
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 26
           cache: 'npm'
       - run: npm ci
       - name: Build then run verify (typecheck + lint + format:check + test:coverage)
