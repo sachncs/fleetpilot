@@ -85,7 +85,7 @@ directory.
 See `../../runner/adapters.ts`. The Solomon adapter:
 
 1. Reads the `NUMBER` and `CAPACITY` from the `VEHICLE` block.
-2. Reads each `CUSTOMER` row and builds a `VrpProblem` with:
+2. Reads each `CUSTOMER` row and builds a `Problem` with:
    - `deliveryNodeId` = `pickupNodeId` = the customer's node id (VRPTW
      degenerate case — each customer has one stop, not a pair)
    - `processingTime` = 0 (the service time is absorbed into the per-stop

@@ -130,7 +130,7 @@ async function main(): Promise<void> {
   const instancePath = resolve(familyDir(args.family), args.instance);
   const adapter = ADAPTERS[args.family];
   const parsed = adapter.parse(instancePath);
-  const problem = adapter.toVrpProblem(parsed);
+  const problem = adapter.toProblem(parsed);
   const solver = new FleetPilotSolver(problem);
   const start = Date.now();
   let solution;

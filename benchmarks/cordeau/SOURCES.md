@@ -36,7 +36,7 @@ produces byte-identical files.
 ## File layout
 
 Each file is a JSON document in the **FleetPilot native format** (since the
-synthetic generator writes directly to `VrpProblem` shape):
+synthetic generator writes directly to `Problem` shape):
 
 ```json
 {
@@ -53,7 +53,7 @@ synthetic generator writes directly to `VrpProblem` shape):
 ## Adapter
 
 See `../../runner/adapters.ts`. The Cordeau adapter reads the JSON and
-delegates to `MultiDepotProblem.toVrpProblem()`.
+delegates to `MultiDepotProblem.toProblem()`.
 
 ## Regeneration
 

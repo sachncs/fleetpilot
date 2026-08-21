@@ -1,5 +1,5 @@
-// Benchmark adapters — convert each instance family into a `VrpProblem`.
-// Each adapter exports a `parse<T>(filePath: string): T` and a `toVrpProblem(parsed: T): VrpProblem`.
+// Benchmark adapters — convert each instance family into a `Problem`.
+// Each adapter exports a `parse<T>(filePath: string): T` and a `toProblem(parsed: T): Problem`.
 // All paths use the project's ESM convention (`./src/...js`).
 
 import { readFileSync } from 'node:fs';
@@ -9,7 +9,7 @@ import {
   CustomerWithTimeWindows,
   LocationNode,
   Vehicle,
-  VrpProblem,
+  Problem,
 } from '../../src/core/problem.js';
 
 // ============================================================================
@@ -59,7 +59,7 @@ export function parseLiLim(filePath: string): LiLimInstance {
   return { numVehicles, capacity, nodes };
 }
 
-export function liLimToVrpProblem(parsed: LiLimInstance): VrpProblem {
+export function liLimToProblem(parsed: LiLimInstance): Problem {
   const nodes: Record<number, LocationNode> = {};
   for (const n of parsed.nodes) {
     nodes[n.id] = new LocationNode(n.id, n.x, n.y, `L${n.id}`);
@@ -94,7 +94,7 @@ export function liLimToVrpProblem(parsed: LiLimInstance): VrpProblem {
   for (let v = 1; v <= parsed.numVehicles; v++) {
     vehicles.push(new Vehicle(v, parsed.capacity));
   }
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
 // ============================================================================
@@ -164,7 +164,7 @@ export function parseSolomon(filePath: string): SolomonInstance {
   return { name, numVehicles, capacity, nodes };
 }
 
-export function solomonToVrpProblem(parsed: SolomonInstance): VrpProblem {
+export function solomonToProblem(parsed: SolomonInstance): Problem {
   const nodes: Record<number, LocationNode> = {};
   for (const n of parsed.nodes) {
     nodes[n.id] = new LocationNode(n.id, n.x, n.y, `S${n.id}`);
@@ -195,7 +195,7 @@ export function solomonToVrpProblem(parsed: SolomonInstance): VrpProblem {
   for (let v = 1; v <= parsed.numVehicles; v++) {
     vehicles.push(new Vehicle(v, parsed.capacity));
   }
-  return new VrpProblem(nodes, customers, vehicles, 0);
+  return new Problem(nodes, customers, vehicles, 0);
 }
 
 // ============================================================================
@@ -236,7 +236,7 @@ export function parseFleetPilotJson(filePath: string): FleetPilotJsonShape {
   return data;
 }
 
-export function fleetPilotJsonToVrpProblem(parsed: FleetPilotJsonShape): VrpProblem {
+export function fleetPilotJsonToProblem(parsed: FleetPilotJsonShape): Problem {
   const nodes: Record<number, LocationNode> = {};
   const nodeList = Array.isArray(parsed.nodes)
     ? parsed.nodes
@@ -281,7 +281,7 @@ export function fleetPilotJsonToVrpProblem(parsed: FleetPilotJsonShape): VrpProb
       ),
     );
   }
-  return new VrpProblem(nodes, customers, vehicles, parsed.depotNodeId);
+  return new Problem(nodes, customers, vehicles, parsed.depotNodeId);
 }
 
 // ============================================================================
@@ -292,14 +292,14 @@ export type Family = 'lilim' | 'solomon' | 'cordeau' | 'darp' | 'salhi-nagy' | '
 
 export interface FamilyAdapter {
   parse: (filePath: string) => unknown;
-  toVrpProblem: (parsed: unknown) => VrpProblem;
+  toProblem: (parsed: unknown) => Problem;
 }
 
 export const ADAPTERS: Record<Family, FamilyAdapter> = {
-  'lilim': { parse: parseLiLim as FamilyAdapter['parse'], toVrpProblem: liLimToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'solomon': { parse: parseSolomon as FamilyAdapter['parse'], toVrpProblem: solomonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'cordeau': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'darp': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'salhi-nagy': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
-  'synthetic': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toVrpProblem: fleetPilotJsonToVrpProblem as FamilyAdapter['toVrpProblem'] },
+  'lilim': { parse: parseLiLim as FamilyAdapter['parse'], toProblem: liLimToProblem as FamilyAdapter['toProblem'] },
+  'solomon': { parse: parseSolomon as FamilyAdapter['parse'], toProblem: solomonToProblem as FamilyAdapter['toProblem'] },
+  'cordeau': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toProblem: fleetPilotJsonToProblem as FamilyAdapter['toProblem'] },
+  'darp': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toProblem: fleetPilotJsonToProblem as FamilyAdapter['toProblem'] },
+  'salhi-nagy': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toProblem: fleetPilotJsonToProblem as FamilyAdapter['toProblem'] },
+  'synthetic': { parse: parseFleetPilotJson as FamilyAdapter['parse'], toProblem: fleetPilotJsonToProblem as FamilyAdapter['toProblem'] },
 };

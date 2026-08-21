@@ -29,7 +29,7 @@ parameter ranges described in the Cordeau-Laporte paper:
 - Max ride time = 30 min
 
 The mapping to FleetPilot uses the same D→P inversion as the Li & Lim
-adapter: the synthetic generator writes directly to `VrpProblem` shape.
+adapter: the synthetic generator writes directly to `Problem` shape.
 
 ## File layout
 
@@ -58,7 +58,7 @@ JSON in the **FleetPilot native format**:
 ## Adapter
 
 See `../../runner/adapters.ts`. The DARP adapter parses the JSON and
-returns a `VrpProblem` directly.
+returns a `Problem` directly.
 
 ## Regeneration
 

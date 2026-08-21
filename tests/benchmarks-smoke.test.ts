@@ -56,7 +56,7 @@ describe('Benchmark smoke (smallest instance per family)', function () {
       }
       const adapter = ADAPTERS[family];
       const parsed = adapter.parse(instancePath);
-      const problem = adapter.toVrpProblem(parsed);
+      const problem = adapter.toProblem(parsed);
       const solver = new FleetPilotSolver(problem);
       const solution = await solver.solve({
         maxTimeMs: 10_000,

@@ -56,7 +56,7 @@ function checkVroomAvailable(): string | null {
   return null;
 }
 
-function toVroomInput(problem: import('../src/core/problem.js').VrpProblem): string {
+function toVroomInput(problem: import('../src/core/problem.js').Problem): string {
   // VROOM expects its own JSON format. For now, emit a minimal VRP (no TW,
   // no P/D) using only the depot, customer stops, and capacity.
   const jobs: unknown[] = [];
@@ -90,7 +90,7 @@ function runVroomOnInstance(family: Family, instance: string): {
   const instancePath = resolve(familyDir(family), instance);
   const adapter = ADAPTERS[family];
   const parsed = adapter.parse(instancePath);
-  const problem = adapter.toVrpProblem(parsed);
+  const problem = adapter.toProblem(parsed);
   const input = toVroomInput(problem);
   const tmpFile = `/tmp/vroom-${family}-${instance}.json`;
   writeFileSync(tmpFile, input);

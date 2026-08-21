@@ -79,7 +79,7 @@ describe('Benchmark regression (within 1.3× of baseline)', function () {
       }
       const adapter = ADAPTERS[family];
       const parsed = adapter.parse(instancePath);
-      const problem = adapter.toVrpProblem(parsed);
+      const problem = adapter.toProblem(parsed);
       const solver = new FleetPilotSolver(problem);
       const solution = await solver.solve({
         maxTimeMs: baseline.config.maxTimeMs,

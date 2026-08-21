@@ -76,7 +76,7 @@ See `../../runner/adapters.ts`. The Li & Lim adapter:
 
 1. Reads the vehicle count and capacity from line 1.
 2. Reads each node and pairs pickups with deliveries via `paired_node_id`.
-3. Maps each customer request to a `VrpProblem` customer with:
+3. Maps each customer request to a `Problem` customer with:
    - `deliveryNodeId` = the delivery node id (positive demand)
    - `pickupNodeId` = the pickup node id (negative demand)
    - `processingTime` = max(service_time_pickup, service_time_delivery)
