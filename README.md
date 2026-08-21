@@ -2,7 +2,7 @@
   <h1 align="center">FleetPilot</h1>
   <p align="center">Route optimization for Indian logistics — delivery fleets with resource-constrained pickup and delivery.</p>
   <p align="center">
-    <a href="#installation"><img src="https://img.shields.io/badge/node-20%2B-brightgreen" alt="Node"></a>
+    <a href="#installation"><img src="https://img.shields.io/badge/node-26%2B-brightgreen" alt="Node"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/license-ISC-green" alt="License"></a>
     <a href="https://github.com/sachncs/fleetpilot/actions"><img src="https://img.shields.io/github/actions/workflow/status/sachncs/fleetpilot/ci.yml?branch=master" alt="CI"></a>
     <a href="https://www.npmjs.com/package/fleetpilot"><img src="https://img.shields.io/npm/v/fleetpilot" alt="npm"></a>

@@ -44,7 +44,7 @@ room for native allocations and the worker thread stacks.
 
 ```dockerfile
 # Minimal Dockerfile pattern
-FROM node:20-alpine
+FROM node:26-alpine
 ENV NODE_OPTIONS="--max-old-space-size=512"
 CMD ["node", "your-solver.js"]
 ```
@@ -98,16 +98,16 @@ condition to their config.
 
 ## 5. Alpine / musl quirks
 
-The default `Dockerfile` uses `node:20-alpine` (musl libc). Two known
+The default `Dockerfile` uses `node:26-alpine` (musl libc). Two known
 caveats:
 
-1. **io_uring**: Node 20 on musl may use io_uring for file I/O, which has
+1. **io_uring**: Node 26 on musl may use io_uring for file I/O, which has
    historically had floating-point edge cases. If you see NaN distances in
    logs, set `UV_USE_IO_URING=0` before launching.
 2. **`BCMath` polyfills**: not needed — the solver uses native `Math` only,
    but downstream consumers linking against it should be aware.
 
-If you hit any other musl issue, switch to `node:20-slim` (glibc) and
+If you hit any other musl issue, switch to `node:26-slim` (glibc) and
 double-check that the change is documented in the resulting image rebuild.
 
 ## 6. Graceful shutdown
