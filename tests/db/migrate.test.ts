@@ -86,7 +86,7 @@ describe('fleetpilot-web schema migrations', () => {
       actor: string;
     }>;
     assert.equal(rows.length, 1);
-    assert.equal(rows[0].entity_id, 'ord_t1');
-    assert.equal(rows[0].actor, 'test');
+    assert.equal(rows[0]?.entity_id, 'ord_t1');
+    assert.equal(rows[0]?.actor, 'test');
   });
 });

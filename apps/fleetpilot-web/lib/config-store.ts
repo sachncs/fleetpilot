@@ -70,7 +70,7 @@ export function saveConfig(config: FleetPilotConfig): void {
     maxGenerations: config.maxGenerations,
   };
   if (config.initialApiKeyHash) {
-    out.initialApiKeyHash = config.initialApiKeyHash;
+    out['initialApiKeyHash'] = config.initialApiKeyHash;
   }
   writeFileSync(getConfigPath(config.dataDir), JSON.stringify(out, null, 2) + '\n');
 }
