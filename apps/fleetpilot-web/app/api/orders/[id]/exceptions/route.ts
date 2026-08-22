@@ -1,14 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { eq } from 'drizzle-orm';
 import { z } from 'zod';
 
 import { authenticate } from '@/lib/auth/api-key';
+import { getDb } from '@/lib/db';
+import { ensureSchema } from '@/lib/db/migrate';
+import { orders } from '@/lib/db/schema';
+import { writeAudit } from '@/lib/audit';
 
 interface Ctx {
   params: Promise<{ id: string }>;
 }
 
 const exceptionSchema = z.object({
-  orderId: z.string().nullable(),
   nodeId: z.number().int(),
   kind: z.enum(['late', 'early']),
   arrival: z.number().finite().min(0),
@@ -17,10 +21,7 @@ const exceptionSchema = z.object({
   reportedAt: z.string().datetime(),
 });
 
-/**
- * Playback writeback target. The orders registry console lands in the next
- * milestone; until then the contract is validated but intentionally inert.
- */
+/** Simulation playback writeback: flag an order as an exception. */
 export async function POST(request: NextRequest, ctx: Ctx): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
@@ -37,9 +38,30 @@ export async function POST(request: NextRequest, ctx: Ctx): Promise<NextResponse
     return NextResponse.json({ error: 'Validation failed', issues: parsed.error.issues }, { status: 400 });
   }
 
-  const { id } = await ctx.params;
-  return NextResponse.json(
-    { error: `Order writeback is not enabled yet (order ${id})` },
-    { status: 501 },
-  );
+  try {
+    await ensureSchema();
+    const db = getDb();
+    const { id } = await ctx.params;
+
+    const row = db.select().from(orders).where(eq(orders.id, id)).get();
+    if (!row) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+
+    db.update(orders)
+      .set({ status: 'exception', updatedAt: new Date().toISOString() })
+      .where(eq(orders.id, id))
+      .run();
+
+    writeAudit({
+      entity: 'order',
+      entityId: id,
+      action: 'status:exception',
+      actor: auth.keyName,
+      payload: { previousStatus: row.status, ...parsed.data },
+    });
+
+    return NextResponse.json({ id, status: 'exception' });
+  } catch (err) {
+    console.error('[API] POST /api/orders/[id]/exceptions error:', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

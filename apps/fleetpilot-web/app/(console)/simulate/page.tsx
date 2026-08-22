@@ -25,6 +25,7 @@ import {
   detectWindowViolations,
   type WindowViolation,
 } from '@/lib/simulate/writeback';
+import { ReportExceptionDialog } from '@/components/simulate/report-exception-dialog';
 
 const DynamicSimulateMap = dynamic(
   () => import('@/components/map/simulate-map').then((m) => m.SimulateMap),
@@ -221,6 +222,10 @@ export default function SimulatePage(): React.ReactElement {
     [violations],
   );
 
+  const [reportOpen, setReportOpen] = React.useState(false);
+  const [reportingViolation, setReportingViolation] = React.useState<WindowViolation | null>(null);
+  const [reportedCount, setReportedCount] = React.useState(0);
+
   if (!problem || !solution) {
     return (
       <div className="flex h-full min-h-0 flex-col">
@@ -414,33 +419,56 @@ export default function SimulatePage(): React.ReactElement {
               </CardHeader>
               <CardContent className="space-y-1.5">
                 {violations.map((v, i) => (
-                  <button
+                  <div
                     key={`${v.nodeId}-${v.kind}-${i}`}
-                    type="button"
-                    onClick={() => setCurrentTime(v.arrival)}
-                    className="hover:bg-muted flex w-full items-center justify-between rounded-md border px-2 py-1.5 text-left text-xs"
+                    className="hover:bg-muted flex items-center justify-between gap-2 rounded-md border px-2 py-1.5 text-xs"
                   >
-                    <span>
-                      Node {v.nodeId} ·{' '}
-                      <span className={v.kind === 'late' ? 'text-destructive' : 'text-amber-600'}>
-                        {v.kind}
+                    <button
+                      type="button"
+                      onClick={() => setCurrentTime(v.arrival)}
+                      className="flex flex-1 items-center justify-between text-left"
+                    >
+                      <span>
+                        Node {v.nodeId} ·{' '}
+                        <span className={v.kind === 'late' ? 'text-destructive' : 'text-amber-600'}>
+                          {v.kind}
+                        </span>
                       </span>
-                    </span>
-                    <span className="text-muted-foreground tabular-nums">
-                      arrived {formatDuration(v.arrival)} / window{' '}
-                      {v.windowStart !== null ? formatDuration(v.windowStart) : '—'}–
-                      {v.windowEnd !== null ? formatDuration(v.windowEnd) : '—'}
-                    </span>
-                  </button>
+                      <span className="text-muted-foreground tabular-nums">
+                        arrived {formatDuration(v.arrival)} / window{' '}
+                        {v.windowStart !== null ? formatDuration(v.windowStart) : '—'}–
+                        {v.windowEnd !== null ? formatDuration(v.windowEnd) : '—'}
+                      </span>
+                    </button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-[11px]"
+                      onClick={() => {
+                        setReportingViolation(v);
+                        setReportOpen(true);
+                      }}
+                    >
+                      Report…
+                    </Button>
+                  </div>
                 ))}
                 <p className="text-muted-foreground pt-1 text-[11px]">
                   The engine does not enforce time windows — these are playback observations.
+                  {reportedCount > 0 && ` ${reportedCount} written back to the orders registry.`}
                 </p>
               </CardContent>
             </Card>
           )}
         </div>
       </div>
+
+      <ReportExceptionDialog
+        violation={reportingViolation}
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        onReported={() => setReportedCount((n) => n + 1)}
+      />
     </div>
   );
 }

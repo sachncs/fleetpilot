@@ -1,4 +1,5 @@
 import {
+  ClipboardList,
   Gauge,
   LayoutDashboard,
   MapPinned,
@@ -38,6 +39,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: 'Resources',
     items: [
       { href: '/fleet', label: 'Fleet', icon: Truck },
+      { href: '/orders', label: 'Orders', icon: ClipboardList },
     ],
   },
   {
