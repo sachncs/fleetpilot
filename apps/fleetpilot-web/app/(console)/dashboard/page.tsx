@@ -70,7 +70,7 @@ export default function DashboardPage(): React.ReactElement {
           <h1 className="text-2xl font-bold">Dashboard</h1>
           <Button asChild>
             <Link href="/build">
-              <Plus className="mr-1 h-4 w-4" /> New Problem
+              <Plus className="mr-1 h-4 w-4" /> New scenario
             </Link>
           </Button>
         </div>
@@ -86,7 +86,7 @@ export default function DashboardPage(): React.ReactElement {
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <Card>
             <CardHeader>
-              <CardTitle>Problems</CardTitle>
+              <CardTitle>Scenarios</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (
@@ -103,7 +103,7 @@ export default function DashboardPage(): React.ReactElement {
 
           <Card>
             <CardHeader>
-              <CardTitle>Recent Jobs</CardTitle>
+              <CardTitle>Recent runs</CardTitle>
             </CardHeader>
             <CardContent>
               {loading ? (

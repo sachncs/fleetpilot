@@ -152,7 +152,7 @@ export default function HistoryPage(): React.ReactElement {
         <CardContent className="space-y-3">
           <div className="flex items-center gap-2">
             <Input
-              placeholder="Problem id (prob_…)"
+              placeholder="Scenario id (prob_…)"
               value={problemId}
               onChange={(e) => {
                 setProblemId(e.target.value);
@@ -212,7 +212,7 @@ export default function HistoryPage(): React.ReactElement {
         <TabsList>
           {ENTITY_TABS.map((t) => (
             <TabsTrigger key={t} value={t} onClick={() => switchTab(t)}>
-              {t === 'all' ? 'All' : t}
+              {t === 'all' ? 'All' : t === 'problem' ? 'Scenarios' : t === 'solution' ? 'Runs' : t}
             </TabsTrigger>
           ))}
         </TabsList>
