@@ -1,4 +1,5 @@
 import {
+  Gauge,
   LayoutDashboard,
   MapPinned,
   Play,
@@ -25,6 +26,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: 'Operations',
     items: [
+      { href: '/overview', label: 'Overview', icon: Gauge },
       { href: '/build', label: 'Planning', icon: MapPinned },
       { href: '/simulate', label: 'Simulation', icon: Play },
     ],

@@ -10,11 +10,11 @@ interface EmptyStateProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  actionLabel: string;
-  actionHref: string;
+  actionLabel?: string;
+  actionHref?: string;
 }
 
-/** Consistent empty state for console sections: purpose + primary CTA. */
+/** Consistent empty state for console sections: purpose + optional CTA. */
 export function EmptyState({ icon: Icon, title, description, actionLabel, actionHref }: EmptyStateProps): React.JSX.Element {
   return (
     <div className="flex h-full min-h-[50vh] flex-col items-center justify-center gap-4 p-8 text-center">
@@ -25,9 +25,11 @@ export function EmptyState({ icon: Icon, title, description, actionLabel, action
         <h3 className="text-lg font-semibold">{title}</h3>
         <p className="mx-auto max-w-md text-sm text-muted-foreground">{description}</p>
       </div>
-      <Button asChild size="sm">
-        <Link href={actionHref}>{actionLabel}</Link>
-      </Button>
+      {actionLabel && actionHref ? (
+        <Button asChild size="sm">
+          <Link href={actionHref}>{actionLabel}</Link>
+        </Button>
+      ) : null}
     </div>
   );
 }
