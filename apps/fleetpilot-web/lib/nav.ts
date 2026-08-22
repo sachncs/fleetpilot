@@ -1,4 +1,5 @@
 import {
+  Activity,
   ClipboardList,
   Gauge,
   LayoutDashboard,
@@ -44,7 +45,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'Insights',
-    items: [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }],
+    items: [
+      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+      { href: '/analytics', label: 'Analytics', icon: Activity },
+    ],
   },
   {
     title: 'System',
