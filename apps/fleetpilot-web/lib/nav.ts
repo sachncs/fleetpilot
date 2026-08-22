@@ -2,6 +2,7 @@ import {
   Activity,
   ClipboardList,
   Gauge,
+  History,
   LayoutDashboard,
   MapPinned,
   Play,
@@ -52,7 +53,10 @@ export const NAV_GROUPS: NavGroup[] = [
   },
   {
     title: 'System',
-    items: [{ href: '/settings', label: 'Settings', icon: Settings }],
+    items: [
+      { href: '/history', label: 'History', icon: History },
+      { href: '/settings', label: 'Settings', icon: Settings },
+    ],
   },
 ];
 
