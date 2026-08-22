@@ -4,6 +4,7 @@ import {
   MapPinned,
   Play,
   Settings,
+  Zap,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: '/overview', label: 'Overview', icon: Gauge },
       { href: '/build', label: 'Planning', icon: MapPinned },
+      { href: '/optimize', label: 'Optimize', icon: Zap },
       { href: '/simulate', label: 'Simulation', icon: Play },
     ],
   },

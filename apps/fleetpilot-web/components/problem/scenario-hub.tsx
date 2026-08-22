@@ -77,6 +77,8 @@ export function ScenarioHub(): React.ReactElement {
         }),
       });
       if (!res.ok) throw new Error(`Save failed (${res.status})`);
+      const created = (await res.json()) as { id: string };
+      localStorage.setItem('fleetpilot:last-scenario', created.id);
       setMessage('Scenario saved.');
       await refreshList();
     } catch (err) {

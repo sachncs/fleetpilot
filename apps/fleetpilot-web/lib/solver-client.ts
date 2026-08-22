@@ -18,6 +18,7 @@ export async function solveProblem(
   problem: Problem,
   options: SolverSolveOptions,
   onProgress?: (progress: SolverProgress) => void,
+  existing?: { problemId?: string; name?: string },
 ): Promise<SolverSolution> {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -29,22 +30,26 @@ export async function solveProblem(
     'Content-Type': 'application/json',
   };
 
-  const createRes = await fetch('/api/problems', {
-    method: 'POST',
-    headers: authHeaders,
-    body: JSON.stringify({ name: 'UI Problem', problemJson: problem }),
-  });
-  if (!createRes.ok) {
-    const data = (await createRes.json()) as { error?: string };
-    throw new Error(data.error ?? 'Failed to create problem');
+  let problemId = existing?.problemId;
+  if (!problemId) {
+    const createRes = await fetch('/api/problems', {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({ name: existing?.name ?? 'UI Problem', problemJson: problem }),
+    });
+    if (!createRes.ok) {
+      const data = (await createRes.json()) as { error?: string };
+      throw new Error(data.error ?? 'Failed to create problem');
+    }
+    const created = (await createRes.json()) as { id: string };
+    problemId = created.id;
   }
-  const created = (await createRes.json()) as { id: string };
 
   const jobRes = await fetch('/api/jobs', {
     method: 'POST',
     headers: authHeaders,
     body: JSON.stringify({
-      problemId: created.id,
+      problemId,
       solverOptions: {
         alnsIterations: options.alnsIterations,
         populationSize: options.populationSize,

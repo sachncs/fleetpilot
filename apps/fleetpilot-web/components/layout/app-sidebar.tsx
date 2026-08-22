@@ -14,14 +14,33 @@ import {
   SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
+  SidebarMenuAction,
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
 import { NAV_GROUPS, isActivePath } from '@/lib/nav';
+import { usePolling } from '@/hooks/use-polling';
+
+/** Active solver runs for the Optimize nav badge (30s poll). */
+function useActiveRunCount(): number | null {
+  const fetcher = React.useCallback(async () => {
+    const apiKey = localStorage.getItem('fleetpilot_api_key');
+    if (!apiKey) return null;
+    const res = await fetch('/api/jobs?status=running&limit=100', {
+      headers: { Authorization: `Bearer ${apiKey}` },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { jobs: unknown[] };
+    return data.jobs.length;
+  }, []);
+  const { data } = usePolling(fetcher, { intervalMs: 30_000 });
+  return data;
+}
 
 export function AppSidebar(): React.JSX.Element {
   const pathname = usePathname();
+  const activeRuns = useActiveRunCount();
 
   return (
     <Sidebar>
@@ -48,6 +67,11 @@ export function AppSidebar(): React.JSX.Element {
                         <span>{item.label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {item.href === '/optimize' && activeRuns !== null && activeRuns > 0 && (
+                      <SidebarMenuAction className="pointer-events-none right-1 top-1/2 -translate-y-1/2 bg-primary/10 text-primary text-[10px] font-semibold tabular-nums">
+                        {activeRuns}
+                      </SidebarMenuAction>
+                    )}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
