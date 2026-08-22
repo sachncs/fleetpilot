@@ -3,10 +3,7 @@
 import * as React from 'react';
 import { TileLayer, type TileLayerProps } from 'react-leaflet';
 
-const DEFAULT_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-const DEFAULT_DARK_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const DEFAULT_ATTRIBUTION =
-  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
+import { ALIDADE_SMOOTH, ALIDADE_SMOOTH_DARK } from '@/lib/map/tiles';
 
 export interface MapTileLayerProps extends Omit<TileLayerProps, 'url'> {
   url?: string;
@@ -16,10 +13,10 @@ export interface MapTileLayerProps extends Omit<TileLayerProps, 'url'> {
 }
 
 export const MapTileLayer: React.FC<MapTileLayerProps> = ({
-  url = DEFAULT_URL,
-  darkUrl = DEFAULT_DARK_URL,
-  attribution = DEFAULT_ATTRIBUTION,
-  darkAttribution = DEFAULT_ATTRIBUTION,
+  url = ALIDADE_SMOOTH.url,
+  darkUrl = ALIDADE_SMOOTH_DARK.url,
+  attribution = ALIDADE_SMOOTH.attribution,
+  darkAttribution = ALIDADE_SMOOTH_DARK.attribution,
   ...props
 }) => {
   const [isDark, setIsDark] = React.useState(false);

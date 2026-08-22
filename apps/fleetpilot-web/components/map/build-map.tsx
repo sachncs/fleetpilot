@@ -2,23 +2,27 @@
 
 import * as React from 'react';
 import L from 'leaflet';
+import { useMap, useMapEvents } from 'react-leaflet';
 
 import { Map } from '@/components/map/map';
 import { MapTileLayer } from '@/components/map/map-tile-layer';
 import { MapMarker } from '@/components/map/map-marker';
 import { MapPopup } from '@/components/map/map-popup';
-import { MapDrawControl } from '@/components/map/map-draw-control';
 
 import { useProblemStore } from '@/lib/problem-store';
-import { metresToLatLngExpr, latLngToMetres, type ReferenceOrigin } from '@/lib/geo-utils';
+import {
+  latLngToMetres,
+  metresToLatLng,
+  type ReferenceOrigin,
+} from '@/lib/geo-utils';
 
-const DELHI_CENTER: [number, number] = [28.6139, 77.209];
+export type MapTool = 'select' | 'place';
 
-export interface BuildMapProps {
-  referenceOrigin: ReferenceOrigin | null;
-  selectedNodeId: number | null;
-  onSelectNode: (nodeId: number | null) => void;
-}
+/** Canvas rendering kicks in above this many nodes to keep panning smooth. */
+export const CANVAS_NODE_THRESHOLD = 500;
+
+const WORLD_CENTER: [number, number] = [20, 0];
+const WORLD_ZOOM = 2;
 
 function nodeLabelHtml(id: number, isDepot: boolean, isSelected: boolean): string {
   const ring = isSelected
@@ -37,82 +41,44 @@ function nodeLabelHtml(id: number, isDepot: boolean, isSelected: boolean): strin
   ">${id}</div>`;
 }
 
+/** Recenters the map once a scenario origin exists (first node placed). */
+function Recenter({ origin }: { origin: ReferenceOrigin | null }): null {
+  const map = useMap();
+  React.useEffect(() => {
+    if (origin) map.setView([origin.lat, origin.lng], Math.max(map.getZoom(), 12));
+  }, [map, origin]);
+  return null;
+}
+
+/** Map-level click capture (react-leaflet v5 has no container event props). */
+function ClickHandler({ onClick }: { onClick: (e: L.LeafletMouseEvent) => void }): null {
+  useMapEvents({ click: onClick });
+  return null;
+}
+
+export interface BuildMapProps {
+  tool: MapTool;
+  selectedNodeId: number | null;
+  onSelectNode: (nodeId: number | null) => void;
+}
+
 export function BuildMap({
-  referenceOrigin,
+  tool,
   selectedNodeId,
   onSelectNode,
 }: BuildMapProps): React.ReactElement {
   const problem = useProblemStore((s) => s.problem);
   const setProblem = useProblemStore((s) => s.setProblem);
-  const layerRef = React.useRef<L.FeatureGroup | null>(null);
 
-  const handleMapClick = React.useCallback(
-    (latLng: { lat: number; lng: number }) => {
-      if (!referenceOrigin) return;
-      const currentProblem = useProblemStore.getState().problem;
-      const layer = layerRef.current ?? new L.FeatureGroup();
-      layerRef.current = layer;
-
-      // Allocate the next node id (depot is 0, customer stops start at 1).
-      const existingIds = (
-        currentProblem
-          ? Array.isArray(currentProblem.nodes)
-            ? currentProblem.nodes.map((n) => n.id)
-            : Object.values(currentProblem.nodes).map((n) => n.id)
-          : []
-      ).concat(
-        Array.from(layer.getLayers()).map((l) =>
-          Number((l as L.Marker & { options: { markerId?: number } }).options.markerId),
-        ),
-      );
-      const nextId = existingIds.length === 0 ? 0 : Math.max(...existingIds) + 1;
-
-      const marker = L.marker([latLng.lat, latLng.lng], {
-        icon: L.divIcon({
-          className: 'fleet-draw-marker',
-          iconSize: [24, 24],
-          iconAnchor: [12, 12],
-        }),
-      });
-      (marker.options as { markerId?: number }).markerId = nextId;
-      layer.addLayer(marker);
-
-      const nodes = (layer.getLayers() as L.Marker[]).flatMap((m) => {
-        const id = (m.options as { markerId?: number }).markerId;
-        if (typeof id !== 'number') return [];
-        const ll = m.getLatLng();
-        const [mx, my] = latLngToMetres(referenceOrigin, ll.lat, ll.lng);
-        return [{ id, x: Math.abs(mx), y: Math.abs(my), name: `Node ${id}` }];
-      });
-      const depotNodeId = currentProblem?.depotNodeId ?? nodes[0]?.id ?? 0;
-      const customers = currentProblem?.customers ?? [];
-      const vehicles = currentProblem?.vehicles ?? [{ id: 1, capacity: 100 }];
-
-      setProblem({
-        depotNodeId,
-        nodes,
-        customers,
-        vehicles,
-        referenceOrigin: { lat: referenceOrigin.lat, lng: referenceOrigin.lng },
-      });
-      onSelectNode(nextId);
-    },
-    [referenceOrigin, setProblem, onSelectNode],
-  );
-
-  const center: [number, number] = React.useMemo(() => {
-    if (referenceOrigin) return [referenceOrigin.lat, referenceOrigin.lng];
-    return DELHI_CENTER;
-  }, [referenceOrigin]);
-
-  // Fall back to the depot node when referenceOrigin is missing.
-  const effectiveOrigin: ReferenceOrigin | null = React.useMemo(() => {
-    if (referenceOrigin) return referenceOrigin;
+  // Origin: explicit referenceOrigin wins, else the depot's stored position
+  // reinterpreted as geographic degrees (legacy scenarios).
+  const origin: ReferenceOrigin | null = React.useMemo(() => {
+    if (problem?.referenceOrigin) return problem.referenceOrigin;
     if (!problem) return null;
     const nodeList = Array.isArray(problem.nodes) ? problem.nodes : Object.values(problem.nodes);
     const depot = nodeList.find((n) => n.id === problem.depotNodeId) ?? nodeList[0];
     return depot ? { lat: depot.x, lng: depot.y } : null;
-  }, [referenceOrigin, problem]);
+  }, [problem]);
 
   const nodeList = problem
     ? Array.isArray(problem.nodes)
@@ -121,26 +87,109 @@ export function BuildMap({
     : [];
   const depotNodeId = problem?.depotNodeId ?? 0;
 
+  /** Places a node at geographic coords; the first node anchors the origin. */
+  const placeNode = React.useCallback(
+    (lat: number, lng: number, name?: string) => {
+      const current = useProblemStore.getState().problem;
+      const nextId = current
+        ? Math.max(
+            ...(Array.isArray(current.nodes) ? current.nodes : Object.values(current.nodes)).map(
+              (n) => n.id,
+            ),
+          ) + 1
+        : 0;
+
+      if (!current || !origin) {
+        // First placement defines the reference origin for metre projection.
+        setProblem({
+          depotNodeId: nextId,
+          nodes: [{ id: nextId, x: 0, y: 0, name }],
+          customers: [],
+          vehicles: [{ id: 1, capacity: 100 }],
+          referenceOrigin: { lat, lng },
+        });
+      } else {
+        const [mx, my] = latLngToMetres(origin, lat, lng);
+        const existing = Array.isArray(current.nodes) ? current.nodes : Object.values(current.nodes);
+        setProblem({
+          ...current,
+          nodes: [...existing, { id: nextId, x: Math.abs(mx), y: Math.abs(my), name }],
+        });
+      }
+      onSelectNode(nextId);
+    },
+    [origin, setProblem, onSelectNode],
+  );
+
+  /** Drags rewrite coordinates in place through the same projection. */
+  const moveNode = React.useCallback(
+    (nodeId: number, lat: number, lng: number) => {
+      const current = useProblemStore.getState().problem;
+      const ref = current?.referenceOrigin ?? origin;
+      if (!current || !ref) return;
+      const existing = Array.isArray(current.nodes) ? current.nodes : Object.values(current.nodes);
+      const [mx, my] = latLngToMetres(ref, lat, lng);
+      setProblem({
+        ...current,
+        nodes: existing.map((n) =>
+          n.id === nodeId ? { ...n, x: Math.abs(mx), y: Math.abs(my) } : n,
+        ),
+      });
+    },
+    [origin, setProblem],
+  );
+
+  const handleClick = React.useCallback(
+    (e: L.LeafletMouseEvent) => {
+      if (tool !== 'place') return;
+      placeNode(e.latlng.lat, e.latlng.lng);
+    },
+    [tool, placeNode],
+  );
+
+  // Search-result picks arrive as a custom event so the toolbar stays
+  // independent of Leaflet internals.
+  React.useEffect(() => {
+    const handler = (e: Event): void => {
+      const detail = (e as CustomEvent<{ lat: number; lng: number }>).detail;
+      placeNode(detail.lat, detail.lng);
+    };
+    window.addEventListener('fleetpilot:place-at', handler);
+    return () => window.removeEventListener('fleetpilot:place-at', handler);
+  }, [placeNode]);
+
   return (
-    <Map center={center} zoom={12} className="rounded-xl border">
+    <Map
+      center={origin ? [origin.lat, origin.lng] : WORLD_CENTER}
+      zoom={origin ? 12 : WORLD_ZOOM}
+      className={`rounded-xl border ${tool === 'place' ? 'cursor-crosshair' : ''}`}
+      preferCanvas={nodeList.length > CANVAS_NODE_THRESHOLD}
+    >
       <MapTileLayer />
-      <MapDrawControl onClick={handleMapClick}>
-        <></>
-      </MapDrawControl>
+      <ClickHandler onClick={handleClick} />
+      <Recenter origin={origin} />
       {nodeList.map((node) => {
-        if (!effectiveOrigin) return null;
-        const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [number, number];
+        if (!origin) return null;
+        const [lat, lng] = metresToLatLng(origin, node.x, node.y);
         const isDepot = node.id === depotNodeId;
         const isSelected = node.id === selectedNodeId;
         return (
           <MapMarker
             key={node.id}
             position={[lat, lng]}
+            draggable
             icon={nodeLabelHtml(node.id, isDepot, isSelected)}
             iconSize={[24, 24]}
             iconAnchor={[12, 12]}
             eventHandlers={{
-              click: () => onSelectNode(node.id),
+              click: (e) => {
+                e.originalEvent?.stopPropagation();
+                onSelectNode(node.id);
+              },
+              dragend: (e) => {
+                const ll = (e.target as L.Marker).getLatLng();
+                moveNode(node.id, ll.lat, ll.lng);
+              },
             }}
           >
             <MapPopup>
@@ -152,18 +201,20 @@ export function BuildMap({
                   )}
                 </div>
                 <div className="text-muted-foreground">
-                  ({node.x.toFixed(1)}, {node.y.toFixed(1)})
+                  ({lat.toFixed(5)}, {lng.toFixed(5)})
                 </div>
               </div>
             </MapPopup>
           </MapMarker>
         );
       })}
-      {effectiveOrigin && (
-        <div className="absolute right-2 top-2 z-1000 rounded-md bg-white/90 px-3 py-1.5 text-xs shadow">
-          Click the map to drop a node · {nodeList.length} nodes
-        </div>
-      )}
+      <div className="pointer-events-none absolute bottom-2 left-2 z-[1000] rounded-md bg-background/90 px-3 py-1.5 text-xs shadow">
+        {tool === 'place'
+          ? 'Click the map to drop a stop · drag markers to adjust'
+          : 'Select mode — click a marker to inspect'}
+        {' · '}
+        {nodeList.length} nodes
+      </div>
     </Map>
   );
 }
