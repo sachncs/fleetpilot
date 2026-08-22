@@ -3,17 +3,30 @@
 import * as React from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
-import { Loader2, Play, Pause, RotateCcw } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
+import { AlertTriangle, Loader2, Play, Pause, RotateCcw } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
-import { useProblemStore } from '@/lib/problem-store';
+import { useProblemStore, type SolverSolution } from '@/lib/problem-store';
 import { formatDuration, formatDistance, formatCost, formatCo2 } from '@/lib/utils';
+import {
+  detectWindowViolations,
+  type WindowViolation,
+} from '@/lib/simulate/writeback';
 
-const SimulateMap = dynamic(
+const DynamicSimulateMap = dynamic(
   () => import('@/components/map/simulate-map').then((m) => m.SimulateMap),
   {
     ssr: false,
@@ -27,16 +40,77 @@ const SimulateMap = dynamic(
 
 const REALTIME_MS_PER_MIN = 200; // 1 wall-clock minute = 200 ms of playback
 
+interface SolutionRow {
+  id: string;
+  problemId: string;
+  solutionJson: string;
+}
+
 export default function SimulatePage(): React.ReactElement {
+  const searchParams = useSearchParams();
+  const deepLinkSolutionId = searchParams.get('solution');
+
   const problem = useProblemStore((s) => s.problem);
+  const setProblem = useProblemStore((s) => s.setProblem);
   const solution = useProblemStore((s) => s.solution);
+  const setSolution = useProblemStore((s) => s.setSolution);
   const status = useProblemStore((s) => s.status);
   const reset = useProblemStore((s) => s.reset);
 
+  const [loadingLink, setLoadingLink] = React.useState(false);
+  const [linkError, setLinkError] = React.useState<string | null>(null);
   const [currentTime, setCurrentTime] = React.useState(0);
   const [playing, setPlaying] = React.useState(false);
   const [speed, setSpeed] = React.useState(1);
   const [hoveredVehicleId, setHoveredVehicleId] = React.useState<number | null>(null);
+
+  /** Deep link: ?solution=<id> hydrates the store from the server. */
+  React.useEffect(() => {
+    if (!deepLinkSolutionId) return;
+    let cancelled = false;
+    setLoadingLink(true);
+    setLinkError(null);
+    (async () => {
+      try {
+        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? '';
+        const headers = { Authorization: `Bearer ${apiKey}` };
+        const solRes = await fetch(`/api/solutions/${deepLinkSolutionId}`, { headers });
+        if (!solRes.ok) throw new Error(`Solution load failed (${solRes.status})`);
+        const row = (await solRes.json()) as SolutionRow;
+
+        const parsed = JSON.parse(row.solutionJson) as SolverSolution & {
+          nodeTimesEntries?: Array<[number, number]>;
+        };
+        const normalized: SolverSolution = {
+          ...parsed,
+          routes: parsed.routes ?? [],
+          nodeTimes: parsed.nodeTimes ?? {},
+          nodeTimesEntries:
+            parsed.nodeTimesEntries ??
+            Object.entries(parsed.nodeTimes ?? {}).map(([k, v]) => [Number(k), v] as [number, number]),
+        };
+
+        if (!useProblemStore.getState().problem && row.problemId) {
+          const probRes = await fetch(`/api/problems/${row.problemId}`, { headers });
+          if (probRes.ok) {
+            const detail = (await probRes.json()) as { problemJson: string };
+            setProblem(JSON.parse(detail.problemJson));
+          }
+        }
+        if (!cancelled) {
+          setSolution(normalized);
+          setPlaying(true);
+        }
+      } catch (err) {
+        if (!cancelled) setLinkError(err instanceof Error ? err.message : 'Deep link failed');
+      } finally {
+        if (!cancelled) setLoadingLink(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [deepLinkSolutionId]);
 
   const makespan = solution?.makespan ?? 0;
 
@@ -92,6 +166,61 @@ export default function SimulatePage(): React.ReactElement {
     }
   }, [solution]);
 
+  // Keyboard transport: space play/pause, arrows step ±1 min, r reset.
+  // Suppressed while typing in form fields.
+  React.useEffect(() => {
+    const handler = (e: KeyboardEvent): void => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'SELECT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (e.key === ' ') {
+        e.preventDefault();
+        setPlaying((p) => !p);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setCurrentTime((t) => Math.min(makespan, t + 1));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setCurrentTime((t) => Math.max(0, t - 1));
+      } else if (e.key.toLowerCase() === 'r') {
+        setCurrentTime(0);
+        setPlaying(false);
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [makespan]);
+
+  /** Node arrival times keyed by node id, for window checks and ETAs. */
+  const arrivalByNodeId = React.useMemo(() => {
+    const m = new Map<number, number>();
+    for (const [k, v] of solution?.nodeTimesEntries ?? []) m.set(Number(k), v);
+    return m;
+  }, [solution]);
+
+  const violations = React.useMemo<WindowViolation[]>(
+    () =>
+      problem && solution
+        ? detectWindowViolations(
+            problem,
+            Object.fromEntries([...arrivalByNodeId.entries()].map(([k, v]) => [String(k), v])),
+          )
+        : [],
+    [problem, solution, arrivalByNodeId],
+  );
+
+  const violationNodeIds = React.useMemo(
+    () => [...new Set(violations.map((v) => v.nodeId))],
+    [violations],
+  );
+
   if (!problem || !solution) {
     return (
       <div className="flex h-full min-h-0 flex-col">
@@ -103,22 +232,32 @@ export default function SimulatePage(): React.ReactElement {
         <main className="flex flex-1 items-center justify-center p-8">
           <Card className="max-w-md">
             <CardHeader>
-              <CardTitle>No solution yet</CardTitle>
+              <CardTitle>
+                {loadingLink ? 'Loading run…' : linkError ? 'Run failed to load' : 'No solution yet'}
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-sm text-muted-foreground">
               <p>
-                {status === 'error'
-                  ? 'The last solve failed.'
-                  : 'Build a problem and solve it first.'}
+                {loadingLink
+                  ? 'Fetching the shared run…'
+                  : linkError
+                    ? linkError
+                    : status === 'error'
+                      ? 'The last solve failed.'
+                      : 'Build a problem and solve it first.'}
               </p>
-              <div className="flex gap-2">
-                <Button asChild>
-                  <Link href="/build">Go to builder</Link>
-                </Button>
-                <Button variant="outline" onClick={reset}>
-                  Clear state
-                </Button>
-              </div>
+              {!loadingLink && (
+                <div className="flex gap-2">
+                  <Button asChild>
+                    <Link href="/build">Go to planner</Link>
+                  </Button>
+                  {!linkError && (
+                    <Button variant="outline" onClick={reset}>
+                      Clear state
+                    </Button>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </main>
@@ -134,17 +273,23 @@ export default function SimulatePage(): React.ReactElement {
           <Badge variant={solution.feasible ? 'success' : 'destructive'}>
             {solution.feasible ? 'Feasible' : 'Infeasible'}
           </Badge>
+          {violations.length > 0 && (
+            <Badge variant="destructive" className="gap-1">
+              <AlertTriangle className="size-3" /> {violations.length} window violation{violations.length === 1 ? '' : 's'}
+            </Badge>
+          )}
         </div>
         <Button asChild variant="outline" size="sm">
-          <Link href="/build">Edit problem →</Link>
+          <Link href="/build">Edit plan →</Link>
         </Button>
       </header>
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_360px]">
         <div className="relative min-h-[400px]">
-          <SimulateMap
+          <DynamicSimulateMap
             referenceOrigin={problem.referenceOrigin ?? null}
             currentTime={currentTime}
             hoveredVehicleId={hoveredVehicleId}
+            violationNodeIds={violationNodeIds}
           />
         </div>
         <div className="overflow-y-auto pr-1">
@@ -227,25 +372,73 @@ export default function SimulatePage(): React.ReactElement {
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Routes ({solution.routes.length})</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2">
-              {solution.routes.map((r) => (
-                <div
-                  key={r.vehicleId}
-                  className="rounded-md border p-2 text-xs hover:bg-muted"
-                  onMouseEnter={() => setHoveredVehicleId(r.vehicleId)}
-                  onMouseLeave={() => setHoveredVehicleId(null)}
-                >
-                  <div className="flex items-center justify-between">
-                    <Badge variant="secondary">Vehicle {r.vehicleId}</Badge>
-                    <span className="text-muted-foreground">{r.nodes.length} stops</span>
-                  </div>
-                  <div className="mt-1 font-mono text-[10px] text-muted-foreground">
-                    {r.nodes.join(' → ')}
-                  </div>
-                </div>
-              ))}
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Vehicle</TableHead>
+                    <TableHead>Stops</TableHead>
+                    <TableHead className="text-right">ETA</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {solution.routes.map((r) => {
+                    const arrivals = r.nodes.map((n) => arrivalByNodeId.get(n) ?? 0);
+                    const eta = arrivals.length > 0 ? Math.max(...arrivals) : 0;
+                    return (
+                      <TableRow
+                        key={r.vehicleId}
+                        onMouseEnter={() => setHoveredVehicleId(r.vehicleId)}
+                        onMouseLeave={() => setHoveredVehicleId(null)}
+                      >
+                        <TableCell>
+                          <Badge variant="secondary">Vehicle {r.vehicleId}</Badge>
+                        </TableCell>
+                        <TableCell className="max-w-40 truncate font-mono text-[10px] text-muted-foreground">
+                          {r.nodes.join(' → ')}
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">
+                          {formatDuration(eta)}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </CardContent>
           </Card>
+          {violations.length > 0 && (
+            <Card className="border-destructive/40 mt-4">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">Window violations</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-1.5">
+                {violations.map((v, i) => (
+                  <button
+                    key={`${v.nodeId}-${v.kind}-${i}`}
+                    type="button"
+                    onClick={() => setCurrentTime(v.arrival)}
+                    className="hover:bg-muted flex w-full items-center justify-between rounded-md border px-2 py-1.5 text-left text-xs"
+                  >
+                    <span>
+                      Node {v.nodeId} ·{' '}
+                      <span className={v.kind === 'late' ? 'text-destructive' : 'text-amber-600'}>
+                        {v.kind}
+                      </span>
+                    </span>
+                    <span className="text-muted-foreground tabular-nums">
+                      arrived {formatDuration(v.arrival)} / window{' '}
+                      {v.windowStart !== null ? formatDuration(v.windowStart) : '—'}–
+                      {v.windowEnd !== null ? formatDuration(v.windowEnd) : '—'}
+                    </span>
+                  </button>
+                ))}
+                <p className="text-muted-foreground pt-1 text-[11px]">
+                  The engine does not enforce time windows — these are playback observations.
+                </p>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

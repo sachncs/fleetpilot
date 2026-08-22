@@ -22,7 +22,10 @@ export interface SimulateMapProps {
   referenceOrigin: ReferenceOrigin | null;
   currentTime: number;
   hoveredVehicleId: number | null;
+  violationNodeIds?: number[];
 }
+
+const WORLD_CENTER: [number, number] = [20, 0];
 
 interface VehicleTrace {
   vehicleId: number;
@@ -97,6 +100,14 @@ function depotHtml(): string {
   return `<div class="fleet-depot">D</div>`;
 }
 
+function violationHtml(): string {
+  return `<div style="
+    width:18px;height:18px;border-radius:50%;
+    border:3px solid #dc2626;
+    background:rgba(220,38,38,0.25);
+  "></div>`;
+}
+
 interface TruckMarkerProps {
   position: [number, number];
   color: string;
@@ -133,6 +144,7 @@ export function SimulateMap({
   referenceOrigin,
   currentTime,
   hoveredVehicleId,
+  violationNodeIds = [],
 }: SimulateMapProps): React.ReactElement {
   const problem = useProblemStore((s) => s.problem);
   const solution = useProblemStore((s) => s.solution);
@@ -147,7 +159,7 @@ export function SimulateMap({
 
   const center: [number, number] = React.useMemo(() => {
     if (effectiveOrigin) return [effectiveOrigin.lat, effectiveOrigin.lng];
-    return [28.6139, 77.209];
+    return WORLD_CENTER;
   }, [effectiveOrigin]);
 
   const nodeById = React.useMemo(() => {
@@ -269,6 +281,29 @@ export function SimulateMap({
           />
         );
       })}
+      {violationNodeIds.length > 0 &&
+        violationNodeIds.map((nodeId) => {
+          const node = nodeById.get(nodeId);
+          if (!node || !effectiveOrigin) return null;
+          const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [number, number];
+          return (
+            <MapMarker
+              key={`viol-${nodeId}`}
+              position={[lat, lng]}
+              icon={violationHtml()}
+              iconSize={[18, 18]}
+              iconAnchor={[9, 9]}
+              zIndexOffset={800}
+            >
+              <MapPopup>
+                <div className="text-xs">
+                  <div className="font-semibold text-red-600">Window violation</div>
+                  <div className="text-muted-foreground">{node.name || `Node ${nodeId}`}</div>
+                </div>
+              </MapPopup>
+            </MapMarker>
+          );
+        })}
     </Map>
   );
 }
