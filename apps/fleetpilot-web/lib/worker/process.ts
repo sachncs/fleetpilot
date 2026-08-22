@@ -2,6 +2,8 @@ import Database from 'better-sqlite3';
 import { randomBytes } from 'node:crypto';
 import { mkdirSync } from 'node:fs';
 import { config } from '../config';
+import { ensureSchema } from '../db/migrate';
+import { writeAudit } from '../audit';
 
 const POLL_INTERVAL = 1000;
 
@@ -25,6 +27,7 @@ function getDb() {
 }
 
 async function run() {
+  await ensureSchema();
   const db = getDb();
 
   while (true) {
@@ -138,6 +141,14 @@ async function run() {
         "UPDATE jobs SET status = 'completed', solution_id = ?, completed_at = datetime('now') WHERE id = ?",
       ).run(solutionId, job.id);
 
+      writeAudit({
+        entity: 'job',
+        entityId: job.id,
+        action: 'completed',
+        actor: 'worker',
+        payload: { problemId: job.problem_id, solutionId, feasible: solution.isFeasible() },
+      });
+
       send({
         type: 'solution',
         jobId: job.id,
@@ -151,6 +162,7 @@ async function run() {
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       db.prepare("UPDATE jobs SET status = 'failed', error = ?, completed_at = datetime('now') WHERE id = ?").run(msg, job.id);
+      writeAudit({ entity: 'job', entityId: job.id, action: 'failed', actor: 'worker', payload: { error: msg } });
       send({ type: 'error', jobId: job.id, error: msg });
     }
   }
