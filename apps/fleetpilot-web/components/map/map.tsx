@@ -5,6 +5,7 @@ import { MapContainer, type MapContainerProps } from 'react-leaflet';
 import L from 'leaflet';
 
 import { cn } from '@/lib/utils';
+import { log } from '@/lib/log';
 
 import 'leaflet/dist/leaflet.css';
 
@@ -18,6 +19,9 @@ export const Map = React.forwardRef<L.Map, MapProps>(({ className, ...props }, r
       ref={ref}
       className={cn('h-full w-full', className)}
       zoomControl={false}
+      whenReady={() => {
+        log.debug('Leaflet container ready');
+      }}
       {...props}
     />
   );

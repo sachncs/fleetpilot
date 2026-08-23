@@ -10,6 +10,7 @@ import { MapMarker } from '@/components/map/map-marker';
 import { MapPopup } from '@/components/map/map-popup';
 
 import { useProblemStore } from '@/lib/problem-store';
+import { log } from '@/lib/log';
 import {
   latLngToMetres,
   metresToLatLng,
@@ -157,6 +158,11 @@ export function BuildMap({
     window.addEventListener('fleetpilot:place-at', handler);
     return () => window.removeEventListener('fleetpilot:place-at', handler);
   }, [placeNode]);
+
+  React.useEffect(() => {
+    log.debug('BuildMap mount', { tool, hasOrigin: !!origin, nodes: nodeList.length });
+    return () => log.debug('BuildMap unmount');
+  }, [tool, origin, nodeList.length]);
 
   return (
     <Map

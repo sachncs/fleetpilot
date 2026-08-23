@@ -4,6 +4,7 @@ import * as React from 'react';
 import { TileLayer, type TileLayerProps } from 'react-leaflet';
 
 import { ALIDADE_SMOOTH, ALIDADE_SMOOTH_DARK } from '@/lib/map/tiles';
+import { log } from '@/lib/log';
 
 export interface MapTileLayerProps extends Omit<TileLayerProps, 'url'> {
   url?: string;
@@ -28,6 +29,10 @@ export const MapTileLayer: React.FC<MapTileLayerProps> = ({
     mql.addEventListener('change', onChange);
     return () => mql.removeEventListener('change', onChange);
   }, []);
+
+  React.useEffect(() => {
+    log.debug('MapTileLayer mount', { isDark, url: isDark ? darkUrl : url });
+  }, [isDark, url, darkUrl]);
 
   return (
     <TileLayer
