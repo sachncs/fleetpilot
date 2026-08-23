@@ -173,7 +173,7 @@ export default function SettingsPage(): React.ReactElement {
             </div>
             <div className="flex items-center justify-between gap-2">
               <span>Map tiles</span>
-              <span className="text-muted-foreground text-xs">Stadia Maps / OpenStreetMap</span>
+              <span className="text-muted-foreground text-xs">CARTO basemaps / OpenStreetMap</span>
             </div>
           </CardContent>
         </Card>
