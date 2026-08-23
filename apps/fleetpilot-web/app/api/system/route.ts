@@ -13,6 +13,7 @@ import {
   vehicles,
 } from '@/lib/db/schema';
 import { config } from '@/lib/config';
+import { log } from '@/lib/log';
 
 /** Read-only system facts for the settings page. */
 export async function GET(_request: NextRequest): Promise<NextResponse> {
@@ -47,7 +48,7 @@ export async function GET(_request: NextRequest): Promise<NextResponse> {
       },
     });
   } catch (err) {
-    console.error('[API] GET /api/system error:', err);
+    log.error('[API] GET /api/system error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

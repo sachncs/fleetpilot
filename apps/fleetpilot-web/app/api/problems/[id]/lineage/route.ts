@@ -5,6 +5,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { ensureSchema } from '@/lib/db/migrate';
 import { problems } from '@/lib/db/schema';
+import { log } from '@/lib/log';
 
 interface Ctx {
   params: Promise<{ id: string }>;
@@ -80,7 +81,7 @@ export async function GET(request: NextRequest, ctx: Ctx): Promise<NextResponse>
 
     return NextResponse.json({ ancestors: chain, children });
   } catch (err) {
-    console.error('[API] GET /api/problems/[id]/lineage error:', err);
+    log.error('[API] GET /api/problems/[id]/lineage error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

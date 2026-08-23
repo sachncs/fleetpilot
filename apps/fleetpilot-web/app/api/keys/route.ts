@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db';
 import { apiKeys } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
 import { generateApiKey, hashApiKey } from '@/lib/db/seed';
+import { log } from '@/lib/log';
 import { randomBytes } from 'node:crypto';
 import { desc } from 'drizzle-orm';
 
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       })),
     });
   } catch (err) {
-    console.error('[API] GET /api/keys error:', err);
+    log.error('[API] GET /api/keys error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ key: rawKey, name }, { status: 201 });
   } catch (err) {
-    console.error('[API] POST /api/keys error:', err);
+    log.error('[API] POST /api/keys error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

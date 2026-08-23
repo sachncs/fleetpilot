@@ -10,6 +10,7 @@ import { attachWebSocket } from './lib/ws/server';
 import { config, reloadConfig } from './lib/config';
 import { isFirstRun } from './lib/config-store';
 import { runOnboarding } from './lib/onboarding';
+import { log } from './lib/log';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -23,16 +24,16 @@ async function main(): Promise<void> {
   const hostname = '0.0.0.0';
   const port = config.port;
 
-  console.log('[FleetPilot] Initializing database...');
+  log.info('Initializing database...');
   await ensureSchema();
 
   const defaultKey = await seedDefaultApiKey();
   if (defaultKey) {
-    console.log(`[FleetPilot] Default API key: ${defaultKey}`);
-    console.log('[FleetPilot] Save this key — it will not be shown again.');
+    log.info(`Default API key: ${defaultKey}`);
+    log.info('Save this key — it will not be shown again.');
   }
 
-  console.log('[FleetPilot] Starting worker...');
+  log.info('Starting worker...');
   startWorker();
 
   const pubsub = getPubSub();
@@ -55,11 +56,11 @@ async function main(): Promise<void> {
   const wss = attachWebSocket(server);
 
   server.listen(port, hostname, () => {
-    console.log(`[FleetPilot] Ready on http://${hostname}:${port}`);
+    log.info(`Ready on http://${hostname}:${port}`);
   });
 
   const shutdown = (): void => {
-    console.log('\n[FleetPilot] Shutting down...');
+    log.info('Shutting down...');
     stopWorker();
     wss.close();
     server.close(() => process.exit(0));
@@ -69,15 +70,15 @@ async function main(): Promise<void> {
   process.on('SIGINT', shutdown);
   process.on('SIGTERM', shutdown);
   process.on('unhandledRejection', (err) => {
-    console.error('[FleetPilot] Unhandled rejection:', err);
+    log.error('Unhandled rejection:', err);
   });
   process.on('uncaughtException', (err) => {
-    console.error('[FleetPilot] Uncaught exception:', err);
+    log.error('Uncaught exception:', err);
     shutdown();
   });
 }
 
 main().catch((err) => {
-  console.error('[FleetPilot] Fatal:', err);
+  log.error('Fatal:', err);
   process.exit(1);
 });

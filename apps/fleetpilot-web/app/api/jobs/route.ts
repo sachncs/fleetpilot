@@ -7,6 +7,7 @@ import { randomBytes } from 'node:crypto';
 import { config } from '@/lib/config';
 import { eq, desc } from 'drizzle-orm';
 import { getJobQueue } from '@/lib/worker/spawn';
+import { log } from '@/lib/log';
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
@@ -64,7 +65,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const job = db.select().from(jobs).where(eq(jobs.id, id)).get();
     return NextResponse.json(job, { status: 201 });
   } catch (err) {
-    console.error('[API] POST /api/jobs error:', err);
+    log.error('[API] POST /api/jobs error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -90,7 +91,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
     return NextResponse.json({ jobs: rows, limit, offset });
   } catch (err) {
-    console.error('[API] GET /api/jobs error:', err);
+    log.error('[API] GET /api/jobs error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

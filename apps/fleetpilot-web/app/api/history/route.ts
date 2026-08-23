@@ -5,6 +5,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { ensureSchema } from '@/lib/db/migrate';
 import { auditLog } from '@/lib/db/schema';
+import { log } from '@/lib/log';
 
 const PAGE_SIZE_DEFAULT = 50;
 const PAGE_SIZE_MAX = 200;
@@ -50,7 +51,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       limit,
     });
   } catch (err) {
-    console.error('[API] GET /api/history error:', err);
+    log.error('[API] GET /api/history error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

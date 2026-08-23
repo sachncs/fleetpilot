@@ -7,6 +7,7 @@ import { ensureSchema } from '@/lib/db/migrate';
 import { depots } from '@/lib/db/schema';
 import { writeAudit } from '@/lib/audit';
 import { depotCreateSchema } from '@/lib/registry-schemas';
+import { log } from '@/lib/log';
 import { randomBytes } from 'node:crypto';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     const rows = db.select().from(depots).orderBy(desc(depots.createdAt)).limit(limit).offset(offset).all();
     return NextResponse.json({ depots: rows, limit, offset });
   } catch (err) {
-    console.error('[API] GET /api/depots error:', err);
+    log.error('[API] GET /api/depots error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -68,7 +69,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const created = db.select().from(depots).where(eq(depots.id, id)).get();
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
-    console.error('[API] POST /api/depots error:', err);
+    log.error('[API] POST /api/depots error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

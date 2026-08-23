@@ -8,6 +8,7 @@ import { ensureSchema } from '@/lib/db/migrate';
 import { orders, problems } from '@/lib/db/schema';
 import { writeAudit } from '@/lib/audit';
 import { orderCreateSchema } from '@/lib/registry-schemas';
+import { log } from '@/lib/log';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ orders: rows, limit, offset });
   } catch (err) {
-    console.error('[API] GET /api/orders error:', err);
+    log.error('[API] GET /api/orders error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const created = db.select().from(orders).where(eq(orders.id, id)).get();
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
-    console.error('[API] POST /api/orders error:', err);
+    log.error('[API] POST /api/orders error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

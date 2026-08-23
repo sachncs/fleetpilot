@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { apiKeys } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
+import { log } from '@/lib/log';
 import { eq } from 'drizzle-orm';
 
 export async function DELETE(
@@ -26,7 +27,7 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[API] DELETE /api/keys/[id] error:', err);
+    log.error('[API] DELETE /api/keys/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

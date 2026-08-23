@@ -5,6 +5,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { ensureSchema } from '@/lib/db/migrate';
 import { problems, solutions } from '@/lib/db/schema';
+import { log } from '@/lib/log';
 
 /** KPI rows for recent solutions — no solution JSON, charts only need metrics. */
 export async function GET(request: NextRequest): Promise<NextResponse> {
@@ -36,7 +37,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ solutions: rows });
   } catch (err) {
-    console.error('[API] GET /api/solutions error:', err);
+    log.error('[API] GET /api/solutions error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

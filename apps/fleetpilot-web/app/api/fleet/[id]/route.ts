@@ -7,6 +7,7 @@ import { ensureSchema } from '@/lib/db/migrate';
 import { vehicles, depots } from '@/lib/db/schema';
 import { writeAudit } from '@/lib/audit';
 import { vehicleUpdateSchema } from '@/lib/registry-schemas';
+import { log } from '@/lib/log';
 
 interface Ctx {
   params: Promise<{ id: string }>;
@@ -60,7 +61,7 @@ export async function PATCH(request: NextRequest, ctx: Ctx): Promise<NextRespons
 
     return NextResponse.json(db.select().from(vehicles).where(eq(vehicles.id, id)).get());
   } catch (err) {
-    console.error('[API] PATCH /api/fleet/[id] error:', err);
+    log.error('[API] PATCH /api/fleet/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -82,7 +83,7 @@ export async function DELETE(request: NextRequest, ctx: Ctx): Promise<NextRespon
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[API] DELETE /api/fleet/[id] error:', err);
+    log.error('[API] DELETE /api/fleet/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

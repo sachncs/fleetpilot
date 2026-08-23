@@ -7,6 +7,7 @@ import { getDb } from '@/lib/db';
 import { ensureSchema } from '@/lib/db/migrate';
 import { orders } from '@/lib/db/schema';
 import { writeAudit } from '@/lib/audit';
+import { log } from '@/lib/log';
 
 interface Ctx {
   params: Promise<{ id: string }>;
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest, ctx: Ctx): Promise<NextResponse
 
     return NextResponse.json({ id, status: 'exception' });
   } catch (err) {
-    console.error('[API] POST /api/orders/[id]/exceptions error:', err);
+    log.error('[API] POST /api/orders/[id]/exceptions error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

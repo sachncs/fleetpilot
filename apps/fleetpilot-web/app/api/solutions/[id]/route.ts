@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { solutions } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
+import { log } from '@/lib/log';
 import { eq } from 'drizzle-orm';
 
 export async function GET(
@@ -24,7 +25,7 @@ export async function GET(
 
     return NextResponse.json(solution);
   } catch (err) {
-    console.error('[API] GET /api/solutions/[id] error:', err);
+    log.error('[API] GET /api/solutions/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

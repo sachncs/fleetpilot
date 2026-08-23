@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { jobs } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
+import { log } from '@/lib/log';
 import { eq } from 'drizzle-orm';
 
 export async function GET(
@@ -24,7 +25,7 @@ export async function GET(
 
     return NextResponse.json(job);
   } catch (err) {
-    console.error('[API] GET /api/jobs/[id] error:', err);
+    log.error('[API] GET /api/jobs/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -52,7 +53,7 @@ export async function DELETE(
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[API] DELETE /api/jobs/[id] error:', err);
+    log.error('[API] DELETE /api/jobs/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

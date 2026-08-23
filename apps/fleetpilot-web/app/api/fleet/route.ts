@@ -8,6 +8,7 @@ import { ensureSchema } from '@/lib/db/migrate';
 import { vehicles, depots } from '@/lib/db/schema';
 import { writeAudit } from '@/lib/audit';
 import { vehicleCreateSchema } from '@/lib/registry-schemas';
+import { log } from '@/lib/log';
 
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ fleet: rows, limit, offset });
   } catch (err) {
-    console.error('[API] GET /api/fleet error:', err);
+    log.error('[API] GET /api/fleet error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const created = db.select().from(vehicles).where(eq(vehicles.id, id)).get();
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
-    console.error('[API] POST /api/fleet error:', err);
+    log.error('[API] POST /api/fleet error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

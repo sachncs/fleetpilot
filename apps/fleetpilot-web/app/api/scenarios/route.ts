@@ -8,6 +8,7 @@ import { getDb } from '@/lib/db';
 import { ensureSchema } from '@/lib/db/migrate';
 import { problems, solutions } from '@/lib/db/schema';
 import { writeAudit } from '@/lib/audit';
+import { log } from '@/lib/log';
 
 const scenarioCreateSchema = z.object({
   name: z.string().min(1).max(200).optional(),
@@ -48,7 +49,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ scenarios: rows, limit, offset });
   } catch (err) {
-    console.error('[API] GET /api/scenarios error:', err);
+    log.error('[API] GET /api/scenarios error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       { status: 400 },
     );
   } catch (err) {
-    console.error('[API] POST /api/scenarios error:', err);
+    log.error('[API] POST /api/scenarios error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

@@ -6,6 +6,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { ensureSchema } from '@/lib/db/migrate';
 import { geocodeCache } from '@/lib/db/schema';
+import { log } from '@/lib/log';
 
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
@@ -102,7 +103,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ results, cached: false, queryHash: hash });
   } catch (err) {
-    console.error('[API] GET /api/geocode error:', err);
+    log.error('[API] GET /api/geocode error:', err);
     return NextResponse.json({ error: 'Geocoding failed' }, { status: 502 });
   }
 }

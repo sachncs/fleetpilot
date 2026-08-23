@@ -3,6 +3,7 @@ import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
 import { problems } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
+import { log } from '@/lib/log';
 import { randomBytes } from 'node:crypto';
 import { desc, eq } from 'drizzle-orm';
 
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     return NextResponse.json({ problems: rows, total, limit, offset });
   } catch (err) {
-    console.error('[API] GET /api/problems error:', err);
+    log.error('[API] GET /api/problems error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
@@ -82,7 +83,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const created = db.select().from(problems).where(eq(problems.id, id)).get();
     return NextResponse.json(created, { status: 201 });
   } catch (err) {
-    console.error('[API] POST /api/problems error:', err);
+    log.error('[API] POST /api/problems error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
