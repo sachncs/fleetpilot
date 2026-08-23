@@ -153,8 +153,8 @@ export default function BuildPage(): React.ReactElement {
         </div>
       </div>
 
-      <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_420px]">
-        <div className="relative min-h-[400px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[1fr] gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_420px]">
+        <div className="relative h-full min-h-[400px]">
           <DynamicBuildMap
             tool={tool}
             selectedNodeId={selectedNodeId}
