@@ -49,7 +49,7 @@ async function run() {
         throw new Error(`Problem ${job.problem_id} not found`);
       }
 
-      const { FleetPilotSolver, Problem, LocationNode, Customer, CustomerWithTimeWindows, Vehicle } = await import('fleetpilot');
+      const { FleetPilotSolver, Problem, LocationNode, Customer, CustomerWithTimeWindows, Vehicle } = await import('../../../src/index.js');
 
       const probData = JSON.parse(problem.problem_json) as Record<string, unknown>;
       const nodeList = Array.isArray(probData['nodes'])
