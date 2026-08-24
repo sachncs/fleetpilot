@@ -8,18 +8,23 @@
 set -euo pipefail
 
 IMAGE="${IMAGE:-fleetpilot:test}"
-SAMPLE="${SAMPLE:-samples/delhi-10.json}"
+SAMPLE="${SAMPLE:-/tmp/problem.json}"
 TMP_OUT="$(mktemp -t fleetpilot-smoke.XXXXXX.json)"
 trap 'rm -f "$TMP_OUT"' EXIT
+
+if [ ! -f "$SAMPLE" ]; then
+  echo "FAIL: SAMPLE file not found at $SAMPLE. Provide SAMPLE=/path/to/problem.json" >&2
+  exit 1
+fi
 
 echo ">> Building $IMAGE..."
 docker build -t "$IMAGE" .
 
 echo ">> Running fleetpilot inside $IMAGE on $SAMPLE..."
 docker run --rm \
-  -v "${PWD}/samples:/app/samples:ro" \
+  -v "${SAMPLE}:/tmp/problem.json:ro" \
   "$IMAGE" \
-  --problem "$SAMPLE" \
+  --problem /tmp/problem.json \
   --max-time 5000 \
   --alns-iterations 100 \
   --population-size 500 \

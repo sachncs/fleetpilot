@@ -14,7 +14,6 @@ RUN npm ci --no-audit --no-fund
 
 COPY tsconfig.json rollup.config.mjs ./
 COPY src ./src
-COPY samples ./samples
 COPY frontend ./frontend
 
 RUN npm run build

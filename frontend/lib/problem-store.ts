@@ -1,7 +1,7 @@
 'use client';
 
 // Problem + solution store. Browser-only (localStorage persistence).
-// Shape mirrors the sample JSON in samples/*.json so the data round-trips
+// Shape mirrors the CLI JSON problem schema so the data round-trips
 // with the CLI: fleetpilot/read-from-file → build → solve → simulate.
 
 import { create } from 'zustand';

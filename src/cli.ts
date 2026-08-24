@@ -233,7 +233,7 @@ Info:
 Examples:
   fleetpilot --problem problem.json --output solution.json
   fleetpilot --problem problem.json --max-time 30000 --progress
-  fleetpilot --problem samples/mumbai-20.json --seed 42
+  fleetpilot --problem problem.json --seed 42
 `);
 }
 

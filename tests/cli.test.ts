@@ -1,5 +1,5 @@
 import { spawnSync } from 'child_process';
-import { existsSync, readFileSync, writeFileSync, mkdtempSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync, mkdtempSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 
@@ -168,16 +168,5 @@ describe('CLI', () => {
     } finally {
       cleanup();
     }
-  });
-});
-
-describe('Mumbai-20 sample', () => {
-  it('ships as a valid problem file', () => {
-    const samplePath = new URL('../samples/mumbai-20.json', import.meta.url).pathname;
-    expect(existsSync(samplePath)).to.equal(true);
-    const content = readFileSync(samplePath, 'utf-8');
-    const parsed = JSON.parse(content) as { customers: unknown[]; vehicles: unknown[] };
-    expect(parsed.customers).to.have.lengthOf(20);
-    expect(parsed.vehicles).to.have.lengthOf(4);
   });
 });

@@ -72,8 +72,8 @@ npm install
 # Install globally to use the fleetpilot binary
 npm install -g fleetpilot
 
-fleetpilot --problem samples/delhi-10.json --output solution.json
-fleetpilot --problem samples/mumbai-20.json --progress
+fleetpilot --problem problem.json --output solution.json
+fleetpilot --problem problem.json --progress
 ```
 
 | Option                  | Default         | Description                  |
@@ -490,13 +490,6 @@ src/
 ├── worker-validation.ts               # WorkerData validation
 ├── worker-path.ts                     # Env-aware worker bundle path
 └── worker-spawn.ts                    # Node / browser worker spawn
-
-samples/                               # Example problem files
-├── basic.json
-├── time-windows.json
-├── multi-depot.json
-├── delhi-10.json
-└── mumbai-20.json
 ```
 
 ## Tech Stack

@@ -2,8 +2,6 @@
 // and markers would render correctly. Tests the data path that the
 // browser-based simulator consumes.
 
-import { readFileSync } from 'node:fs';
-
 import { expect } from 'chai';
 
 import { FleetPilotSolver, Problem, LocationNode, Customer, Vehicle } from '../src/index.js';
@@ -28,8 +26,52 @@ interface Sample {
   referenceOrigin?: { lat: number; lng: number };
 }
 
+const DELHI_SAMPLE: Sample = {
+  depotNodeId: 0,
+  nodes: [
+    { id: 0, x: 28.61, y: 77.23, name: 'Delhi Hub - Rohini' },
+    { id: 1, x: 28.63, y: 77.1, name: 'Pitampura - Drop' },
+    { id: 2, x: 28.64, y: 77.12, name: 'Pitampura - Pick' },
+    { id: 3, x: 28.59, y: 77.04, name: 'Paschim Vihar - Drop' },
+    { id: 4, x: 28.6, y: 77.06, name: 'Paschim Vihar - Pick' },
+    { id: 5, x: 28.56, y: 77.18, name: 'Rajouri Garden - Drop' },
+    { id: 6, x: 28.57, y: 77.2, name: 'Rajouri Garden - Pick' },
+    { id: 7, x: 28.54, y: 77.26, name: 'Karol Bagh - Drop' },
+    { id: 8, x: 28.55, y: 77.28, name: 'Karol Bagh - Pick' },
+    { id: 9, x: 28.52, y: 77.32, name: 'Daryaganj - Drop' },
+    { id: 10, x: 28.53, y: 77.34, name: 'Daryaganj - Pick' },
+    { id: 11, x: 28.5, y: 77.38, name: 'Lajpat Nagar - Drop' },
+    { id: 12, x: 28.51, y: 77.4, name: 'Lajpat Nagar - Pick' },
+    { id: 13, x: 28.47, y: 77.3, name: 'Saket - Drop' },
+    { id: 14, x: 28.48, y: 77.32, name: 'Saket - Pick' },
+    { id: 15, x: 28.45, y: 77.2, name: 'Dwarka - Drop' },
+    { id: 16, x: 28.46, y: 77.22, name: 'Dwarka - Pick' },
+    { id: 17, x: 28.4, y: 77.1, name: 'Najafgarh - Drop' },
+    { id: 18, x: 28.41, y: 77.12, name: 'Najafgarh - Pick' },
+    { id: 19, x: 28.67, y: 77.32, name: 'Yamuna Vihar - Drop' },
+    { id: 20, x: 28.68, y: 77.34, name: 'Yamuna Vihar - Pick' },
+  ],
+  customers: [
+    { id: 1, deliveryNodeId: 1, pickupNodeId: 2, processingTime: 10 },
+    { id: 2, deliveryNodeId: 3, pickupNodeId: 4, processingTime: 15 },
+    { id: 3, deliveryNodeId: 5, pickupNodeId: 6, processingTime: 12 },
+    { id: 4, deliveryNodeId: 7, pickupNodeId: 8, processingTime: 20 },
+    { id: 5, deliveryNodeId: 9, pickupNodeId: 10, processingTime: 8 },
+    { id: 6, deliveryNodeId: 11, pickupNodeId: 12, processingTime: 15 },
+    { id: 7, deliveryNodeId: 13, pickupNodeId: 14, processingTime: 10 },
+    { id: 8, deliveryNodeId: 15, pickupNodeId: 16, processingTime: 12 },
+    { id: 9, deliveryNodeId: 17, pickupNodeId: 18, processingTime: 18 },
+    { id: 10, deliveryNodeId: 19, pickupNodeId: 20, processingTime: 10 },
+  ],
+  vehicles: [
+    { id: 1, capacity: 100 },
+    { id: 2, capacity: 100 },
+    { id: 3, capacity: 80 },
+  ],
+};
+
 function loadDelhiSample() {
-  const sample = JSON.parse(readFileSync('samples/delhi-10.json', 'utf8')) as Sample;
+  const sample = DELHI_SAMPLE;
   const nodeList = Array.isArray(sample.nodes) ? sample.nodes : Object.values(sample.nodes);
   const nodes: Record<number, LocationNode> = {};
   for (const n of nodeList) nodes[n.id] = new LocationNode(n.id, n.x, n.y, n.name);

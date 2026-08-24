@@ -24,8 +24,7 @@
   "files": [
     "dist",
     "LICENSE",
-    "README.md",
-    "samples/"
+    "README.md"
   ],
   "workspaces": [
     "frontend"
@@ -37,8 +36,6 @@
   "scripts": {
     "build": "rollup -c",
     "build:frontend": "npm run build && npm run build -w @fleetpilot/web",
-    "check-samples": "node scripts/check-samples.mjs",
-    "prebuild": "npm run check-samples",
     "dev": "rollup -c -w",
     "clean": "rm -rf dist docs/api docs/md",
     "lint": "eslint src tests",
@@ -59,7 +56,7 @@
     "sbom:cyclonedx": "npx @cyclonedx/cyclonedx-npm --output-format JSON --output-file sbom.cdx.json",
     "audit": "npm audit --audit-level=high",
     "docker:build": "docker build -t fleetpilot:test .",
-    "docker:run": "docker run --rm -it -v \"${PWD}/samples:/app/samples:ro\" fleetpilot:test",
+    "docker:run": "docker run --rm -it fleetpilot:test",
     "docker:smoke": "bash scripts/docker-smoke.sh",
     "dev:frontend": "npx tsx frontend/server.ts",
     "benchmark:vroom": "tsx benchmarks/vroom-baseline.ts",
@@ -137,9 +134,9 @@
     "serialize-javascript": "7.1.0"
   },
   "allowScripts": {
-    "better-sqlite3@13.0.3": true,
-    "esbuild@0.28.2": true,
     "fsevents@2.3.3": true,
-    "unrs-resolver@1.12.2": true
+    "better-sqlite3": true,
+    "esbuild": true,
+    "unrs-resolver": true
   }
 }
