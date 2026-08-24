@@ -15,7 +15,8 @@ export interface FleetPilotConfig {
 }
 
 function getDefaultDataDir(): string {
-  return resolve(__dirname, '../../../data');
+  // frontend/lib -> frontend -> repo root
+  return resolve(__dirname, '../../data');
 }
 
 function getConfigPath(dataDir: string): string {
