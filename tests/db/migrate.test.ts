@@ -27,17 +27,31 @@ describe('@fleetpilot/web schema migrations', () => {
   });
 
   function tableNames(): string[] {
-    const rows = getDb().all(sql`SELECT name FROM sqlite_master WHERE type='table'`) as Array<{ name: string }>;
+    const rows = getDb().all(sql`SELECT name FROM sqlite_master WHERE type='table'`) as Array<{
+      name: string;
+    }>;
     return rows.map((r) => r.name);
   }
 
   function columns(table: string): string[] {
-    return (getDb().all(sql.raw(`PRAGMA table_info(${table})`)) as Array<{ name: string }>).map((c) => c.name);
+    return (getDb().all(sql.raw(`PRAGMA table_info(${table})`)) as Array<{ name: string }>).map(
+      (c) => c.name,
+    );
   }
 
   it('creates all console tables', () => {
     const names = tableNames();
-    for (const t of ['problems', 'solutions', 'jobs', 'api_keys', 'depots', 'vehicles', 'orders', 'audit_log', 'geocode_cache']) {
+    for (const t of [
+      'problems',
+      'solutions',
+      'jobs',
+      'api_keys',
+      'depots',
+      'vehicles',
+      'orders',
+      'audit_log',
+      'geocode_cache',
+    ]) {
       assert.ok(names.includes(t), `missing table ${t}`);
     }
   });
@@ -56,7 +70,9 @@ describe('@fleetpilot/web schema migrations', () => {
   it('accepts registry rows with constraints enforced', () => {
     const db = getDb();
 
-    db.run(sql`INSERT INTO depots (id, name, lat, lng) VALUES ('dep_t1', 'Test Depot', 12.9716, 77.5946)`);
+    db.run(
+      sql`INSERT INTO depots (id, name, lat, lng) VALUES ('dep_t1', 'Test Depot', 12.9716, 77.5946)`,
+    );
     db.run(sql`INSERT INTO vehicles (id, name, depot_id) VALUES ('veh_t1', 'Truck 1', 'dep_t1')`);
     db.run(sql`INSERT INTO orders (id, ref, lat, lng) VALUES ('ord_t1', 'REF-001', 12.9, 77.6)`);
 
@@ -73,7 +89,9 @@ describe('@fleetpilot/web schema migrations', () => {
     // depot delete nulls vehicle references (ON DELETE SET NULL);
     // hard blocking lives at the API layer (409 on referencing rows).
     db.run(sql`DELETE FROM depots WHERE id = 'dep_t1'`);
-    const veh = getDb().get(sql`SELECT depot_id FROM vehicles WHERE id = 'veh_t1'`) as { depot_id: string | null };
+    const veh = getDb().get(sql`SELECT depot_id FROM vehicles WHERE id = 'veh_t1'`) as {
+      depot_id: string | null;
+    };
     assert.equal(veh.depot_id, null);
   });
 

@@ -14,8 +14,16 @@ import { useProblemStore } from '@/lib/problem-store';
 import { metresToLatLngExpr, type ReferenceOrigin } from '@/lib/geo-utils';
 
 const TABLEAU = [
-  '#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
-  '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ab',
+  '#4e79a7',
+  '#f28e2b',
+  '#e15759',
+  '#76b7b2',
+  '#59a14f',
+  '#edc948',
+  '#b07aa1',
+  '#ff9da7',
+  '#9c755f',
+  '#bab0ab',
 ];
 
 export interface SimulateMapProps {
@@ -187,10 +195,7 @@ export function SimulateMap({
       for (const nodeId of route.nodes) {
         const node = nodeById.get(nodeId);
         if (!node) continue;
-        const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [
-          number,
-          number,
-        ];
+        const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [number, number];
         positions.push([lat, lng]);
         times.push(nodeTimeMap.get(nodeId) ?? 0);
       }
@@ -286,7 +291,10 @@ export function SimulateMap({
         violationNodeIds.map((nodeId) => {
           const node = nodeById.get(nodeId);
           if (!node || !effectiveOrigin) return null;
-          const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [number, number];
+          const [lat, lng] = metresToLatLngExpr(effectiveOrigin, node.x, node.y) as [
+            number,
+            number,
+          ];
           return (
             <MapMarker
               key={`viol-${nodeId}`}
