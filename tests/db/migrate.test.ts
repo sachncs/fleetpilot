@@ -2,16 +2,18 @@ import { strict as assert } from 'node:assert';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { before, after, describe, it } from 'mocha';
+
 import type { sql as SqlTag } from 'drizzle-orm';
+import { before, after, describe, it } from 'mocha';
+
+import type { getDb as GetDbFn } from '../../frontend/lib/db';
 
 describe('@fleetpilot/web schema migrations', () => {
   const dir = mkdtempSync(join(tmpdir(), 'fp-web-migrate-'));
   process.env['DATABASE_URL'] = `file:${join(dir, 'test.db')}`;
 
   let ensureSchema: () => Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let getDb: () => any;
+  let getDb: typeof GetDbFn;
   let sql: typeof SqlTag;
 
   before(async () => {
@@ -27,16 +29,16 @@ describe('@fleetpilot/web schema migrations', () => {
   });
 
   function tableNames(): string[] {
-    const rows = getDb().all(sql`SELECT name FROM sqlite_master WHERE type='table'`) as Array<{
-      name: string;
-    }>;
+    const rows = getDb().all<{ name: string }>(
+      sql`SELECT name FROM sqlite_master WHERE type='table'`,
+    );
     return rows.map((r) => r.name);
   }
 
   function columns(table: string): string[] {
-    return (getDb().all(sql.raw(`PRAGMA table_info(${table})`)) as Array<{ name: string }>).map(
-      (c) => c.name,
-    );
+    return getDb()
+      .all<{ name: string }>(sql.raw(`PRAGMA table_info(${table})`))
+      .map((c) => c.name);
   }
 
   it('creates all console tables', () => {
@@ -89,9 +91,9 @@ describe('@fleetpilot/web schema migrations', () => {
     // depot delete nulls vehicle references (ON DELETE SET NULL);
     // hard blocking lives at the API layer (409 on referencing rows).
     db.run(sql`DELETE FROM depots WHERE id = 'dep_t1'`);
-    const veh = getDb().get(sql`SELECT depot_id FROM vehicles WHERE id = 'veh_t1'`) as {
-      depot_id: string | null;
-    };
+    const veh = getDb().get<{ depot_id: string | null }>(
+      sql`SELECT depot_id FROM vehicles WHERE id = 'veh_t1'`,
+    );
     assert.equal(veh.depot_id, null);
   });
 
@@ -99,12 +101,13 @@ describe('@fleetpilot/web schema migrations', () => {
     getDb().run(sql`
       INSERT INTO audit_log (entity, entity_id, action, actor) VALUES ('order', 'ord_t1', 'created', 'test')
     `);
-    const rows = getDb().all(sql`SELECT * FROM audit_log WHERE entity = 'order'`) as Array<{
-      entity_id: string;
-      actor: string;
-    }>;
+    const rows = getDb().all<{ entity_id: string; actor: string }>(
+      sql`SELECT * FROM audit_log WHERE entity = 'order'`,
+    );
     assert.equal(rows.length, 1);
-    assert.equal(rows[0]?.entity_id, 'ord_t1');
-    assert.equal(rows[0]?.actor, 'test');
+    const row = rows.at(0);
+    assert.ok(row, 'expected one audit entry');
+    assert.equal(row.entity_id, 'ord_t1');
+    assert.equal(row.actor, 'test');
   });
 });
