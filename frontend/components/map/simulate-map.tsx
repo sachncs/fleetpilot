@@ -171,23 +171,16 @@ export function SimulateMap({
     return map;
   }, [problem]);
 
-  if (!effectiveOrigin || !problem || !solution) {
-    return (
-      <Map center={center} zoom={12} className="rounded-xl border">
-        <MapTileLayer />
-      </Map>
-    );
-  }
-
   const nodeTimeMap = React.useMemo(() => {
     const m = new globalThis.Map<number, number>();
-    for (const [k, v] of solution.nodeTimesEntries ?? []) {
+    for (const [k, v] of solution?.nodeTimesEntries ?? []) {
       m.set(Number(k), v);
     }
     return m;
   }, [solution]);
 
   const vehicles: VehicleTrace[] = React.useMemo(() => {
+    if (!effectiveOrigin || !solution) return [];
     return solution.routes.map((route, idx) => {
       const positions: Array<[number, number]> = [];
       const times: number[] = [];
@@ -211,6 +204,14 @@ export function SimulateMap({
   }, [solution, nodeById, nodeTimeMap, effectiveOrigin]);
 
   const fitBoundsRef = React.useRef(false);
+
+  if (!effectiveOrigin || !problem || !solution) {
+    return (
+      <Map center={center} zoom={12} className="rounded-xl border">
+        <MapTileLayer />
+      </Map>
+    );
+  }
 
   return (
     <Map
