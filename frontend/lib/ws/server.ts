@@ -1,20 +1,22 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import type { IncomingMessage } from 'node:http';
 import type { Server } from 'node:http';
 import { getPubSub } from './pubsub';
 import type { WorkerMessage } from '../worker/ipc';
 
+/**
+ * Attaches the solve-progress WebSocket endpoint (/ws/progress/:jobId).
+ *
+ * Unmatched upgrades are intentionally left untouched (NOT destroyed):
+ * Next.js registers its own 'upgrade' listener (HMR in dev) on the same
+ * server and needs to receive them.
+ */
 export function attachWebSocket(server: Server): WebSocketServer {
   const wss = new WebSocketServer({ noServer: true });
   const pubsub = getPubSub();
 
-  server.on('upgrade', (request: IncomingMessage, socket, head) => {
-    const url = request.url ?? '';
-    const match = url.match(/^\/ws\/progress\/([^/]+)$/);
-    if (!match) {
-      socket.destroy();
-      return;
-    }
+  server.on('upgrade', (request, socket, head) => {
+    const match = (request.url ?? '').match(/^\/ws\/progress\/([^/]+)$/);
+    if (!match) return;
 
     wss.handleUpgrade(request, socket, head, (ws) => {
       const jobId = match[1]!;

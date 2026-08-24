@@ -44,16 +44,20 @@ async function main(): Promise<void> {
     }
   });
 
-  const app = next({ dev, dir: __dirname, hostname, port });
+  // The server is created first and handed to Next so its dev HMR
+  // 'upgrade' listener attaches to the same instance as our progress WS.
+  const server = createServer();
+
+  const app = next({ dev, dir: __dirname, hostname, port, httpServer: server });
   const handle = app.getRequestHandler();
 
   await app.prepare();
 
-  const server = createServer((req, res) => {
+  const wss = attachWebSocket(server);
+
+  server.on('request', (req, res) => {
     handle(req, res);
   });
-
-  const wss = attachWebSocket(server);
 
   server.listen(port, hostname, () => {
     log.info(`Ready on http://${hostname}:${port}`);
