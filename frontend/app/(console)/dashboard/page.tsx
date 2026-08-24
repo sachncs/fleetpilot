@@ -33,9 +33,10 @@ export default function DashboardPage(): React.ReactElement {
   const [jobs, setJobs] = React.useState<Job[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  const apiKey = React.useMemo(() => {
-    if (typeof window === 'undefined') return '';
-    return localStorage.getItem('fleetpilot_api_key') ?? '';
+  const [apiKey, setApiKey] = React.useState('');
+
+  React.useEffect(() => {
+    setApiKey(localStorage.getItem('fleetpilot_api_key') ?? '');
   }, []);
 
   React.useEffect(() => {

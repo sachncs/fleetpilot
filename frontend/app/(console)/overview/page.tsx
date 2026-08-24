@@ -117,9 +117,15 @@ export default function OverviewPage(): React.ReactElement {
     }
   }, []);
 
+  const [apiKey, setApiKey] = React.useState('');
+
+  React.useEffect(() => {
+    setApiKey(getApiKey());
+  }, []);
+
   usePolling(refresh, { intervalMs: POLL_MS });
 
-  if (!getApiKey()) {
+  if (!apiKey) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <EmptyState
