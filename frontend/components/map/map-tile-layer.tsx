@@ -2,6 +2,7 @@
 
 import * as React from 'react';
 import { TileLayer, type TileLayerProps } from 'react-leaflet';
+import { useTheme } from 'next-themes';
 
 import { ALIDADE_SMOOTH, ALIDADE_SMOOTH_DARK } from '@/lib/map/tiles';
 import { log } from '@/lib/log';
@@ -20,15 +21,10 @@ export const MapTileLayer: React.FC<MapTileLayerProps> = ({
   darkAttribution = ALIDADE_SMOOTH_DARK.attribution,
   ...props
 }) => {
-  const [isDark, setIsDark] = React.useState(false);
-  React.useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const mql = window.matchMedia('(prefers-color-scheme: dark)');
-    setIsDark(mql.matches);
-    const onChange = (e: MediaQueryListEvent) => setIsDark(e.matches);
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
+  const { resolvedTheme } = useTheme();
+  // Tiles stay light until the theme resolves (first paint), then follow
+  // the app theme so the basemap matches the ThemeToggle.
+  const isDark = resolvedTheme === 'dark';
 
   React.useEffect(() => {
     log.debug('MapTileLayer mount', { isDark, url: isDark ? darkUrl : url });
@@ -36,6 +32,7 @@ export const MapTileLayer: React.FC<MapTileLayerProps> = ({
 
   return (
     <TileLayer
+      key={isDark ? 'dark' : 'light'}
       attribution={isDark ? darkAttribution : attribution}
       url={isDark ? darkUrl : url}
       {...props}
@@ -43,4 +40,3 @@ export const MapTileLayer: React.FC<MapTileLayerProps> = ({
   );
 };
 MapTileLayer.displayName = 'MapTileLayer';
-
