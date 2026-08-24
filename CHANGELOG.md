@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   | `VrpError`                                   | `Error`                         |
   | `MultiDepotProblem.toVrpProblem()`           | `MultiDepotProblem.toProblem()` |
   | `src/errors/vrp-error.ts`                    | `src/errors/error.ts`           |
-  | `.vrp-*` CSS classes (`apps/fleetpilot-web`) | `.fleet-*`                      |
+  | `.vrp-*` CSS classes (`frontend/`) | `.fleet-*`                      |
 
 - `Error` extends `globalThis.Error` so the class declaration avoids the
   class-binding TDZ violation of `extends Error`; all typed errors

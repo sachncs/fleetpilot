@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { before, after, describe, it } from 'mocha';
 import type { sql as SqlTag } from 'drizzle-orm';
 
-describe('fleetpilot-web schema migrations', () => {
+describe('@fleetpilot/web schema migrations', () => {
   const dir = mkdtempSync(join(tmpdir(), 'fp-web-migrate-'));
   process.env['DATABASE_URL'] = `file:${join(dir, 'test.db')}`;
 
@@ -15,8 +15,8 @@ describe('fleetpilot-web schema migrations', () => {
   let sql: typeof SqlTag;
 
   before(async () => {
-    ({ ensureSchema } = await import('../../apps/fleetpilot-web/lib/db/migrate'));
-    ({ getDb } = await import('../../apps/fleetpilot-web/lib/db'));
+    ({ ensureSchema } = await import('../../frontend/lib/db/migrate'));
+    ({ getDb } = await import('../../frontend/lib/db'));
     ({ sql } = await import('drizzle-orm'));
     await ensureSchema();
   });

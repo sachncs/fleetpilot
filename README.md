@@ -520,12 +520,12 @@ samples/                               # Example problem files
 ## Roadmap
 
 - **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
-- **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, `apps/fleetpilot-web/` interactive UI.
+- **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, interactive web UI.
 - **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models; GPU acceleration for ALNS.
 
 ## Web UI
 
-`apps/fleetpilot-web/` is a Next.js 16 + shadcn/ui frontend that lets users drop
+`frontend/` (`@fleetpilot/web`) is a Next.js 16 + shadcn/ui frontend that lets users drop
 a depot and customer stops on a real map, configure vehicles and time windows,
 and step through the solved routes on a replayable timeline.
 
@@ -533,11 +533,11 @@ and step through the solved routes on a replayable timeline.
 npm install
 npm run build
 
-# Development
-npm run dev -w fleetpilot-web    # http://localhost:3000
+# Development (custom server with WebSocket progress streaming)
+npm run dev:frontend              # http://localhost:3000
 
-# Production (custom server with WebSocket progress streaming)
-npm run start:prod -w fleetpilot-web
+# Production
+npm run start -w @fleetpilot/web
 
 # Docker
 docker compose up --build        # mounts ./data for SQLite persistence
