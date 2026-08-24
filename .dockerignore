@@ -3,8 +3,11 @@
 
 # Build artefacts and dev-time data
 node_modules
+**/node_modules
 coverage
 dist
+data
+frontend/.next
 docs/api
 docs/md
 *.log
