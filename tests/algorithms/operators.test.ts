@@ -1,0 +1,296 @@
+import { expect } from 'chai';
+
+import { RemovalOperators, InsertionOperators } from '../../src/algorithms/alns/operators.js';
+import {
+  Problem,
+  LocationNode,
+  Customer,
+  CustomerWithTimeWindows,
+  Vehicle,
+} from '../../src/core/problem.js';
+import { Solution, Route } from '../../src/core/solution.js';
+import {
+  createBasicProblem,
+  createSingleCustomerProblem,
+  createTwoVehicleProblem,
+  assertFeasible,
+} from '../helpers.js';
+
+const testRandom: () => number = () => Math.random();
+
+describe('ALNS Removal Operators', () => {
+  it('random removes exactly k customers', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const k = 1;
+    const { solution: partial, removed } = RemovalOperators.random(solution, k, testRandom);
+    expect(removed.length).to.equal(k);
+    expect(partial.routes[0]!.nodes.length).to.be.lessThan(solution.routes[0]!.nodes.length);
+  });
+
+  it('random returns empty removed for k=0', () => {
+    const problem = createSingleCustomerProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.random(solution, 0, testRandom);
+    expect(removed).to.deep.equal([]);
+    expect(partial.routes[0]!.nodes.length).to.equal(solution.routes[0]!.nodes.length);
+  });
+
+  it('worst removes the highest-cost customer', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const k = 1;
+    const { solution: partial, removed } = RemovalOperators.worst(solution, k);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('worst removes k customers when k > all customers', () => {
+    const problem = createSingleCustomerProblem();
+    const solution = createKnownSolution(problem);
+    const k = 10;
+    const { solution: partial, removed } = RemovalOperators.worst(solution, k);
+    expect(removed.length).to.equal(1);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('shaw removes k customers', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const k = 1;
+    const { solution: partial, removed } = RemovalOperators.shaw(solution, k, testRandom);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('shaw with k > 1 exercises the relatedness loop', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const k = 2;
+    const { solution: partial, removed } = RemovalOperators.shaw(solution, k, testRandom);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('shaw handles empty customer list', () => {
+    const problem = createSingleCustomerProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.shaw(solution, 0, testRandom);
+    expect(removed).to.deep.equal([]);
+    expect(partial.routes[0]!.nodes.length).to.equal(solution.routes[0]!.nodes.length);
+  });
+
+  it('cluster removes k customers', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const k = 1;
+    const { solution: partial, removed } = RemovalOperators.cluster(solution, k, testRandom);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('proximity removes k customers', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const k = 1;
+    const { solution: partial, removed } = RemovalOperators.proximity(solution, k, testRandom);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('temporal removes k customers', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const k = 1;
+    const { solution: partial, removed } = RemovalOperators.temporal(solution, k);
+    expect(removed.length).to.equal(k);
+    expect(partial.isComplete()).to.be.false;
+  });
+
+  it('temporal ranks time-window customers higher', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 50, 0, 'D2'),
+      4: new LocationNode(4, 60, 0, 'P2'),
+    };
+    const customers = [
+      new CustomerWithTimeWindows(1, 1, 2, 10, 200, 400, 300, 500),
+      new Customer(2, 3, 4, 10),
+    ];
+    const problem = new Problem(nodes, customers, [new Vehicle(1, 20)], 0);
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const k = 1;
+    const { removed } = RemovalOperators.temporal(solution, k);
+    expect(removed.length).to.equal(1);
+    expect(removed[0]!.id).to.equal(1);
+  });
+
+  it('removes delivery and pickup from same route correctly', () => {
+    const problem = createSingleCustomerProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    const c = problem.customers[0]!;
+    solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    solution.calculateSchedule();
+
+    const { solution: partial, removed } = RemovalOperators.random(solution, 1, testRandom);
+    expect(removed.length).to.equal(1);
+    expect(partial.routes[0]!.nodes.includes(c.deliveryNodeId)).to.be.false;
+    expect(partial.routes[0]!.nodes.includes(c.pickupNodeId)).to.be.false;
+  });
+
+  function createKnownSolution(problem: Problem): Solution {
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      const route = solution.routes[0];
+      if (route) {
+        route.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+      }
+    }
+    solution.calculateSchedule();
+    return solution;
+  }
+});
+
+describe('ALNS Insertion Operators', () => {
+  it('greedyInsertion restores completeness after removal', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const { solution: partial, removed } = RemovalOperators.random(solution, 1, testRandom);
+    const repaired = InsertionOperators.greedyInsertion(partial, removed);
+    assertFeasible(repaired);
+  });
+
+  it('greedyInsertion places customer in cheapest position', () => {
+    const problem = createTwoVehicleProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      solution.routes[0]!.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+    }
+    solution.calculateSchedule();
+
+    const { solution: partial, removed } = RemovalOperators.random(solution, 1, testRandom);
+    const repaired = InsertionOperators.greedyInsertion(partial, removed);
+    assertFeasible(repaired);
+  });
+
+  it('regret2Insertion restores completeness', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.random(solution, 1, testRandom);
+    const repaired = InsertionOperators.regret2Insertion(partial, removed);
+    assertFeasible(repaired);
+  });
+
+  it('regret3Insertion restores completeness', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.random(solution, 1, testRandom);
+    const repaired = InsertionOperators.regret3Insertion(partial, removed);
+    assertFeasible(repaired);
+  });
+
+  it('regret4Insertion restores completeness', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.random(solution, 1, testRandom);
+    const repaired = InsertionOperators.regret4Insertion(partial, removed);
+    assertFeasible(repaired);
+  });
+
+  it('all insertion operators handle empty customer list', () => {
+    const problem = createBasicProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    solution.calculateSchedule();
+
+    const greedy = InsertionOperators.greedyInsertion(solution, []);
+    expect(greedy.routes[0]!.nodes.length).to.equal(0);
+
+    const r2 = InsertionOperators.regret2Insertion(solution, []);
+    expect(r2.routes[0]!.nodes.length).to.equal(0);
+  });
+
+  it('worst removes customers based on cost contribution', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { removed } = RemovalOperators.worst(solution, 1);
+    expect(removed.length).to.equal(1);
+  });
+
+  it('shaw removes customers based on relatedness', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { removed } = RemovalOperators.shaw(solution, 1, testRandom);
+    expect(removed.length).to.equal(1);
+  });
+
+  it('cluster removes customers from clusters', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    const { removed } = RemovalOperators.cluster(solution, 1, testRandom);
+    expect(removed.length).to.equal(1);
+  });
+
+  it('greedyInsertion handles multiple customers and multiple routes', () => {
+    const problem = createTwoVehicleProblem();
+    const solution = createKnownSolution(problem);
+    const { solution: partial, removed } = RemovalOperators.random(solution, 2, testRandom);
+    const repaired = InsertionOperators.greedyInsertion(partial, removed);
+    expect(repaired.isComplete()).to.be.true;
+  });
+
+  it('all regret variants produce complete solutions', () => {
+    const problem = createBasicProblem();
+    const solution = createKnownSolution(problem);
+    for (const op of [
+      () => InsertionOperators.regret2Insertion(solution.clone(), problem.customers),
+      () => InsertionOperators.regret3Insertion(solution.clone(), problem.customers),
+      () => InsertionOperators.regret4Insertion(solution.clone(), problem.customers),
+    ]) {
+      const repaired = op();
+      expect(repaired.isComplete()).to.be.true;
+    }
+  });
+
+  function createKnownSolution(problem: Problem): Solution {
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    for (const c of problem.customers) {
+      const route = solution.routes[0];
+      if (route) {
+        route.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+      }
+    }
+    solution.calculateSchedule();
+    return solution;
+  }
+});

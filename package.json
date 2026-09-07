@@ -1,0 +1,142 @@
+{
+  "name": "fleetpilot",
+  "version": "2.0.0",
+  "description": "FleetPilot — Route optimization with ALNS + BRKGA metaheuristics, time windows, multi-depot, and traffic-aware routing",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./worker": {
+      "worker": "./dist/worker.browser.js",
+      "node": "./dist/worker.js",
+      "default": "./dist/worker.js"
+    }
+  },
+  "bin": {
+    "fleetpilot": "./dist/cli.mjs"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "workspaces": [
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=26"
+  },
+  "packageManager": "npm@11.6.1",
+  "scripts": {
+    "build": "rollup -c",
+    "build:frontend": "npm run build && npm run build -w @fleetpilot/web",
+    "dev": "rollup -c -w",
+    "clean": "rm -rf dist docs/api docs/md",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
+    "format": "prettier --write src tests README.md CHANGELOG.md todo.md",
+    "format:check": "prettier --check src tests README.md CHANGELOG.md todo.md",
+    "pretest": "npm run build",
+    "test": "mocha",
+    "test:watch": "mocha --watch",
+    "pretest:coverage": "npm run build",
+    "test:coverage": "c8 mocha",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm run test:coverage",
+    "docs": "typedoc",
+    "docs:md": "typedoc --plugin typedoc-plugin-markdown --out docs/md",
+    "typecheck": "tsc --noEmit",
+    "postinstall": "node scripts/fix-tsc-symlink.mjs && node scripts/fix-workspace-links.mjs",
+    "sbom": "npm sbom --sbom-format=spdxjson --sbom-spec-version=1.0 --output-file sbom.spdx.json",
+    "sbom:cyclonedx": "npx @cyclonedx/cyclonedx-npm --output-format JSON --output-file sbom.cdx.json",
+    "audit": "npm audit --audit-level=high",
+    "docker:build": "docker build -t fleetpilot:test .",
+    "docker:run": "docker run --rm -it fleetpilot:test",
+    "docker:smoke": "bash scripts/docker-smoke.sh",
+    "dev:frontend": "npx tsx frontend/server.ts",
+    "benchmark:vroom": "tsx benchmarks/vroom-baseline.ts",
+    "release": "bash scripts/release.sh",
+    "prepublishOnly": "npm run verify && npm run build"
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "lcov",
+      "html"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.d.ts",
+      "src/**/*.test.ts",
+      "tests/**",
+      "dist/**",
+      "demo/**"
+    ],
+    "check-coverage": true,
+    "lines": 85,
+    "functions": 85,
+    "branches": 70,
+    "statements": 85
+  },
+  "keywords": [
+    "pickup-and-delivery",
+    "fleetpilot",
+    "route-optimization",
+    "logistics",
+    "last-mile",
+    "delivery",
+    "alns",
+    "brkga",
+    "metaheuristic",
+    "optimization"
+  ],
+  "author": "Sachin <sachncs@gmail.com>",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sachncs/fleetpilot.git"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "12.3.0",
+    "@types/chai": "5.2.3",
+    "@types/mocha": "10.0.10",
+    "@types/node": "26.2.0",
+    "c8": "12.0.0",
+    "chai": "6.2.2",
+    "eslint": "10.9.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-import-x": "4.17.1",
+    "eslint-plugin-jsdoc": "^64.0.2",
+    "mocha": "11.8.0",
+    "prettier": "3.9.6",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "rollup": "4.62.5",
+    "rollup-plugin-dts": "6.5.1",
+    "tslib": "2.8.1",
+    "tsx": "4.23.12",
+    "typedoc": "0.28.20",
+    "typedoc-plugin-markdown": "4.12.0",
+    "typescript": "npm:@typescript/typescript6@6.0.2",
+    "typescript-7": "npm:typescript@7.0.2",
+    "typescript-eslint": "8.67.0",
+    "web-worker": "1.5.0"
+  },
+  "overrides": {
+    "diff": "8.0.3",
+    "serialize-javascript": "7.1.0"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true,
+    "better-sqlite3": true,
+    "esbuild": true,
+    "unrs-resolver": true
+  }
+}

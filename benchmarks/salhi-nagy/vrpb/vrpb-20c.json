@@ -1,0 +1,383 @@
+{
+  "depotNodeId": 0,
+  "nodes": {
+    "0": {
+      "id": 0,
+      "x": 50,
+      "y": 50,
+      "name": "Depot"
+    },
+    "1": {
+      "id": 1,
+      "x": 26,
+      "y": 57,
+      "name": "D1"
+    },
+    "2": {
+      "id": 2,
+      "x": 28,
+      "y": 59,
+      "name": "P1"
+    },
+    "3": {
+      "id": 3,
+      "x": 30,
+      "y": 59,
+      "name": "D2"
+    },
+    "4": {
+      "id": 4,
+      "x": 32,
+      "y": 61,
+      "name": "P2"
+    },
+    "5": {
+      "id": 5,
+      "x": 36,
+      "y": 48,
+      "name": "D3"
+    },
+    "6": {
+      "id": 6,
+      "x": 38,
+      "y": 50,
+      "name": "P3"
+    },
+    "7": {
+      "id": 7,
+      "x": 39,
+      "y": 37,
+      "name": "D4"
+    },
+    "8": {
+      "id": 8,
+      "x": 41,
+      "y": 39,
+      "name": "P4"
+    },
+    "9": {
+      "id": 9,
+      "x": 38,
+      "y": 39,
+      "name": "D5"
+    },
+    "10": {
+      "id": 10,
+      "x": 40,
+      "y": 41,
+      "name": "P5"
+    },
+    "11": {
+      "id": 11,
+      "x": 37,
+      "y": 70,
+      "name": "D6"
+    },
+    "12": {
+      "id": 12,
+      "x": 39,
+      "y": 72,
+      "name": "P6"
+    },
+    "13": {
+      "id": 13,
+      "x": 37,
+      "y": 36,
+      "name": "D7"
+    },
+    "14": {
+      "id": 14,
+      "x": 39,
+      "y": 38,
+      "name": "P7"
+    },
+    "15": {
+      "id": 15,
+      "x": 39,
+      "y": 78,
+      "name": "D8"
+    },
+    "16": {
+      "id": 16,
+      "x": 41,
+      "y": 80,
+      "name": "P8"
+    },
+    "17": {
+      "id": 17,
+      "x": 34,
+      "y": 45,
+      "name": "D9"
+    },
+    "18": {
+      "id": 18,
+      "x": 36,
+      "y": 47,
+      "name": "P9"
+    },
+    "19": {
+      "id": 19,
+      "x": 39,
+      "y": 32,
+      "name": "D10"
+    },
+    "20": {
+      "id": 20,
+      "x": 41,
+      "y": 34,
+      "name": "P10"
+    },
+    "21": {
+      "id": 21,
+      "x": 73,
+      "y": 42,
+      "name": "D11"
+    },
+    "22": {
+      "id": 22,
+      "x": 75,
+      "y": 44,
+      "name": "P11"
+    },
+    "23": {
+      "id": 23,
+      "x": 80,
+      "y": 56,
+      "name": "D12"
+    },
+    "24": {
+      "id": 24,
+      "x": 82,
+      "y": 58,
+      "name": "P12"
+    },
+    "25": {
+      "id": 25,
+      "x": 73,
+      "y": 41,
+      "name": "D13"
+    },
+    "26": {
+      "id": 26,
+      "x": 75,
+      "y": 43,
+      "name": "P13"
+    },
+    "27": {
+      "id": 27,
+      "x": 73,
+      "y": 53,
+      "name": "D14"
+    },
+    "28": {
+      "id": 28,
+      "x": 75,
+      "y": 55,
+      "name": "P14"
+    },
+    "29": {
+      "id": 29,
+      "x": 61,
+      "y": 77,
+      "name": "D15"
+    },
+    "30": {
+      "id": 30,
+      "x": 63,
+      "y": 79,
+      "name": "P15"
+    },
+    "31": {
+      "id": 31,
+      "x": 72,
+      "y": 42,
+      "name": "D16"
+    },
+    "32": {
+      "id": 32,
+      "x": 74,
+      "y": 44,
+      "name": "P16"
+    },
+    "33": {
+      "id": 33,
+      "x": 78,
+      "y": 72,
+      "name": "D17"
+    },
+    "34": {
+      "id": 34,
+      "x": 80,
+      "y": 74,
+      "name": "P17"
+    },
+    "35": {
+      "id": 35,
+      "x": 74,
+      "y": 74,
+      "name": "D18"
+    },
+    "36": {
+      "id": 36,
+      "x": 76,
+      "y": 76,
+      "name": "P18"
+    },
+    "37": {
+      "id": 37,
+      "x": 71,
+      "y": 74,
+      "name": "D19"
+    },
+    "38": {
+      "id": 38,
+      "x": 73,
+      "y": 76,
+      "name": "P19"
+    },
+    "39": {
+      "id": 39,
+      "x": 79,
+      "y": 67,
+      "name": "D20"
+    },
+    "40": {
+      "id": 40,
+      "x": 81,
+      "y": 69,
+      "name": "P20"
+    }
+  },
+  "customers": [
+    {
+      "id": 1,
+      "deliveryNodeId": 1,
+      "pickupNodeId": 2,
+      "processingTime": 10
+    },
+    {
+      "id": 2,
+      "deliveryNodeId": 3,
+      "pickupNodeId": 4,
+      "processingTime": 10
+    },
+    {
+      "id": 3,
+      "deliveryNodeId": 5,
+      "pickupNodeId": 6,
+      "processingTime": 10
+    },
+    {
+      "id": 4,
+      "deliveryNodeId": 7,
+      "pickupNodeId": 8,
+      "processingTime": 10
+    },
+    {
+      "id": 5,
+      "deliveryNodeId": 9,
+      "pickupNodeId": 10,
+      "processingTime": 10
+    },
+    {
+      "id": 6,
+      "deliveryNodeId": 11,
+      "pickupNodeId": 12,
+      "processingTime": 10
+    },
+    {
+      "id": 7,
+      "deliveryNodeId": 13,
+      "pickupNodeId": 14,
+      "processingTime": 10
+    },
+    {
+      "id": 8,
+      "deliveryNodeId": 15,
+      "pickupNodeId": 16,
+      "processingTime": 10
+    },
+    {
+      "id": 9,
+      "deliveryNodeId": 17,
+      "pickupNodeId": 18,
+      "processingTime": 10
+    },
+    {
+      "id": 10,
+      "deliveryNodeId": 19,
+      "pickupNodeId": 20,
+      "processingTime": 10
+    },
+    {
+      "id": 11,
+      "deliveryNodeId": 21,
+      "pickupNodeId": 22,
+      "processingTime": 10
+    },
+    {
+      "id": 12,
+      "deliveryNodeId": 23,
+      "pickupNodeId": 24,
+      "processingTime": 10
+    },
+    {
+      "id": 13,
+      "deliveryNodeId": 25,
+      "pickupNodeId": 26,
+      "processingTime": 10
+    },
+    {
+      "id": 14,
+      "deliveryNodeId": 27,
+      "pickupNodeId": 28,
+      "processingTime": 10
+    },
+    {
+      "id": 15,
+      "deliveryNodeId": 29,
+      "pickupNodeId": 30,
+      "processingTime": 10
+    },
+    {
+      "id": 16,
+      "deliveryNodeId": 31,
+      "pickupNodeId": 32,
+      "processingTime": 10
+    },
+    {
+      "id": 17,
+      "deliveryNodeId": 33,
+      "pickupNodeId": 34,
+      "processingTime": 10
+    },
+    {
+      "id": 18,
+      "deliveryNodeId": 35,
+      "pickupNodeId": 36,
+      "processingTime": 10
+    },
+    {
+      "id": 19,
+      "deliveryNodeId": 37,
+      "pickupNodeId": 38,
+      "processingTime": 10
+    },
+    {
+      "id": 20,
+      "deliveryNodeId": 39,
+      "pickupNodeId": 40,
+      "processingTime": 10
+    }
+  ],
+  "vehicles": [
+    {
+      "id": 1,
+      "capacity": 100
+    },
+    {
+      "id": 2,
+      "capacity": 100
+    }
+  ]
+}

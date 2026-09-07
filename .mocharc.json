@@ -1,0 +1,7 @@
+{
+  "extension": ["ts"],
+  "spec": ["tests/**/*.test.ts", "benchmarks/results/*.test.ts"],
+  "node-option": ["import=tsx/esm", "import=./tests/hooks.ts"],
+  "watch-files": ["src/**/*.ts", "tests/**/*.ts", "benchmarks/**/*.ts"],
+  "timeout": 60000
+}

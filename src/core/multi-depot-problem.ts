@@ -1,0 +1,145 @@
+import { ValidationError } from '../errors/index.js';
+
+import { Problem, type LocationNode, type Customer, type Vehicle } from './problem.js';
+import { validateProblemBase } from './validate-problem-base.js';
+
+/**
+ * Represents a depot where vehicles can start and end their routes.
+ */
+export class Depot {
+  /**
+   * @param id - Unique depot identifier
+   * @param x - X coordinate
+   * @param y - Y coordinate
+   * @param name - Optional display name
+   */
+  constructor(
+    public readonly id: number,
+    public readonly x: number,
+    public readonly y: number,
+    public readonly name: string = '',
+  ) {}
+}
+
+/**
+ * Multi-depot FleetPilot problem instance.
+ * Vehicles can start and end at different depots.
+ */
+export class MultiDepotProblem {
+  readonly distanceMatrix: Readonly<Record<number, Readonly<Record<number, number>>>>;
+
+  /**
+   * @param nodes - Available nodes by ID
+   * @param customers - Customers to serve
+   * @param vehicles - Fleet vehicles
+   * @param depots - Depot locations
+   * @param vehicleDepotAssignments - Map of vehicleId -> depotId
+   */
+  constructor(
+    public readonly nodes: Readonly<Record<number, LocationNode>>,
+    public readonly customers: ReadonlyArray<Customer>,
+    public readonly vehicles: ReadonlyArray<Vehicle>,
+    public readonly depots: ReadonlyArray<Depot>,
+    public readonly vehicleDepotAssignments: ReadonlyMap<number, number>,
+  ) {
+    validateProblemBase(nodes, customers, vehicles);
+
+    if (depots.length === 0) {
+      throw new ValidationError('Problem depots cannot be empty');
+    }
+    const depotIds = new Set<number>();
+    for (const depot of depots) {
+      if (depotIds.has(depot.id)) {
+        throw new ValidationError(`Duplicate depot ID: ${depot.id}`);
+      }
+      depotIds.add(depot.id);
+      if (!Number.isInteger(depot.id)) {
+        throw new ValidationError(`Depot ID must be an integer, got ${depot.id}`);
+      }
+      if (!Number.isFinite(depot.x) || !Number.isFinite(depot.y)) {
+        throw new ValidationError(
+          `Depot ${depot.id} has invalid coordinates: x=${depot.x}, y=${depot.y}`,
+        );
+      }
+      if (depot.x < 0 || depot.y < 0) {
+        throw new ValidationError(
+          `Depot ${depot.id} has negative coordinates: x=${depot.x}, y=${depot.y}`,
+        );
+      }
+    }
+
+    const vehicleIds = new Set(vehicles.map((v) => v.id));
+    for (const [vehicleId, depotId] of vehicleDepotAssignments) {
+      if (!vehicleIds.has(vehicleId)) {
+        throw new ValidationError(`Vehicle ${vehicleId} in depot assignments does not exist`);
+      }
+      if (!depotIds.has(depotId)) {
+        throw new ValidationError(
+          `Depot ${depotId} assigned to vehicle ${vehicleId} does not exist`,
+        );
+      }
+    }
+
+    this.distanceMatrix = this.calculateDistanceMatrix();
+  }
+
+  private calculateDistanceMatrix(): Record<number, Record<number, number>> {
+    const matrix: Record<number, Record<number, number>> = {};
+    const nodeIds = Object.keys(this.nodes).map(Number);
+
+    for (const i of nodeIds) {
+      matrix[i] = {};
+      for (const j of nodeIds) {
+        const n1 = this.nodes[i];
+        const n2 = this.nodes[j];
+        if (n1 && n2) {
+          matrix[i][j] = Math.sqrt(Math.pow(n1.x - n2.x, 2) + Math.pow(n1.y - n2.y, 2));
+        } else {
+          matrix[i][j] = 0;
+        }
+      }
+    }
+
+    return matrix;
+  }
+
+  /**
+   * @param fromId - Origin node ID
+   * @param toId - Destination node ID
+   * @returns Euclidean distance between the two nodes
+   */
+  getDistance(fromId: number, toId: number): number {
+    const distance = this.distanceMatrix[fromId]?.[toId];
+    return distance ?? 0;
+  }
+
+  /**
+   * @param vehicleId - Vehicle to look up
+   * @returns Assigned depot for the vehicle
+   */
+  getDepotForVehicle(vehicleId: number): Depot | undefined {
+    const depotId = this.vehicleDepotAssignments.get(vehicleId);
+    if (depotId === undefined) return undefined;
+    return this.depots.find((d) => d.id === depotId);
+  }
+
+  /**
+   * @param depotId - Depot ID to look up
+   * @returns Depot with the given ID
+   */
+  getDepotById(depotId: number): Depot | undefined {
+    return this.depots.find((d) => d.id === depotId);
+  }
+
+  /**
+   * Converts this multi-depot problem to a single-depot problem for solvers
+   * that do not natively support multi-depot. The first depot's ID is used
+   * as the default; vehicles retain their `startDepotId` / `endDepotId`.
+   * @param depotNodeId - Optional override depot ID (default: first depot)
+   * @returns A `Problem` with the same nodes / customers / vehicles
+   */
+  toProblem(depotNodeId?: number): Problem {
+    const defaultDepot = depotNodeId ?? this.depots[0]?.id ?? 0;
+    return new Problem(this.nodes, this.customers, this.vehicles, defaultDepot);
+  }
+}

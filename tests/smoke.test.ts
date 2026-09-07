@@ -1,0 +1,54 @@
+import { expect } from 'chai';
+
+import { ALNS } from '../src/algorithms/alns/alns.js';
+import { BRKGA } from '../src/algorithms/brkga/brkga.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
+
+describe('Smoke Tests', () => {
+  const nodes: Record<number, LocationNode> = {
+    0: new LocationNode(0, 0, 0, 'Depot'),
+    1: new LocationNode(1, 10, 0, 'D1'),
+    2: new LocationNode(2, 20, 0, 'P1'),
+  };
+  const customers = [new Customer(1, 1, 2, 50)];
+  const vehicles = [new Vehicle(1, 5)];
+  const problem = new Problem(nodes, customers, vehicles, 0);
+
+  it('creating problem instance', () => {
+    expect(problem).to.exist;
+  });
+
+  it('calculating schedule', () => {
+    const routes = [new Route(1, [1, 2])];
+    const solution = new Solution(problem, routes);
+    const makespan = solution.calculateSchedule();
+    expect(makespan).to.be.greaterThan(0);
+  });
+
+  it('ALNS solve', () => {
+    const alns = new ALNS(problem, { maxIterations: 10 });
+    const alnsSolution = alns.solve();
+    expect(alnsSolution.isComplete()).to.be.true;
+    expect(alnsSolution.makespan).to.be.greaterThan(0);
+  });
+
+  it('BRKGA solve', async () => {
+    const brkga = new BRKGA(problem, { populationSize: 10, maxGenerations: 10 });
+    const brkgaSolution = await brkga.solve();
+    expect(brkgaSolution.isComplete()).to.be.true;
+    expect(brkgaSolution.makespan).to.be.greaterThan(0);
+  });
+
+  it('ALNS input validation', () => {
+    expect(() => {
+      new ALNS(problem, { coolingRate: 1.5 });
+    }).to.throw('Cooling rate');
+  });
+
+  it('BRKGA input validation', () => {
+    expect(() => {
+      new BRKGA(problem, { populationSize: -1 });
+    }).to.throw('Population size');
+  });
+});

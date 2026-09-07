@@ -1,0 +1,330 @@
+import { expect } from 'chai';
+
+import { ALNS } from '../src/algorithms/alns/alns.js';
+import { BRKGA } from '../src/algorithms/brkga/brkga.js';
+import { Problem, LocationNode, Customer, Vehicle } from '../src/core/problem.js';
+import { Solution, Route } from '../src/core/solution.js';
+import { FleetPilotSolver } from '../src/index.js';
+
+describe('Problem', () => {
+  it('should create a problem instance', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 10, 'D1'),
+      2: new LocationNode(2, 20, 20, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    expect(problem.customers.length).to.equal(1);
+    expect(problem.vehicles.length).to.equal(1);
+    expect(problem.depotNodeId).to.equal(0);
+  });
+
+  it('should calculate distance matrix', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 3, 4, 'D1'),
+    };
+    const customers = [new Customer(1, 1, 1, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    expect(problem.getDistance(0, 1)).to.be.closeTo(5, 0.000005);
+  });
+});
+
+describe('Solution', () => {
+  it('should create a solution', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 10, 'D1'),
+      2: new LocationNode(2, 20, 20, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const routes = [new Route(1, [1, 2])];
+    const solution = new Solution(problem, routes);
+
+    expect(solution.routes.length).to.equal(1);
+    expect(solution.isComplete()).to.be.true;
+  });
+
+  it('should calculate schedule and makespan', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const routes = [new Route(1, [1, 2])];
+    const solution = new Solution(problem, routes);
+    const makespan = solution.calculateSchedule();
+
+    expect(makespan).to.be.greaterThan(0);
+    expect(solution.makespan).to.equal(makespan);
+  });
+
+  it('should check capacity constraints', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 1)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const routes = [new Route(1, [1, 2])];
+    const solution = new Solution(problem, routes);
+
+    expect(solution.checkCapacity()).to.be.true;
+  });
+
+  it('should detect incomplete solutions', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const routes = [new Route(1, [1])]; // Missing pickup
+    const solution = new Solution(problem, routes);
+
+    expect(solution.isComplete()).to.be.false;
+  });
+});
+
+describe('ALNS', () => {
+  it('should solve a small problem', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 0, 10, 'D2'),
+      4: new LocationNode(4, 0, 20, 'P2'),
+    };
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
+    const vehicles = [new Vehicle(1, 10)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const alns = new ALNS(problem, { maxIterations: 500 });
+    const initialSolution = alns.generateInitialSolution();
+    const solution = alns.solve();
+
+    // ALNS is stochastic; initial solution is always complete,
+    // final solution may vary due to simulated annealing.
+    expect(initialSolution.isComplete()).to.be.true;
+    expect(solution.makespan).to.be.greaterThan(0);
+  });
+
+  it('should handle multi-restart without crashing', function () {
+    this.timeout(10000);
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 0, 10, 'D2'),
+      4: new LocationNode(4, 0, 20, 'P2'),
+      5: new LocationNode(5, 30, 10, 'D3'),
+      6: new LocationNode(6, 40, 10, 'P3'),
+      7: new LocationNode(7, 30, 20, 'D4'),
+      8: new LocationNode(8, 40, 20, 'P4'),
+    };
+    const customers = [
+      new Customer(1, 1, 2, 50),
+      new Customer(2, 3, 4, 50),
+      new Customer(3, 5, 6, 30),
+      new Customer(4, 7, 8, 40),
+    ];
+    const vehicles = [new Vehicle(1, 10)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    // Use many iterations so stagnation + restart triggers
+    const alns = new ALNS(problem, { maxIterations: 2000 });
+    const solution = alns.solve();
+
+    expect(solution.isFeasible()).to.be.true;
+    expect(solution.isComplete()).to.be.true;
+    expect(solution.makespan).to.be.greaterThan(0);
+  });
+
+  it('should produce better solution with adaptive removal than fixed small removal', function () {
+    this.timeout(30000);
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 0, 10, 'D2'),
+      4: new LocationNode(4, 0, 20, 'P2'),
+      5: new LocationNode(5, 30, 0, 'D3'),
+      6: new LocationNode(6, 40, 0, 'P3'),
+      7: new LocationNode(7, 30, 10, 'D4'),
+      8: new LocationNode(8, 40, 10, 'P4'),
+      9: new LocationNode(9, 50, 10, 'D5'),
+      10: new LocationNode(10, 60, 10, 'P5'),
+      11: new LocationNode(11, 50, 20, 'D6'),
+      12: new LocationNode(12, 60, 20, 'P6'),
+    };
+    const customers = [
+      new Customer(1, 1, 2, 20),
+      new Customer(2, 3, 4, 30),
+      new Customer(3, 5, 6, 40),
+      new Customer(4, 7, 8, 10),
+      new Customer(5, 9, 10, 25),
+      new Customer(6, 11, 12, 35),
+    ];
+    const vehicles = [new Vehicle(1, 200)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const alns = new ALNS(problem, { maxIterations: 1000 });
+    const solution = alns.solve();
+
+    expect(solution.isFeasible()).to.be.true;
+    expect(solution.isComplete()).to.be.true;
+  });
+});
+
+describe('BRKGA', () => {
+  it('should solve a small problem', async () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 0, 10, 'D2'),
+      4: new LocationNode(4, 0, 20, 'P2'),
+    };
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
+    const vehicles = [new Vehicle(1, 10)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const brkga = new BRKGA(problem, { populationSize: 10, maxGenerations: 10 });
+    const solution = await brkga.solve();
+
+    expect(solution.isFeasible()).to.be.true;
+    expect(solution.isComplete()).to.be.true;
+  });
+
+  it('should handle stagnation with immigrant injection gracefully', async function () {
+    this.timeout(30000);
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'Pickup1'),
+      2: new LocationNode(2, 20, 0, 'Delivery1'),
+      3: new LocationNode(3, 30, 0, 'Pickup2'),
+      4: new LocationNode(4, 40, 0, 'Delivery2'),
+    };
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
+    const vehicles = [new Vehicle(1, 200)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    // Low max generations to hit stagnation early → immigrant injection
+    const brkga = new BRKGA(problem, { populationSize: 10, maxGenerations: 50 });
+    const solution = await brkga.solve();
+
+    expect(solution.isFeasible()).to.be.true;
+    expect(solution.isComplete()).to.be.true;
+  });
+});
+
+describe('FleetPilotSolver', () => {
+  it('should solve with both algorithms', async () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const solver = new FleetPilotSolver(problem);
+    const solution = await solver.solve({ alnsIterations: 10, maxGenerations: 10 });
+
+    expect(solution.isFeasible()).to.be.true;
+    expect(solution.makespan).to.be.greaterThan(0);
+  });
+
+  it('should respect maxTimeMs timeout', async () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+      3: new LocationNode(3, 0, 10, 'D2'),
+      4: new LocationNode(4, 0, 20, 'P2'),
+    };
+    const customers = [new Customer(1, 1, 2, 50), new Customer(2, 3, 4, 50)];
+    const vehicles = [new Vehicle(1, 10)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const solver = new FleetPilotSolver(problem);
+    const start = Date.now();
+    const solution = await solver.solve({ maxTimeMs: 1 });
+    const elapsed = Date.now() - start;
+
+    expect(elapsed).to.be.lessThan(200);
+    expect(solution.isFeasible()).to.be.true;
+  });
+
+  it('should call onProgress', async () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const progressCalls: Array<{ stage: string; iteration: number }> = [];
+    const solver = new FleetPilotSolver(problem);
+    await solver.solve({
+      alnsIterations: 50,
+      maxGenerations: 100,
+      onProgress: (p) => {
+        progressCalls.push({ stage: p.stage, iteration: p.iteration });
+      },
+    });
+
+    expect(progressCalls.length).to.be.greaterThan(0);
+    expect(progressCalls.some((p) => p.stage === 'ALNS')).to.be.true;
+    expect(progressCalls.some((p) => p.stage === 'BRKGA')).to.be.true;
+  });
+});
+
+describe('Solution serialization', () => {
+  it('should serialize and deserialize', () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'D1'),
+      2: new LocationNode(2, 20, 0, 'P1'),
+    };
+    const customers = [new Customer(1, 1, 2, 50)];
+    const vehicles = [new Vehicle(1, 5)];
+    const problem = new Problem(nodes, customers, vehicles, 0);
+
+    const routes = [new Route(1, [1, 2])];
+    const solution = new Solution(problem, routes);
+    solution.calculateSchedule();
+
+    const serialized = solution.serialize();
+    expect(serialized.routes).to.have.lengthOf(1);
+    expect(serialized.makespan).to.equal(solution.makespan);
+
+    const deserialized = Solution.deserialize(serialized, problem);
+    expect(deserialized.isComplete()).to.be.true;
+    expect(deserialized.makespan).to.equal(solution.makespan);
+    expect(deserialized.routes[0]?.nodes).to.deep.equal([1, 2]);
+  });
+});

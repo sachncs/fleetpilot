@@ -1,0 +1,99 @@
+{
+  "family": "salhi-nagy",
+  "instance": "vrpb-30c.json",
+  "ok": true,
+  "customers": 30,
+  "vehicles": 3,
+  "makespan": 357.2538049500939,
+  "totalDistance": 0,
+  "totalCost": 0,
+  "totalCo2": 0,
+  "feasible": true,
+  "complete": true,
+  "routes": [
+    {
+      "vehicleId": 1,
+      "nodes": [
+        51,
+        55,
+        57,
+        49,
+        31,
+        37,
+        33,
+        5,
+        15,
+        17,
+        27,
+        3,
+        29,
+        9,
+        52,
+        56,
+        58,
+        50,
+        32,
+        38,
+        34,
+        6,
+        16,
+        18,
+        28,
+        4,
+        30,
+        10
+      ]
+    },
+    {
+      "vehicleId": 2,
+      "nodes": [
+        13,
+        39,
+        35,
+        59,
+        43,
+        11,
+        7,
+        1,
+        19,
+        14,
+        40,
+        36,
+        60,
+        44,
+        12,
+        8,
+        2,
+        20
+      ]
+    },
+    {
+      "vehicleId": 3,
+      "nodes": [
+        23,
+        25,
+        53,
+        45,
+        47,
+        41,
+        21,
+        24,
+        26,
+        54,
+        46,
+        48,
+        42,
+        22
+      ]
+    }
+  ],
+  "runtimeMs": 864,
+  "config": {
+    "maxTimeMs": 5000,
+    "alnsIterations": 50,
+    "populationSize": 100,
+    "maxGenerations": 50,
+    "seed": 1,
+    "warmStart": true
+  }
+}

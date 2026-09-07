@@ -1,0 +1,102 @@
+{
+  "family": "cordeau",
+  "instance": "mdvrp-3d-24c.json",
+  "ok": true,
+  "customers": 24,
+  "vehicles": 6,
+  "makespan": 233.9287804735951,
+  "totalDistance": 0,
+  "totalCost": 0,
+  "totalCo2": 0,
+  "feasible": true,
+  "complete": true,
+  "routes": [
+    {
+      "vehicleId": 1,
+      "nodes": [
+        13,
+        17,
+        9,
+        3,
+        27,
+        31,
+        11,
+        7,
+        14,
+        18,
+        10,
+        4,
+        28,
+        32,
+        12,
+        8
+      ]
+    },
+    {
+      "vehicleId": 2,
+      "nodes": [
+        35,
+        47,
+        36,
+        48
+      ]
+    },
+    {
+      "vehicleId": 3,
+      "nodes": [
+        29,
+        23,
+        19,
+        30,
+        24,
+        20
+      ]
+    },
+    {
+      "vehicleId": 4,
+      "nodes": [
+        5,
+        15,
+        25,
+        33,
+        21,
+        6,
+        16,
+        26,
+        34,
+        22
+      ]
+    },
+    {
+      "vehicleId": 5,
+      "nodes": [
+        45,
+        37,
+        39,
+        49,
+        46,
+        38,
+        40,
+        50
+      ]
+    },
+    {
+      "vehicleId": 6,
+      "nodes": [
+        41,
+        43,
+        42,
+        44
+      ]
+    }
+  ],
+  "runtimeMs": 274,
+  "config": {
+    "maxTimeMs": 5000,
+    "alnsIterations": 50,
+    "populationSize": 100,
+    "maxGenerations": 50,
+    "seed": 1,
+    "warmStart": true
+  }
+}
