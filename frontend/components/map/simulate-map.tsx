@@ -159,10 +159,7 @@ export function SimulateMap({
 
   const effectiveOrigin: ReferenceOrigin | null = React.useMemo(() => {
     if (referenceOrigin) return referenceOrigin;
-    if (!problem) return null;
-    const nodeList = Array.isArray(problem.nodes) ? problem.nodes : Object.values(problem.nodes);
-    const depot = nodeList.find((n) => n.id === problem.depotNodeId) ?? nodeList[0];
-    return depot ? { lat: depot.x, lng: depot.y } : null;
+    return null;
   }, [referenceOrigin, problem]);
 
   const center: [number, number] = React.useMemo(() => {
