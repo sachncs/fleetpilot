@@ -546,7 +546,9 @@ export class BRKGA {
         workers.forEach((worker, i) => {
           const startIdx = i * migrantsPerIsland;
           const slice = allMigrants.slice(startIdx, startIdx + migrantsPerIsland);
-          injectPromises.push(sendCommand(worker, { type: 'inject', migrants: slice }, this.signal));
+          injectPromises.push(
+            sendCommand(worker, { type: 'inject', migrants: slice }, this.signal),
+          );
         });
         await Promise.all(injectPromises);
       }

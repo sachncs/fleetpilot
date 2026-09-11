@@ -166,7 +166,9 @@ describe('Comprehensive - Problem Validation', () => {
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('finite numbers');
-    expect(() => new CustomerWithTimeWindows(1, 1, 1, 10, 0, 100, NaN, 100)).to.throw(ValidationError);
+    expect(() => new CustomerWithTimeWindows(1, 1, 1, 10, 0, 100, NaN, 100)).to.throw(
+      ValidationError,
+    );
   });
 
   it('rejects non-integer depot node id', () => {
@@ -444,14 +446,8 @@ describe('Comprehensive - Multi-Depot', () => {
       4: new LocationNode(4, 40, 0),
       5: new LocationNode(5, 50, 0),
     };
-    const customers = [
-      new Customer(1, 1, 2, 10),
-      new Customer(2, 4, 5, 10),
-    ];
-    const vehicles = [
-      new Vehicle(1, 10),
-      new Vehicle(2, 10),
-    ];
+    const customers = [new Customer(1, 1, 2, 10), new Customer(2, 4, 5, 10)];
+    const vehicles = [new Vehicle(1, 10), new Vehicle(2, 10)];
     const depots = [new Depot(0, 0, 0, 'A'), new Depot(3, 30, 0, 'B')];
     const assignments = new Map<number, number>([
       [1, 0],
