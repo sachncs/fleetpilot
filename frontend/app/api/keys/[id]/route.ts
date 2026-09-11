@@ -18,6 +18,10 @@ export async function DELETE(
     const db = getDb();
     const { id } = await params;
 
+    if (id !== auth.keyId) {
+      return NextResponse.json({ error: 'Key not found' }, { status: 404 });
+    }
+
     const key = db.select().from(apiKeys).where(eq(apiKeys.id, id)).get();
     if (!key) {
       return NextResponse.json({ error: 'Key not found' }, { status: 404 });
