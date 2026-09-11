@@ -52,7 +52,7 @@
     "docs:md": "typedoc --plugin typedoc-plugin-markdown --out docs/md",
     "typecheck": "tsc --noEmit",
     "postinstall": "node scripts/fix-tsc-symlink.mjs && node scripts/fix-workspace-links.mjs",
-    "sbom": "npm sbom --sbom-format=spdxjson --sbom-spec-version=1.0 --output-file sbom.spdx.json",
+    "sbom": "npm sbom --sbom-format=spdx > sbom.spdx.json",
     "sbom:cyclonedx": "npx @cyclonedx/cyclonedx-npm --output-format JSON --output-file sbom.cdx.json",
     "audit": "npm audit --audit-level=high",
     "docker:build": "docker build -t fleetpilot:test .",
