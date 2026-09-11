@@ -9,16 +9,33 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export interface JobQueue {
   enqueue(jobId: string): void;
+  pending(): number;
+  running(): number;
 }
 
-const jobQueue: JobQueue = { enqueue: () => {} };
+const pendingJobs = new Set<string>();
+const progressEmitter = new EventEmitter();
+let worker: ChildProcess | null = null;
+
+const jobQueue: JobQueue = {
+  enqueue(jobId: string): void {
+    pendingJobs.add(jobId);
+    if (worker?.connected) {
+      worker.send({ type: 'enqueue', jobId });
+    }
+    progressEmitter.emit('queue');
+  },
+  pending(): number {
+    return pendingJobs.size;
+  },
+  running(): number {
+    return 0;
+  },
+};
 
 export function getJobQueue(): JobQueue {
   return jobQueue;
 }
-
-const progressEmitter = new EventEmitter();
-let worker: ChildProcess | null = null;
 
 export function onWorkerMessage(handler: (msg: WorkerMessage) => void): () => void {
   progressEmitter.on('message', handler);
@@ -44,6 +61,12 @@ export function startWorker(): void {
 
   worker.on('message', (msg: unknown) => {
     progressEmitter.emit('message', msg);
+    if (msg && typeof msg === 'object') {
+      const m = msg as { type?: string; jobId?: string };
+      if (m.type === 'completed' || m.type === 'failed' || m.type === 'cancelled') {
+        if (m.jobId) pendingJobs.delete(m.jobId);
+      }
+    }
   });
 
   worker.on('exit', (code) => {
