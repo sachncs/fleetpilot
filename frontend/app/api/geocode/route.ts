@@ -13,22 +13,24 @@ const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 const USER_AGENT = 'FleetPilot/2.0 (+https://github.com/sachncs/fleetpilot)';
 const FETCH_TIMEOUT_MS = 5000;
 
-// Token bucket per client IP: capacity 3 (burst), refill 1 token/second.
+// Token bucket per API key: capacity 3 (burst), refill 1 token/second.
+// Keying by the API key (not the client IP) avoids sharing a bucket across
+// all users behind the same NAT and isolates each key holder's quota.
 const buckets = new Map<string, { tokens: number; last: number }>();
 
-function takeToken(ip: string): boolean {
+function takeToken(bucketKey: string): { allowed: boolean; retryAfterSec: number } {
   const now = Date.now();
-  const b = buckets.get(ip) ?? { tokens: 3, last: now };
+  const b = buckets.get(bucketKey) ?? { tokens: 3, last: now };
   const elapsedSec = Math.max(0, (now - b.last) / 1000);
   b.tokens = Math.min(3, b.tokens + elapsedSec);
   b.last = now;
   if (b.tokens < 1) {
-    buckets.set(ip, b);
-    return false;
+    buckets.set(bucketKey, b);
+    return { allowed: false, retryAfterSec: 1 };
   }
   b.tokens -= 1;
-  buckets.set(ip, b);
-  return true;
+  buckets.set(bucketKey, b);
+  return { allowed: true, retryAfterSec: 0 };
 }
 
 interface GeocodeHit {
@@ -58,12 +60,12 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
   const auth = authenticate(request);
   if (auth instanceof NextResponse) return auth;
 
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ??
-    request.headers.get('x-real-ip') ??
-    'unknown';
-  if (!takeToken(ip)) {
-    return NextResponse.json({ error: 'Rate limit exceeded' }, { status: 429 });
+  const limit = takeToken(`key:${auth.keyId}`);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Rate limit exceeded' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSec) } },
+    );
   }
 
   const q = new URL(request.url).searchParams.get('q')?.trim() ?? '';
