@@ -6,6 +6,8 @@ ARG NODE_VERSION=26-alpine
 # ---- Stage 1: builder ---------------------------------------------------
 FROM node:${NODE_VERSION} AS builder
 
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
