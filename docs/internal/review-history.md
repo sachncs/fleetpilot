@@ -1,4 +1,9 @@
-# FleetPilot Remediation Plan
+# FleetPilot Internal Review History
+
+Historical record of an internal review pass. Not a public roadmap or current
+work-in-progress; the canonical record of shipped work lives in
+[`CHANGELOG.md`](../../CHANGELOG.md). Kept under `docs/internal/` so it stays
+out of the contributor-facing surface but remains available for reference.
 
 Itemized atomic plan. Each item is one commit-sized change, independently verifiable. Dependencies noted inline.
 
