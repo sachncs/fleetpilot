@@ -332,7 +332,7 @@ export class FleetPilotSolver {
       };
 
       const onAbort = (): void => {
-        settle(() => reject(new AbortError(`Parallel ${type} aborted`)));
+        settle(() => { reject(new AbortError(`Parallel ${type} aborted`)); });
       };
 
       const trySettle = (msg: unknown): void => {
@@ -340,7 +340,7 @@ export class FleetPilotSolver {
         if (!ready) return;
         if (typeof msg !== 'object' || msg === null) {
           settle(() =>
-            reject(new AlgorithmConvergenceError(`Worker ${type} returned non-object result`)),
+            { reject(new AlgorithmConvergenceError(`Worker ${type} returned non-object result`)); },
           );
           return;
         }
@@ -352,11 +352,11 @@ export class FleetPilotSolver {
           return;
         }
         if (isWorkerResult(msg)) {
-          settle(() => resolveResult(msg));
+          settle(() => { resolveResult(msg); });
           return;
         }
         settle(() =>
-          reject(new AlgorithmConvergenceError(`Worker ${type} returned unexpected result`)),
+          { reject(new AlgorithmConvergenceError(`Worker ${type} returned unexpected result`)); },
         );
       };
 
@@ -373,7 +373,7 @@ export class FleetPilotSolver {
         trySettle(msg);
       });
       worker.onError((err) => {
-        settle(() => reject(new AlgorithmConvergenceError(`Worker ${type} error: ${err.message}`)));
+        settle(() => { reject(new AlgorithmConvergenceError(`Worker ${type} error: ${err.message}`)); });
       });
       worker.onExit((code) => {
         settle(() => {
@@ -386,7 +386,7 @@ export class FleetPilotSolver {
       });
       if (signal) {
         if (signal.aborted) {
-          settle(() => reject(new AbortError(`Parallel ${type} aborted`)));
+          settle(() => { reject(new AbortError(`Parallel ${type} aborted`)); });
           return;
         }
         signal.addEventListener('abort', onAbort, { once: true });
