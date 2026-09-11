@@ -72,7 +72,7 @@ export class RouteAnalytics {
         utilizationRate: Math.min(1, Math.max(0, utilizationRate)),
         totalDistance: routeDistance,
         totalTime,
-        customerCount: customerCount / 2, // Divide by 2 because we count both D and P
+        customerCount,
       });
     }
 

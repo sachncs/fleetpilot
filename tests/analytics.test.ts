@@ -27,6 +27,29 @@ describe('RouteAnalytics', () => {
     }
   });
 
+  it('getVehicleUtilization reports customerCount as actual number of customers served', () => {
+    const problem = createTwoVehicleProblem();
+    const routes = problem.vehicles.map((v) => new Route(v.id, []));
+    const solution = new Solution(problem, routes);
+    const customersByRoute: number[] = [0, 0];
+    for (const c of problem.customers) {
+      const routeIdx = c.id - 1;
+      const route = solution.routes[routeIdx];
+      if (route) {
+        route.nodes.push(c.deliveryNodeId, c.pickupNodeId);
+        customersByRoute[routeIdx] = (customersByRoute[routeIdx] ?? 0) + 1;
+      }
+    }
+    solution.calculateSchedule();
+
+    const analytics = new RouteAnalytics(solution, problem);
+    const utilization = analytics.getVehicleUtilization();
+    expect(utilization.length).to.equal(solution.routes.length);
+    for (let i = 0; i < utilization.length; i++) {
+      expect(utilization[i]!.customerCount).to.equal(customersByRoute[i]);
+    }
+  });
+
   it('getWaitTimes returns non-negative values', () => {
     const problem = createBasicProblem();
     const routes = problem.vehicles.map((v) => new Route(v.id, []));
