@@ -4,6 +4,7 @@ import { getDb } from '@/lib/db';
 import { jobs } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
 import { log } from '@/lib/log';
+import { cancelJob } from '@/lib/worker/spawn';
 import { eq } from 'drizzle-orm';
 
 export async function GET(
@@ -48,6 +49,7 @@ export async function DELETE(
     }
 
     if (job.status === 'pending' || job.status === 'running') {
+      cancelJob(id);
       db.update(jobs).set({ status: 'cancelled', completedAt: new Date().toISOString() }).where(eq(jobs.id, id)).run();
     }
 
