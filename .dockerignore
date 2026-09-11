@@ -2,7 +2,6 @@
 # Keep the image small and the build cache clean.
 
 # Build artefacts and dev-time data
-node_modules
 **/node_modules
 coverage
 dist
@@ -20,7 +19,6 @@ docs/md
 
 # Source files not needed at runtime
 tests
-demo
 examples
 benchmarks/results
 benchmarks/lilim/**/*.json
