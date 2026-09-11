@@ -62,6 +62,30 @@ export class CustomerWithTimeWindows extends Customer {
     public readonly latestPickupTime: number,
   ) {
     super(id, deliveryNodeId, pickupNodeId, processingTime);
+    if (
+      !Number.isFinite(earliestDeliveryTime) ||
+      !Number.isFinite(latestDeliveryTime) ||
+      !Number.isFinite(earliestPickupTime) ||
+      !Number.isFinite(latestPickupTime)
+    ) {
+      throw new ValidationError(
+        `Customer ${id} time windows must be finite numbers ` +
+          `(got earliestDelivery=${earliestDeliveryTime}, latestDelivery=${latestDeliveryTime}, ` +
+          `earliestPickup=${earliestPickupTime}, latestPickup=${latestPickupTime})`,
+      );
+    }
+    if (earliestDeliveryTime > latestDeliveryTime) {
+      throw new ValidationError(
+        `Customer ${id} delivery window is inverted ` +
+          `(earliest ${earliestDeliveryTime} > latest ${latestDeliveryTime})`,
+      );
+    }
+    if (earliestPickupTime > latestPickupTime) {
+      throw new ValidationError(
+        `Customer ${id} pickup window is inverted ` +
+          `(earliest ${earliestPickupTime} > latest ${latestPickupTime})`,
+      );
+    }
   }
 }
 

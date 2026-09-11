@@ -135,6 +135,28 @@ describe('Comprehensive - Problem Validation', () => {
       .that.includes('pickup window is inverted');
   });
 
+  it('CustomerWithTimeWindows constructor rejects inverted delivery window', () => {
+    expect(() => new CustomerWithTimeWindows(1, 1, 1, 10, 100, 50, 0, 100))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('delivery window is inverted');
+  });
+
+  it('CustomerWithTimeWindows constructor rejects inverted pickup window', () => {
+    expect(() => new CustomerWithTimeWindows(1, 1, 1, 10, 0, 100, 100, 50))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('pickup window is inverted');
+  });
+
+  it('CustomerWithTimeWindows constructor rejects non-finite time windows', () => {
+    expect(() => new CustomerWithTimeWindows(1, 1, 1, 10, Infinity, 100, 0, 100))
+      .to.throw(ValidationError)
+      .with.property('message')
+      .that.includes('finite numbers');
+    expect(() => new CustomerWithTimeWindows(1, 1, 1, 10, 0, 100, NaN, 100)).to.throw(ValidationError);
+  });
+
   it('rejects non-integer depot node id', () => {
     const nodes = {
       0: new LocationNode(0, 0, 0),
