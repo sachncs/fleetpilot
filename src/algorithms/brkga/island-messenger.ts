@@ -67,14 +67,26 @@ function isIslandWorkerMessage(msg: unknown): msg is IslandWorkerMessage {
 }
 
 /**
- * Sends a command to a worker and awaits its response.
+ * Sends a command to a worker and awaits its response. If an `AbortSignal`
+ * is provided and fires before the worker replies, the worker is terminated
+ * and the returned promise rejects with an `AbortError`.
  */
-export function sendCommand(worker: Worker, cmd: IslandCommand): Promise<IslandWorkerMessage> {
+export function sendCommand(
+  worker: Worker,
+  cmd: IslandCommand,
+  signal?: AbortSignal,
+): Promise<IslandWorkerMessage> {
   return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      void worker.terminate();
+      reject(new Error('Aborted'));
+      return;
+    }
     const onMessage = (msg: unknown) => {
       worker.off('message', onMessage);
       worker.off('error', onError);
       worker.off('exit', onExit);
+      signal?.removeEventListener('abort', onAbort);
       if (isIslandWorkerMessage(msg)) {
         resolve(msg);
       } else {
@@ -85,17 +97,27 @@ export function sendCommand(worker: Worker, cmd: IslandCommand): Promise<IslandW
       worker.off('message', onMessage);
       worker.off('error', onError);
       worker.off('exit', onExit);
+      signal?.removeEventListener('abort', onAbort);
       reject(err);
     };
     const onExit = (code: number) => {
       worker.off('message', onMessage);
       worker.off('error', onError);
       worker.off('exit', onExit);
+      signal?.removeEventListener('abort', onAbort);
       reject(new Error(`Worker exited with code ${code}`));
+    };
+    const onAbort = () => {
+      worker.off('message', onMessage);
+      worker.off('error', onError);
+      worker.off('exit', onExit);
+      void worker.terminate();
+      reject(new Error('Aborted'));
     };
     worker.on('message', onMessage);
     worker.on('error', onError);
     worker.on('exit', onExit);
+    signal?.addEventListener('abort', onAbort, { once: true });
     worker.postMessage(cmd);
   });
 }
