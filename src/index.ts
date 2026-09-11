@@ -257,22 +257,34 @@ export class FleetPilotSolver {
   protected async solveParallel(options: SolveOptions = {}): Promise<Solution> {
     this.logger.log('Starting Parallel Solving (ALNS + BRKGA)...');
 
+    if (options.signal?.aborted) {
+      throw new AbortError('Parallel solving aborted before start');
+    }
+
     const workerPromises = [
-      this.runWorker('ALNS', {
-        maxIterations: options.alnsIterations ?? 500,
-        initialTemp: options.initialTemp,
-        coolingRate: options.coolingRate ?? 0.9998,
-        maxTimeMs: options.maxTimeMs ?? 0,
-        seed: options.seed,
-        targetMakespan: options.targetMakespan,
-      }),
-      this.runWorker('BRKGA', {
-        populationSize: options.populationSize ?? 30000,
-        maxGenerations: options.maxGenerations ?? 20000,
-        maxTimeMs: options.maxTimeMs ?? 0,
-        seed: options.seed,
-        targetMakespan: options.targetMakespan,
-      }),
+      this.runWorker(
+        'ALNS',
+        {
+          maxIterations: options.alnsIterations ?? 500,
+          initialTemp: options.initialTemp,
+          coolingRate: options.coolingRate ?? 0.9998,
+          maxTimeMs: options.maxTimeMs ?? 0,
+          seed: options.seed,
+          targetMakespan: options.targetMakespan,
+        },
+        options.signal,
+      ),
+      this.runWorker(
+        'BRKGA',
+        {
+          populationSize: options.populationSize ?? 30000,
+          maxGenerations: options.maxGenerations ?? 20000,
+          maxTimeMs: options.maxTimeMs ?? 0,
+          seed: options.seed,
+          targetMakespan: options.targetMakespan,
+        },
+        options.signal,
+      ),
     ];
 
     const results = await Promise.all(workerPromises);
@@ -303,6 +315,7 @@ export class FleetPilotSolver {
   protected async runWorker(
     type: 'ALNS' | 'BRKGA',
     options: ALNSOptions | BRKGAOptions,
+    signal?: AbortSignal,
   ): Promise<WorkerResult> {
     const worker = await spawnWorker();
     const payload = serializeProblem(this.problem, { type, options });
@@ -310,31 +323,41 @@ export class FleetPilotSolver {
       let settled = false;
       let ready = false;
 
+      const settle = (fn: () => void): void => {
+        if (settled) return;
+        settled = true;
+        signal?.removeEventListener('abort', onAbort);
+        void worker.terminate();
+        fn();
+      };
+
+      const onAbort = (): void => {
+        settle(() => reject(new AbortError(`Parallel ${type} aborted`)));
+      };
+
       const trySettle = (msg: unknown): void => {
         if (settled) return;
         if (!ready) return;
         if (typeof msg !== 'object' || msg === null) {
-          settled = true;
-          void worker.terminate();
-          reject(new AlgorithmConvergenceError(`Worker ${type} returned non-object result`));
+          settle(() =>
+            reject(new AlgorithmConvergenceError(`Worker ${type} returned non-object result`)),
+          );
           return;
         }
         if ('error' in msg) {
-          settled = true;
-          void worker.terminate();
-          const errMsg = typeof msg.error === 'string' ? msg.error : 'Unknown error';
-          reject(new AlgorithmConvergenceError(`Worker ${type} failed: ${errMsg}`));
+          settle(() => {
+            const errMsg = typeof msg.error === 'string' ? msg.error : 'Unknown error';
+            reject(new AlgorithmConvergenceError(`Worker ${type} failed: ${errMsg}`));
+          });
           return;
         }
         if (isWorkerResult(msg)) {
-          settled = true;
-          void worker.terminate();
-          resolveResult(msg);
+          settle(() => resolveResult(msg));
           return;
         }
-        settled = true;
-        void worker.terminate();
-        reject(new AlgorithmConvergenceError(`Worker ${type} returned unexpected result`));
+        settle(() =>
+          reject(new AlgorithmConvergenceError(`Worker ${type} returned unexpected result`)),
+        );
       };
 
       worker.onMessage((msg) => {
@@ -350,21 +373,24 @@ export class FleetPilotSolver {
         trySettle(msg);
       });
       worker.onError((err) => {
-        if (settled) return;
-        settled = true;
-        void worker.terminate();
-        reject(new AlgorithmConvergenceError(`Worker ${type} error: ${err.message}`));
+        settle(() => reject(new AlgorithmConvergenceError(`Worker ${type} error: ${err.message}`)));
       });
       worker.onExit((code) => {
-        if (settled) return;
-        settled = true;
-        void worker.terminate();
-        if (code !== 0) {
-          reject(new AlgorithmConvergenceError(`Worker stopped with exit code ${code}`));
-        } else {
-          reject(new AlgorithmConvergenceError('Worker exited without producing a result'));
-        }
+        settle(() => {
+          if (code !== 0) {
+            reject(new AlgorithmConvergenceError(`Worker stopped with exit code ${code}`));
+          } else {
+            reject(new AlgorithmConvergenceError('Worker exited without producing a result'));
+          }
+        });
       });
+      if (signal) {
+        if (signal.aborted) {
+          settle(() => reject(new AbortError(`Parallel ${type} aborted`)));
+          return;
+        }
+        signal.addEventListener('abort', onAbort, { once: true });
+      }
     });
   }
 }
