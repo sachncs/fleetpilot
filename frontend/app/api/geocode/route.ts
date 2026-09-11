@@ -10,7 +10,7 @@ import { log } from '@/lib/log';
 
 const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
-const USER_AGENT = 'FleetPilot/2.0 (+https://fleetpilot.local)';
+const USER_AGENT = 'FleetPilot/2.0 (+https://github.com/sachncs/fleetpilot)';
 const FETCH_TIMEOUT_MS = 5000;
 
 // Token bucket per client IP: capacity 3 (burst), refill 1 token/second.
