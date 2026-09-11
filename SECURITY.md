@@ -6,7 +6,8 @@ The `fleetpilot` npm package is the only artifact covered by this policy.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 1.2.x   | :white_check_mark: |
+| 2.0.x   | :white_check_mark: |
+| 1.2.x   | :white_check_mark: (security fixes only) |
 | 1.1.x   | :white_check_mark: (security fixes only) |
 | < 1.1   | :x:                |
 
