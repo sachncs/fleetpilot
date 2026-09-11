@@ -508,13 +508,12 @@ src/
 | Docs           | TypeDoc + `typedoc-plugin-markdown`                                         |
 | CLI            | `dist/cli.mjs` (`fleetpilot` bin)                                           |
 | Parallelism    | `worker_threads` (Node) / Web Worker (browser via `dist/worker.browser.js`) |
-| Dev runner     | Vite (dev mode only)                                                        |
 
 ## Roadmap
 
-- **v1.2.0** — Current: browser worker bundle, ready-handshake protocol, `AbortError` / `signal` plumbing, deterministic seeded RNG, `MultiDepotProblem.toProblem()`, CLI `--version` / `--seed` / `--problem-kind`, Prettier integration, TypeScript 7.0, Node ≥ 20. Fixes: island-BRKGA warm-start typo, transfer↔customer correlation.
-- **v1.3.0** — Hardening: release provenance, Dependabot, SECURITY.md, benchmark suite (Li & Lim, Solomon, Cordeau, DARP, Salhi-Nagy), Docker image, regression test, interactive web UI.
-- **v2.0.0** — Planned: full parity with paper benchmarks on Indian cities; scenario replay; production sample bundles; lower-cost transfer models; GPU acceleration for ALNS.
+- **v2.0.0** — Current: Next.js web console, SQLite-backed jobs/keys, multi-depot solver, island-mode BRKGA, deterministic seeded RNG, Docker image, regression test suite.
+- **Next minor** — Hardening: rate-limited geocoding, WebSocket auth, key self-protection, abort-signal coverage in the parallel and island paths, SBOM pipeline on npm 11.
+- **Future** — Exploring (under research, no committed schedule): traffic-aware transfer hubs, lower-cost transfer models, additional benchmark families.
 
 ## Web UI
 
