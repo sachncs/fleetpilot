@@ -71,14 +71,11 @@ export function BuildMap({
   const problem = useProblemStore((s) => s.problem);
   const setProblem = useProblemStore((s) => s.setProblem);
 
-  // Origin: explicit referenceOrigin wins, else the depot's stored position
-  // reinterpreted as geographic degrees (legacy scenarios).
+  // Origin: explicit referenceOrigin wins. Legacy scenarios without one stay
+  // at world view rather than mis-interpreting stored metres as lat/lng.
   const origin: ReferenceOrigin | null = React.useMemo(() => {
     if (problem?.referenceOrigin) return problem.referenceOrigin;
-    if (!problem) return null;
-    const nodeList = Array.isArray(problem.nodes) ? problem.nodes : Object.values(problem.nodes);
-    const depot = nodeList.find((n) => n.id === problem.depotNodeId) ?? nodeList[0];
-    return depot ? { lat: depot.x, lng: depot.y } : null;
+    return null;
   }, [problem]);
 
   const nodeList = problem
