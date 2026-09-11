@@ -543,7 +543,11 @@ used by the REST API.
 ## Contributing
 
 Bug reports and PRs welcome on GitHub. Open an issue before sending
-large changes so we can align on direction.
+large changes so we can align on direction. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the local setup, testing, and
+review workflow, and [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for our
+community standards. Need help using the library? See
+[SUPPORT.md](SUPPORT.md).
 
 ## Security
 
