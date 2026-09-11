@@ -464,9 +464,14 @@ export class BRKGA {
     let generation = 0;
 
     try {
-      await Promise.all(workers.map((w) => sendCommand(w, { type: 'evolve', generations: 0 })));
+      await Promise.all(
+        workers.map((w) => sendCommand(w, { type: 'evolve', generations: 0 }, this.signal)),
+      );
 
       while (generation < this.maxGenerations) {
+        if (this.signal?.aborted) {
+          throw new AbortError(`Island BRKGA aborted at generation ${generation}`);
+        }
         if (this.maxTimeMs > 0 && Date.now() - startTime >= this.maxTimeMs) {
           this.logger.log('Island BRKGA stopping early (global timeout)');
           break;
@@ -474,7 +479,7 @@ export class BRKGA {
 
         const evolveResults = await Promise.all(
           workers.map((w) =>
-            sendCommand(w, { type: 'evolve', generations: this.migrationInterval }),
+            sendCommand(w, { type: 'evolve', generations: this.migrationInterval }, this.signal),
           ),
         );
 
@@ -541,13 +546,13 @@ export class BRKGA {
         workers.forEach((worker, i) => {
           const startIdx = i * migrantsPerIsland;
           const slice = allMigrants.slice(startIdx, startIdx + migrantsPerIsland);
-          injectPromises.push(sendCommand(worker, { type: 'inject', migrants: slice }));
+          injectPromises.push(sendCommand(worker, { type: 'inject', migrants: slice }, this.signal));
         });
         await Promise.all(injectPromises);
       }
 
       const finishResults = await Promise.all(
-        workers.map((w) => sendCommand(w, { type: 'finish' })),
+        workers.map((w) => sendCommand(w, { type: 'finish' }, this.signal)),
       );
 
       for (const result of finishResults) {
@@ -572,6 +577,7 @@ export class BRKGA {
       for (const w of workers) {
         void w.terminate();
       }
+      if (err instanceof AbortError) throw err;
       throw new AlgorithmConvergenceError(
         `Island BRKGA worker failed: ${err instanceof Error ? err.message : String(err)}`,
       );
