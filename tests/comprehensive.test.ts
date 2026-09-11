@@ -434,6 +434,38 @@ describe('Comprehensive - Multi-Depot', () => {
     expect(problem.getDistance(999, 1)).to.equal(0);
     expect(problem.getDistance(0, 1)).to.be.closeTo(10, 0.0001);
   });
+
+  it('MultiDepotProblem.toProblem projects vehicleDepotAssignments onto vehicles', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot A'),
+      1: new LocationNode(1, 10, 0),
+      2: new LocationNode(2, 20, 0),
+      3: new LocationNode(3, 30, 0, 'Depot B'),
+      4: new LocationNode(4, 40, 0),
+      5: new LocationNode(5, 50, 0),
+    };
+    const customers = [
+      new Customer(1, 1, 2, 10),
+      new Customer(2, 4, 5, 10),
+    ];
+    const vehicles = [
+      new Vehicle(1, 10),
+      new Vehicle(2, 10),
+    ];
+    const depots = [new Depot(0, 0, 0, 'A'), new Depot(3, 30, 0, 'B')];
+    const assignments = new Map<number, number>([
+      [1, 0],
+      [2, 3],
+    ]);
+    const multi = new MultiDepotProblem(nodes, customers, vehicles, depots, assignments);
+    const single = multi.toProblem();
+    const projectedV1 = single.vehicles.find((v) => v.id === 1);
+    const projectedV2 = single.vehicles.find((v) => v.id === 2);
+    expect(projectedV1?.startDepotId).to.equal(0);
+    expect(projectedV1?.endDepotId).to.equal(0);
+    expect(projectedV2?.startDepotId).to.equal(3);
+    expect(projectedV2?.endDepotId).to.equal(3);
+  });
 });
 
 describe('Comprehensive - Traffic-Aware', () => {

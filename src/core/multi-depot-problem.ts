@@ -1,6 +1,6 @@
 import { ValidationError } from '../errors/index.js';
 
-import { Problem, type LocationNode, type Customer, type Vehicle } from './problem.js';
+import { Problem, Vehicle, type LocationNode, type Customer } from './problem.js';
 import { validateProblemBase } from './validate-problem-base.js';
 
 /**
@@ -134,12 +134,20 @@ export class MultiDepotProblem {
   /**
    * Converts this multi-depot problem to a single-depot problem for solvers
    * that do not natively support multi-depot. The first depot's ID is used
-   * as the default; vehicles retain their `startDepotId` / `endDepotId`.
+   * as the default; the per-vehicle `vehicleDepotAssignments` are projected
+   * onto each vehicle's `startDepotId` / `endDepotId` so the resulting routes
+   * honor the original multi-depot assignment.
    * @param depotNodeId - Optional override depot ID (default: first depot)
-   * @returns A `Problem` with the same nodes / customers / vehicles
+   * @returns A `Problem` with the same nodes / customers / vehicles, where
+   *   each vehicle's start/end depot reflects `vehicleDepotAssignments`.
    */
   toProblem(depotNodeId?: number): Problem {
     const defaultDepot = depotNodeId ?? this.depots[0]?.id ?? 0;
-    return new Problem(this.nodes, this.customers, this.vehicles, defaultDepot);
+    const projectedVehicles = this.vehicles.map((v) => {
+      const assignedDepot = this.vehicleDepotAssignments.get(v.id);
+      if (assignedDepot === undefined) return v;
+      return new Vehicle(v.id, v.capacity, assignedDepot, assignedDepot, v.costPerKm, v.co2PerKm);
+    });
+    return new Problem(this.nodes, this.customers, projectedVehicles, defaultDepot);
   }
 }
