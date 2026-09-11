@@ -44,3 +44,8 @@ export interface CancelMessage {
   type: 'cancel';
   jobId: string;
 }
+
+export interface EnqueueMessage {
+  type: 'enqueue';
+  jobId: string;
+}
