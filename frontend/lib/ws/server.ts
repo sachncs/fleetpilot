@@ -1,7 +1,8 @@
 import { WebSocketServer, WebSocket } from 'ws';
-import type { Server } from 'node:http';
+import type { Server, IncomingMessage } from 'node:http';
 import { getPubSub } from './pubsub';
 import type { WorkerMessage } from '../worker/ipc';
+import { authenticateUpgrade } from '../auth/api-key';
 
 /**
  * Attaches the solve-progress WebSocket endpoint (/ws/progress/:jobId).
@@ -18,9 +19,17 @@ export function attachWebSocket(server: Server): WebSocketServer {
     const match = (request.url ?? '').match(/^\/ws\/progress\/([^/]+)$/);
     if (!match) return;
 
+    const auth = authenticateUpgrade(request as IncomingMessage);
+    if (!auth) {
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+      socket.destroy();
+      return;
+    }
+
     wss.handleUpgrade(request, socket, head, (ws) => {
       const jobId = match[1]!;
-      (ws as WebSocket & { _jobId?: string })._jobId = jobId;
+      (ws as WebSocket & { _jobId?: string; _authKeyId?: string })._jobId = jobId;
+      (ws as WebSocket & { _authKeyId?: string })._authKeyId = auth.keyId;
       wss.emit('connection', ws, request);
     });
   });

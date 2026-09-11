@@ -68,7 +68,9 @@ export async function solveProblem(
 
   return new Promise<SolverSolution>((resolve, reject) => {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const ws = new WebSocket(`${protocol}//${window.location.host}/ws/progress/${job.id}`);
+    const ws = new WebSocket(
+      `${protocol}//${window.location.host}/ws/progress/${job.id}?key=${encodeURIComponent(apiKey)}`,
+    );
 
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data as string) as
