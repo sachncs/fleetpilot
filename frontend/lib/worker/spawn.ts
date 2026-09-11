@@ -16,6 +16,9 @@ export interface JobQueue {
 const pendingJobs = new Set<string>();
 const progressEmitter = new EventEmitter();
 let worker: ChildProcess | null = null;
+let shuttingDown = false;
+let restartAttempts = 0;
+const MAX_RESTART_ATTEMPTS = 5;
 
 const jobQueue: JobQueue = {
   enqueue(jobId: string): void {
@@ -50,6 +53,7 @@ export function cancelJob(jobId: string): boolean {
 
 export function startWorker(): void {
   if (worker) return;
+  if (shuttingDown) return;
 
   const scriptPath = resolve(__dirname, 'process.ts');
 
@@ -58,6 +62,7 @@ export function startWorker(): void {
     env: { ...process.env },
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });
+  restartAttempts = 0;
 
   worker.on('message', (msg: unknown) => {
     progressEmitter.emit('message', msg);
@@ -70,9 +75,17 @@ export function startWorker(): void {
   });
 
   worker.on('exit', (code) => {
-    log.error(`Worker exited with code ${code}, restarting in 2s...`);
+    log.error(`Worker exited with code ${code}`);
     worker = null;
-    setTimeout(startWorker, 2000);
+    if (shuttingDown) return;
+    if (restartAttempts >= MAX_RESTART_ATTEMPTS) {
+      log.error(`Worker exceeded ${MAX_RESTART_ATTEMPTS} restart attempts; giving up`);
+      return;
+    }
+    restartAttempts++;
+    const delay = Math.min(2000 * restartAttempts, 30000);
+    log.error(`Restarting worker in ${delay}ms (attempt ${restartAttempts})`);
+    setTimeout(startWorker, delay);
   });
 
   worker.on('error', (err) => {
@@ -83,8 +96,14 @@ export function startWorker(): void {
 }
 
 export function stopWorker(): void {
+  shuttingDown = true;
   if (worker) {
     worker.kill();
     worker = null;
   }
+}
+
+export function resetWorkerForRestart(): void {
+  shuttingDown = false;
+  restartAttempts = 0;
 }
