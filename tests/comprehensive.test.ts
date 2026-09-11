@@ -300,7 +300,7 @@ describe('Comprehensive - Solution Edge Cases', () => {
   it('serialize round-trips a finite solution through JSON', () => {
     const problem = createBasicProblem();
     const solution = new Solution(problem);
-    solution.calculateSchedule(2);
+    solution.calculateSchedule();
     const data = solution.serialize();
     const json = JSON.parse(JSON.stringify(data)) as unknown;
     const restored = Solution.deserialize(json as never, problem);

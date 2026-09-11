@@ -14,8 +14,9 @@
 //   benchmarks/results/vroom-baseline.json
 
 import { spawnSync } from 'node:child_process';
-import { writeFileSync, mkdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { writeFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, chmodSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { ADAPTERS, type Family } from './runner/adapters.js';
@@ -92,27 +93,35 @@ function runVroomOnInstance(family: Family, instance: string): {
   const parsed = adapter.parse(instancePath);
   const problem = adapter.toProblem(parsed);
   const input = toVroomInput(problem);
-  const tmpFile = `/tmp/vroom-${family}-${instance}.json`;
-  writeFileSync(tmpFile, input);
-  const start = Date.now();
-  const result = spawnSync(vroom, ['-i', tmpFile, '-o', '/tmp/vroom-out.json'], {
-    encoding: 'utf8',
-    timeout: 30_000,
-  });
-  const durationMs = Date.now() - start;
-  if (result.status !== 0) {
-    return { ok: false, durationMs, error: `vroom exit ${result.status}: ${result.stderr}` };
-  }
+  const scratchDir = mkdtempSync(join(tmpdir(), 'fleetpilot-vroom-'));
+  chmodSync(scratchDir, 0o700);
+  const safeInstance = instance.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const tmpFile = join(scratchDir, `vroom-${family}-${safeInstance}.json`);
+  const outFile = join(scratchDir, 'vroom-out.json');
   try {
-    const out = JSON.parse(require('node:fs').readFileSync('/tmp/vroom-out.json', 'utf8')) as {
-      summary?: { duration?: number; cost?: number };
-      routes?: Array<{ duration: number }>;
-    };
-    const makespan = Math.max(0, ...(out.routes ?? []).map((r) => r.duration));
-    return { ok: true, makespan, durationMs };
-  } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : String(err);
-    return { ok: false, durationMs, error: `parse error: ${msg}` };
+    writeFileSync(tmpFile, input, { mode: 0o600 });
+    const start = Date.now();
+    const result = spawnSync(vroom, ['-i', tmpFile, '-o', outFile], {
+      encoding: 'utf8',
+      timeout: 30_000,
+    });
+    const durationMs = Date.now() - start;
+    if (result.status !== 0) {
+      return { ok: false, durationMs, error: `vroom exit ${result.status}: ${result.stderr}` };
+    }
+    try {
+      const out = JSON.parse(readFileSync(outFile, 'utf8')) as {
+        summary?: { duration?: number; cost?: number };
+        routes?: Array<{ duration: number }>;
+      };
+      const makespan = Math.max(0, ...(out.routes ?? []).map((r) => r.duration));
+      return { ok: true, makespan, durationMs };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { ok: false, durationMs, error: `parse error: ${msg}` };
+    }
+  } finally {
+    rmSync(scratchDir, { recursive: true, force: true });
   }
 }
 

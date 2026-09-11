@@ -80,7 +80,7 @@ import { BRKGA } from './algorithms/brkga/brkga.js';
 import type { BRKGAOptions, BRKGAProgress } from './algorithms/brkga/brkga.js';
 import type { Problem } from './core/problem.js';
 import { Solution, Route } from './core/solution.js';
-import { AlgorithmConvergenceError, InfeasibleSolutionError } from './errors/index.js';
+import { AbortError, AlgorithmConvergenceError, InfeasibleSolutionError } from './errors/index.js';
 import type { Logger } from './logger.js';
 import { defaultLogger } from './logger.js';
 import { serializeProblem } from './worker-data.js';
