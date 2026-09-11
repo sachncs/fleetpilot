@@ -18,6 +18,8 @@ interface Problem {
   problem_json: string;
 }
 
+const activeJobs = new Map<string, AbortController>();
+
 function getDb() {
   mkdirSync(config.databaseUrl.replace(/\/[^/]+$/, ''), { recursive: true });
   const db = new Database(config.databaseUrl);
@@ -25,6 +27,16 @@ function getDb() {
   db.pragma('foreign_keys = ON');
   return db;
 }
+
+process.on('message', (msg: unknown) => {
+  if (msg && typeof msg === 'object' && (msg as { type?: string }).type === 'cancel') {
+    const jobId = (msg as { jobId?: string }).jobId;
+    if (jobId) {
+      const controller = activeJobs.get(jobId);
+      controller?.abort();
+    }
+  }
+});
 
 async function run() {
   await ensureSchema();
@@ -39,6 +51,9 @@ async function run() {
       await sleep(POLL_INTERVAL);
       continue;
     }
+
+    const controller = new AbortController();
+    activeJobs.set(job.id, controller);
 
     db.prepare("UPDATE jobs SET status = 'running', started_at = datetime('now') WHERE id = ?").run(job.id);
     send({ type: 'progress', jobId: job.id, stage: 'ALNS', iteration: 0, maxGenerations: 0, bestMakespan: Infinity, elapsedMs: 0 });
@@ -99,6 +114,7 @@ async function run() {
         maxTimeMs: opts['maxTimeMs'] as number,
         seed: opts['seed'] as number,
         warmStart: opts['warmStart'] as boolean,
+        signal: controller.signal,
         onProgress: (p) => {
           send({
             type: 'progress',
@@ -161,9 +177,17 @@ async function run() {
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      db.prepare("UPDATE jobs SET status = 'failed', error = ?, completed_at = datetime('now') WHERE id = ?").run(msg, job.id);
-      writeAudit({ entity: 'job', entityId: job.id, action: 'failed', actor: 'worker', payload: { error: msg } });
-      send({ type: 'error', jobId: job.id, error: msg });
+      if (controller.signal.aborted) {
+        db.prepare("UPDATE jobs SET status = 'cancelled', completed_at = datetime('now') WHERE id = ?").run(job.id);
+        writeAudit({ entity: 'job', entityId: job.id, action: 'cancelled', actor: 'worker', payload: {} });
+        send({ type: 'error', jobId: job.id, error: 'cancelled' });
+      } else {
+        db.prepare("UPDATE jobs SET status = 'failed', error = ?, completed_at = datetime('now') WHERE id = ?").run(msg, job.id);
+        writeAudit({ entity: 'job', entityId: job.id, action: 'failed', actor: 'worker', payload: { error: msg } });
+        send({ type: 'error', jobId: job.id, error: msg });
+      }
+    } finally {
+      activeJobs.delete(job.id);
     }
   }
 }

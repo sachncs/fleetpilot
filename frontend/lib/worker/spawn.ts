@@ -25,6 +25,12 @@ export function onWorkerMessage(handler: (msg: WorkerMessage) => void): () => vo
   return () => progressEmitter.off('message', handler);
 }
 
+export function cancelJob(jobId: string): boolean {
+  if (!worker || !worker.connected) return false;
+  worker.send({ type: 'cancel', jobId });
+  return true;
+}
+
 export function startWorker(): void {
   if (worker) return;
 

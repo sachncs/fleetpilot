@@ -39,3 +39,8 @@ export interface ErrorMessage {
 }
 
 export type WorkerMessage = ProgressMessage | SolutionMessage | ErrorMessage;
+
+export interface CancelMessage {
+  type: 'cancel';
+  jobId: string;
+}
