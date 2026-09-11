@@ -119,8 +119,14 @@ describe('Comprehensive - Problem Validation', () => {
 
   it('rejects inverted delivery time window', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    const customers = [new CustomerWithTimeWindows(1, 1, 1, 10, 100, 0, 0, 200)];
-    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)]))
+    expect(
+      () =>
+        new Problem(
+          nodes,
+          [new CustomerWithTimeWindows(1, 1, 1, 10, 100, 0, 0, 200)],
+          [new Vehicle(1, 5)],
+        ),
+    )
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('delivery window is inverted');
@@ -128,8 +134,14 @@ describe('Comprehensive - Problem Validation', () => {
 
   it('rejects inverted pickup time window', () => {
     const nodes = { 0: new LocationNode(0, 0, 0), 1: new LocationNode(1, 10, 0) };
-    const customers = [new CustomerWithTimeWindows(1, 1, 1, 10, 0, 200, 100, 0)];
-    expect(() => new Problem(nodes, customers, [new Vehicle(1, 5)]))
+    expect(
+      () =>
+        new Problem(
+          nodes,
+          [new CustomerWithTimeWindows(1, 1, 1, 10, 0, 200, 100, 0)],
+          [new Vehicle(1, 5)],
+        ),
+    )
       .to.throw(ValidationError)
       .with.property('message')
       .that.includes('pickup window is inverted');
@@ -278,10 +290,21 @@ describe('Comprehensive - Solution Edge Cases', () => {
     const solution = new Solution(problem);
     const data = solution.serialize();
     expect(data.routes.length).to.equal(problem.vehicles.length);
-    expect(data.makespan).to.equal(Infinity);
+    expect(data.makespan).to.equal(null);
 
     const restored = Solution.deserialize(data, problem);
     expect(restored.routes.length).to.equal(problem.vehicles.length);
+    expect(restored.makespan).to.equal(Infinity);
+  });
+
+  it('serialize round-trips a finite solution through JSON', () => {
+    const problem = createBasicProblem();
+    const solution = new Solution(problem);
+    solution.calculateSchedule(2);
+    const data = solution.serialize();
+    const json = JSON.parse(JSON.stringify(data)) as unknown;
+    const restored = Solution.deserialize(json as never, problem);
+    expect(restored.makespan).to.equal(solution.makespan);
   });
 });
 

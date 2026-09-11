@@ -693,33 +693,69 @@ export class Solution {
   /**
    * Serializes this solution to a plain JSON-compatible object.
    * The problem instance is NOT included; pass it to deserialize().
+   * Non-finite values (Infinity, -Infinity, NaN) are emitted as `null` since
+   * `JSON.stringify` would otherwise drop them to `null` silently. Use
+   * `deserialize()` to restore the runtime representation.
    */
   serialize(): SerializedSolution {
     return {
       routes: this.routes.map((r) => ({ vehicleId: r.vehicleId, nodes: [...r.nodes] })),
-      makespan: this.makespan,
-      totalDistance: this.totalDistance,
-      totalCost: this.totalCost,
-      totalCo2: this.totalCo2,
-      nodeTimes: { ...this.nodeTimes },
-      resourceReadyTimes: { ...this.resourceReadyTimes },
+      makespan: finiteOrNull(this.makespan),
+      totalDistance: finiteOrNull(this.totalDistance),
+      totalCost: finiteOrNull(this.totalCost),
+      totalCo2: finiteOrNull(this.totalCo2),
+      nodeTimes: finiteRecordOrNull(this.nodeTimes),
+      resourceReadyTimes: finiteRecordOrNull(this.resourceReadyTimes),
     };
   }
 
   /**
    * Reconstructs a Solution from a serialized object and a problem instance.
+   * Numeric fields that were serialized as `null` are restored as `Infinity`,
+   * preserving the "uncomputed" signal across a JSON round-trip.
    */
   static deserialize(data: SerializedSolution, problem: Problem): Solution {
     const routes = data.routes.map((r) => new Route(r.vehicleId, [...r.nodes]));
     const solution = new Solution(problem, routes);
-    solution.makespan = data.makespan;
-    solution.totalDistance = data.totalDistance;
-    solution.totalCost = data.totalCost;
-    solution.totalCo2 = data.totalCo2;
-    solution.nodeTimes = { ...data.nodeTimes };
-    solution.resourceReadyTimes = { ...data.resourceReadyTimes };
+    solution.makespan = nullOrFiniteToInfinity(data.makespan);
+    solution.totalDistance = nullOrFiniteToInfinity(data.totalDistance);
+    solution.totalCost = nullOrFiniteToInfinity(data.totalCost);
+    solution.totalCo2 = nullOrFiniteToInfinity(data.totalCo2);
+    solution.nodeTimes = nullFiniteMapToInfinity(data.nodeTimes);
+    solution.resourceReadyTimes = nullFiniteMapToInfinity(data.resourceReadyTimes);
     return solution;
   }
+}
+
+function finiteOrNull(value: number): number | null {
+  return Number.isFinite(value) ? value : null;
+}
+
+function finiteRecordOrNull(
+  record: Readonly<Record<number | string, number>>,
+): Record<number | string, number | null> {
+  const out: Record<number | string, number | null> = {};
+  for (const key of Object.keys(record)) {
+    const v = record[key];
+    out[key] = v === undefined ? null : finiteOrNull(v);
+  }
+  return out;
+}
+
+function nullOrFiniteToInfinity(value: number | null | undefined): number {
+  if (value === null || value === undefined) return Infinity;
+  return value;
+}
+
+function nullFiniteMapToInfinity(
+  record: Readonly<Record<number | string, number | null>>,
+): Record<number, number> {
+  const out: Record<number, number> = {};
+  for (const key of Object.keys(record)) {
+    const v = record[key];
+    out[Number(key)] = nullOrFiniteToInfinity(v ?? null);
+  }
+  return out;
 }
 
 /**
@@ -734,13 +770,16 @@ export interface SerializedRoute {
  * JSON-serializable representation of a Solution produced by
  * `Solution.serialize()`. The problem instance is NOT included;
  * pass it to `Solution.deserialize(data, problem)` to round-trip.
+ * Non-finite numeric fields (Infinity, NaN) are emitted as `null`
+ * because `JSON.stringify` would otherwise drop them; `deserialize()`
+ * restores them as `Infinity`.
  */
 export interface SerializedSolution {
   routes: SerializedRoute[];
-  makespan: number;
-  totalDistance: number;
-  totalCost: number;
-  totalCo2: number;
-  nodeTimes: Record<number | string, number>;
-  resourceReadyTimes: Record<number, number>;
+  makespan: number | null;
+  totalDistance: number | null;
+  totalCost: number | null;
+  totalCo2: number | null;
+  nodeTimes: Record<number | string, number | null>;
+  resourceReadyTimes: Record<number, number | null>;
 }
