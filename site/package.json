@@ -1,0 +1,31 @@
+{
+  "name": "@fleetpilot/site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Premium landing page for FleetPilot — route optimization for Indian logistics.",
+  "scripts": {
+    "dev": "next dev --turbopack -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "framer-motion": "^12.23.22",
+    "lucide-react": "^0.474.0",
+    "next": "15.5.4",
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.7",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "eslint": "^9.18.0",
+    "eslint-config-next": "15.5.4",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.7.3"
+  }
+}
