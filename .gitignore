@@ -14,3 +14,9 @@ data/
 *~
 tests/**/*.js.map
 tests/**/*.d.ts.map
+
+# site/ (Next.js landing page)
+site/.next/
+site/out/
+site/node_modules/
+site/.turbo/
