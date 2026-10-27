@@ -199,15 +199,14 @@ describe('Security S3 - Problem constructor validation', () => {
     );
   });
 
-  it('rejects negative coordinates', () => {
+  it('supports signed coordinates while preserving finite validation', () => {
     const nodes: Record<number, LocationNode> = {
       0: new LocationNode(0, 0, 0, 'Depot'),
       1: new LocationNode(1, -10, 0, 'D1'),
       2: new LocationNode(2, 20, 0, 'P1'),
     };
-    expect(() => new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0)).to.throw(
-      'negative coordinates',
-    );
+    const problem = new Problem(nodes, [new Customer(1, 1, 2, 50)], [new Vehicle(1, 10)], 0);
+    expect(problem.getDistance(1, 2)).to.equal(30);
   });
 
   it('rejects duplicate customer IDs', () => {

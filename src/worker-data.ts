@@ -42,6 +42,7 @@ export function serializeProblem(problem: Problem, meta: WorkerMeta): WorkerData
       deliveryNodeId: c.deliveryNodeId,
       pickupNodeId: c.pickupNodeId,
       processingTime: c.processingTime,
+      demand: c.demand,
     };
     if (c instanceof CustomerWithTimeWindows) {
       return {
@@ -122,9 +123,10 @@ export function deserializeProblem(data: WorkerData): Problem {
         c.latestDeliveryTime ?? 0,
         c.earliestPickupTime ?? 0,
         c.latestPickupTime ?? 0,
+        c.demand ?? 1,
       );
     }
-    return new Customer(c.id, c.deliveryNodeId, c.pickupNodeId, c.processingTime);
+    return new Customer(c.id, c.deliveryNodeId, c.pickupNodeId, c.processingTime, c.demand ?? 1);
   });
 
   const vehicles = data.vehicles.map(

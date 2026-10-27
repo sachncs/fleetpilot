@@ -28,8 +28,13 @@ interface RouteLoad {
   maxDelta: number;
 }
 
-function canAddOperation(load: RouteLoad, capacity: number, type: 'delivery' | 'pickup'): boolean {
-  const delta = type === 'delivery' ? -1 : 1;
+function canAddOperation(
+  load: RouteLoad,
+  capacity: number,
+  type: 'delivery' | 'pickup',
+  demand: number,
+): boolean {
+  const delta = type === 'delivery' ? -demand : demand;
   const newCurrent = load.currentLoad + delta;
   const newMin = Math.min(load.minDelta, newCurrent);
   const newMax = Math.max(load.maxDelta, newCurrent);
@@ -38,8 +43,8 @@ function canAddOperation(load: RouteLoad, capacity: number, type: 'delivery' | '
   return initialLoadNeeded <= capacity && peakLoad <= capacity;
 }
 
-function updateLoad(load: RouteLoad, type: 'delivery' | 'pickup'): void {
-  const delta = type === 'delivery' ? -1 : 1;
+function updateLoad(load: RouteLoad, type: 'delivery' | 'pickup', demand: number): void {
+  const delta = type === 'delivery' ? -demand : demand;
   load.currentLoad += delta;
   load.minDelta = Math.min(load.minDelta, load.currentLoad);
   load.maxDelta = Math.max(load.maxDelta, load.currentLoad);
@@ -114,9 +119,9 @@ export class Decoder {
       const load = routeLoads[targetV];
       if (!load) continue;
 
-      if (canAddOperation(load, this.vehicleCapacity(targetV), 'delivery')) {
+      if (canAddOperation(load, this.vehicleCapacity(targetV), 'delivery', customer.demand)) {
         route.nodes.push(customer.deliveryNodeId);
-        updateLoad(load, 'delivery');
+        updateLoad(load, 'delivery', customer.demand);
         solution.updateRouteAfterAppend(targetV);
         deliveryScheduled.add(idx);
         deliveryVehicle[idx] = targetV;
@@ -127,7 +132,7 @@ export class Decoder {
           const altLoad = routeLoads[alt];
           if (altRoute && altLoad) {
             altRoute.nodes.push(customer.deliveryNodeId);
-            updateLoad(altLoad, 'delivery');
+            updateLoad(altLoad, 'delivery', customer.demand);
             solution.updateRouteAfterAppend(alt);
             deliveryScheduled.add(idx);
             deliveryVehicle[idx] = alt;
@@ -156,9 +161,9 @@ export class Decoder {
       const load = routeLoads[targetV];
       if (!load) continue;
 
-      if (canAddOperation(load, this.vehicleCapacity(targetV), 'pickup')) {
+      if (canAddOperation(load, this.vehicleCapacity(targetV), 'pickup', customer.demand)) {
         route.nodes.push(customer.pickupNodeId);
-        updateLoad(load, 'pickup');
+        updateLoad(load, 'pickup', customer.demand);
         solution.updateRouteAfterAppend(targetV);
         pickupScheduled.add(idx);
       } else {
@@ -168,7 +173,7 @@ export class Decoder {
           const altLoad = routeLoads[alt];
           if (altRoute && altLoad) {
             altRoute.nodes.push(customer.pickupNodeId);
-            updateLoad(altLoad, 'pickup');
+            updateLoad(altLoad, 'pickup', customer.demand);
             solution.updateRouteAfterAppend(alt);
             pickupScheduled.add(idx);
           }
@@ -200,7 +205,7 @@ export class Decoder {
       const load = loads[i];
       const route = routes[i];
       if (!route || !load) continue;
-      if (canAddOperation(load, this.vehicleCapacity(i), type)) {
+      if (canAddOperation(load, this.vehicleCapacity(i), type, customer.demand)) {
         return i;
       }
     }

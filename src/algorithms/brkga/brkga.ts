@@ -184,10 +184,14 @@ export class BRKGA {
    */
   async solve(): Promise<Solution> {
     const startTime = Date.now();
-    if (this.islands > 1) {
-      return this.solveIslands(startTime);
-    }
-    return this.runSingleIsland(startTime);
+    const solution =
+      this.islands > 1 ? await this.solveIslands(startTime) : this.runSingleIsland(startTime);
+
+    // The decoder maintains makespan incrementally for population fitness,
+    // but intentionally skips the more expensive aggregate distance/cost/CO₂
+    // work. Finalize the winning solution once before exposing it to callers.
+    solution.calculateSchedule();
+    return solution;
   }
 
   /**

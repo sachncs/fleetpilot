@@ -4,7 +4,7 @@ import type { Customer, LocationNode, Vehicle } from './problem.js';
 
 /**
  * Shared input validation for problem instances.
- * Enforces non-empty inputs, finite non-negative coordinates, integer ids,
+ * Enforces non-empty inputs, finite coordinates, integer ids,
  * unique customers/vehicles, existing node references, exclusive node
  * ownership per customer, and ordered time windows.
  *
@@ -39,11 +39,6 @@ export function validateProblemBase(
     if (!Number.isFinite(node.x) || !Number.isFinite(node.y)) {
       throw new ValidationError(
         `Node ${node.id} has invalid coordinates: x=${node.x}, y=${node.y}`,
-      );
-    }
-    if (node.x < 0 || node.y < 0) {
-      throw new ValidationError(
-        `Node ${node.id} has negative coordinates: x=${node.x}, y=${node.y}`,
       );
     }
   }
@@ -83,6 +78,11 @@ export function validateProblemBase(
     if (customer.processingTime < 0) {
       throw new ValidationError(
         `Customer ${customer.id} has negative processingTime: ${customer.processingTime}`,
+      );
+    }
+    if (!Number.isFinite(customer.demand) || customer.demand <= 0) {
+      throw new ValidationError(
+        `Customer ${customer.id} must have positive demand, got ${customer.demand}`,
       );
     }
     const tw = customer as Customer & {
