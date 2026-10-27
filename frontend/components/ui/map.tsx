@@ -854,7 +854,7 @@ function MapPolyline({
     return (
         <LeafletPolyline
             className={cn(
-                "fill-foreground stroke-foreground stroke-2",
+                "fill-none stroke-foreground stroke-2",
                 className
             )}
             {...props}
