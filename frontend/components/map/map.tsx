@@ -12,11 +12,12 @@ export interface MapProps extends Omit<MapContainerProps, 'ref' | 'center'> {
   className?: string;
 }
 
-export const Map = React.forwardRef<L.Map, MapProps>(({ className, ...props }, ref) => {
+export const Map = React.forwardRef<L.Map, MapProps>(({ className, style, ...props }, ref) => {
   return (
     <ShadcnMap
       ref={ref}
       className={cn('fleet-map h-full w-full rounded-none bg-background', className)}
+      style={{ ...style, filter: 'grayscale(1)' }}
       {...props}
     />
   );
