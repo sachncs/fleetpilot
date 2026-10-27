@@ -128,6 +128,9 @@
   .leaflet-container {
     @apply !bg-card !font-[inherit];
   }
+  .fleet-map {
+    filter: grayscale(1);
+  }
   .leaflet-container .maplibregl-canvas,
   .leaflet-container .leaflet-tile-pane {
     filter: grayscale(1) contrast(0.94) brightness(1.03);
