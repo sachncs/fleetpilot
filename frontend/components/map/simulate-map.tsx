@@ -9,21 +9,22 @@ import { MapTileLayer } from '@/components/map/map-tile-layer';
 import { MapMarker } from '@/components/map/map-marker';
 import { MapPolyline } from '@/components/map/map-polyline';
 import { MapPopup } from '@/components/map/map-popup';
+import { MapFullscreenControl, MapZoomControl } from '@/components/ui/map';
 
 import { useProblemStore } from '@/lib/problem-store';
 import { metresToLatLngExpr, type ReferenceOrigin } from '@/lib/geo-utils';
 
 const TABLEAU = [
-  '#4e79a7',
-  '#f28e2b',
-  '#e15759',
-  '#76b7b2',
-  '#59a14f',
-  '#edc948',
-  '#b07aa1',
-  '#ff9da7',
-  '#9c755f',
-  '#bab0ab',
+  '#0a0a0a',
+  '#2e2e2e',
+  '#505050',
+  '#747474',
+  '#969696',
+  '#b0b0b0',
+  '#1d1d1d',
+  '#414141',
+  '#656565',
+  '#898989',
 ];
 
 export interface SimulateMapProps {
@@ -232,6 +233,8 @@ export function SimulateMap({
       className="rounded-xl border"
     >
       <MapTileLayer />
+      <MapZoomControl position="top-3 left-3" />
+      <MapFullscreenControl position="top-3 right-3" />
       {vehicles.map((v) => (
         <MapPolyline
           key={`poly-${v.vehicleId}`}

@@ -3,7 +3,6 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Truck } from 'lucide-react';
 
 import {
   Sidebar,
@@ -21,6 +20,7 @@ import {
 
 import { NAV_GROUPS, isActivePath } from '@/lib/nav';
 import { usePolling } from '@/hooks/use-polling';
+import { BrandMark } from '@/components/brand-mark';
 
 /** Active solver runs for the Optimize nav badge (30s poll). */
 function useActiveRunCount(): number | null {
@@ -43,14 +43,14 @@ export function AppSidebar(): React.JSX.Element {
   const activeRuns = useActiveRunCount();
 
   return (
-    <Sidebar>
+    <Sidebar className="border-r bg-sidebar/80 backdrop-blur-2xl">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <Truck className="h-5 w-5 text-primary" />
-          <span className="text-base font-bold tracking-tight">FleetPilot</span>
-          <span className="ml-auto rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
-            Console
-          </span>
+        <div className="flex items-center gap-2.5 px-2 py-2">
+          <BrandMark className="size-7" />
+          <div>
+            <span className="block text-sm font-semibold tracking-[-0.02em]">FleetPilot</span>
+            <span className="block text-[10px] text-muted-foreground">Dispatch workspace</span>
+          </div>
         </div>
       </SidebarHeader>
       <SidebarContent>
@@ -80,7 +80,10 @@ export function AppSidebar(): React.JSX.Element {
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-2 py-1 text-xs text-muted-foreground">FleetPilot Console</div>
+        <div className="flex items-center justify-between border-t px-2 py-3 text-[10px] text-muted-foreground">
+          <span>Data stays on this machine</span>
+          <span className="size-1.5 rounded-full bg-foreground" />
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
