@@ -10,8 +10,13 @@ export interface AuthContext {
   keyName: string;
 }
 
+const PUBLIC_CONSOLE_TOKEN = 'fp_public_console';
+
 function extractToken(request: NextRequest | IncomingMessage): string | undefined {
-  const header = request.headers['authorization'] ?? request.headers['Authorization'];
+  const header =
+    request.headers instanceof Headers
+      ? request.headers.get('authorization') ?? undefined
+      : request.headers.authorization;
   const raw = Array.isArray(header) ? header[0] : header;
   if (raw && raw.startsWith('Bearer ')) return raw.slice(7);
   const url =
@@ -31,12 +36,22 @@ export function authenticate(request: NextRequest): AuthContext | NextResponse {
     return NextResponse.json({ error: 'Invalid API key format' }, { status: 401 });
   }
 
+  // The first-party console is intentionally open: there is no account or
+  // login flow. External API clients still use revocable keys stored in the
+  // database, while the browser identifies itself with this public marker.
+  if (token === PUBLIC_CONSOLE_TOKEN) {
+    return { keyId: 'public-console', keyName: 'FleetPilot Console' };
+  }
+
   return resolveKey(token);
 }
 
 export function authenticateUpgrade(request: IncomingMessage): AuthContext | null {
   const token = extractToken(request);
   if (!token || !token.startsWith('fp_')) return null;
+  if (token === PUBLIC_CONSOLE_TOKEN) {
+    return { keyId: 'public-console', keyName: 'FleetPilot Console' };
+  }
   const ctx = resolveKey(token);
   return ctx instanceof NextResponse ? null : ctx;
 }

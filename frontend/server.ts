@@ -1,7 +1,10 @@
+// Next's CLI loads this before every other server module. A custom entrypoint
+// has to do the same so transitive `next/server` imports see Node's ALS.
+import 'next/dist/server/node-environment-baseline.js';
+
 import { createServer } from 'node:http';
 import { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import next from 'next';
 import { ensureSchema } from './lib/db/migrate';
 import { seedDefaultApiKey } from './lib/db/seed';
 import { startWorker, onWorkerMessage, stopWorker } from './lib/worker/spawn';
@@ -15,6 +18,8 @@ import { log } from './lib/log';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 async function main(): Promise<void> {
+  const { default: next } = await import('next');
+
   if (isFirstRun()) {
     await runOnboarding();
     reloadConfig();

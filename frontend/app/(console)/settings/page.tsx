@@ -1,13 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { ApiKeyManager } from '@/components/settings/api-key-manager';
-import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from 'sonner';
 
 interface SystemInfo {
   database: {
@@ -36,7 +31,7 @@ function SystemCard(): React.ReactElement {
     void (async () => {
       try {
         const res = await fetch('/api/system', {
-          headers: { Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? ''}` },
+          headers: { Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console'}` },
         });
         if (!res.ok) throw new Error(`System info unavailable (${res.status})`);
         setInfo((await res.json()) as SystemInfo);
@@ -104,58 +99,12 @@ function SystemCard(): React.ReactElement {
 }
 
 export default function SettingsPage(): React.ReactElement {
-  const [apiKey, setApiKey] = React.useState('');
-  const [saved, setSaved] = React.useState(false);
-
-  React.useEffect(() => {
-    const stored = localStorage.getItem('fleetpilot_api_key') ?? '';
-    setApiKey(stored);
-    setSaved(!!stored);
-  }, []);
-
-  const saveKey = (): void => {
-    localStorage.setItem('fleetpilot_api_key', apiKey);
-    setSaved(true);
-    toast.success('API key saved');
-  };
-
   return (
     <div className="overflow-auto p-6">
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">Settings</h1>
 
       <div className="max-w-2xl space-y-6">
         <SystemCard />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>API access</CardTitle>
-            <div className="flex items-center gap-2">
-              <Badge variant={saved ? 'success' : 'secondary'}>{saved ? 'connected' : 'not set'}</Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-muted-foreground text-sm">
-              Console pages call the local API with this key. Create and revoke keys below.
-            </p>
-            <div className="flex gap-2">
-              <Input
-                type="password"
-                placeholder="fp_..."
-                value={apiKey}
-                onChange={(e) => {
-                  setApiKey(e.target.value);
-                  setSaved(false);
-                }}
-                className="font-mono"
-              />
-              <Button onClick={saveKey} disabled={!apiKey}>
-                Save
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {apiKey && <ApiKeyManager apiKey={apiKey} />}
 
         <Card>
           <CardHeader>
