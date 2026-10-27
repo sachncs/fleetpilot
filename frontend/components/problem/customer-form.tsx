@@ -152,7 +152,17 @@ export function CustomerForm(): React.ReactElement {
                     }
                   />
                 </div>
-                <div className="flex items-end text-xs text-muted-foreground">ID: {c.id}</div>
+                <div>
+                  <Label className="text-xs">Demand / load</Label>
+                  <Input
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value={c.demand ?? 1}
+                    onChange={(e) => updateCustomer(idx, { demand: Number(e.target.value) })}
+                  />
+                </div>
+                <div className="col-span-2 text-xs text-muted-foreground">ID: {c.id}{c.orderRef ? ` · ${c.orderRef}` : ''}</div>
               </div>
               <details className="text-xs" open={hasAnyTw}>
                 <summary className="cursor-pointer select-none text-muted-foreground">

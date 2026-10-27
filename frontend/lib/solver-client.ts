@@ -8,7 +8,7 @@ import type { SolverSolution, SolverProgress, SolverSolveOptions } from '@/lib/p
 
 function getApiKey(): string | null {
   try {
-    return localStorage.getItem('fleetpilot_api_key');
+    return localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console';
   } catch {
     return null;
   }
@@ -19,11 +19,10 @@ export async function solveProblem(
   options: SolverSolveOptions,
   onProgress?: (progress: SolverProgress) => void,
   existing?: { problemId?: string; name?: string },
+  lifecycle?: { signal?: AbortSignal; onJobCreated?: (jobId: string) => void },
 ): Promise<SolverSolution> {
   const apiKey = getApiKey();
-  if (!apiKey) {
-    throw new Error('No API key found. Go to Settings to create one.');
-  }
+  if (!apiKey) throw new Error('Console storage is unavailable in this browser.');
 
   const authHeaders = {
     Authorization: `Bearer ${apiKey}`,
@@ -65,17 +64,40 @@ export async function solveProblem(
     throw new Error(data.error ?? 'Failed to submit job');
   }
   const job = (await jobRes.json()) as { id: string };
+  lifecycle?.onJobCreated?.(job.id);
 
   return new Promise<SolverSolution>((resolve, reject) => {
+    let settled = false;
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const ws = new WebSocket(
       `${protocol}//${window.location.host}/ws/progress/${job.id}?key=${encodeURIComponent(apiKey)}`,
     );
 
+    const abort = (): void => {
+      if (settled) return;
+      settled = true;
+      ws.close();
+      void fetch(`/api/jobs/${job.id}`, { method: 'DELETE', headers: authHeaders });
+      reject(new DOMException('Optimization cancelled', 'AbortError'));
+    };
+    if (lifecycle?.signal?.aborted) {
+      abort();
+      return;
+    }
+    lifecycle?.signal?.addEventListener('abort', abort, { once: true });
+
+    const finish = (callback: () => void): void => {
+      if (settled) return;
+      settled = true;
+      lifecycle?.signal?.removeEventListener('abort', abort);
+      callback();
+      ws.close();
+    };
+
     ws.onmessage = (event) => {
       const msg = JSON.parse(event.data as string) as
         | { type: 'progress'; stage: string; iteration: number; maxGenerations: number; bestMakespan: number; elapsedMs: number }
-        | { type: 'solution'; solutionJson: string; makespan: number; totalDistance: number; totalCost: number; totalCo2: number; feasible: boolean }
+        | { type: 'solution'; solutionId: string; solutionJson: string; makespan: number; totalDistance: number; totalCost: number; totalCo2: number; feasible: boolean }
         | { type: 'error'; error: string };
 
       if (msg.type === 'progress' && onProgress) {
@@ -91,27 +113,26 @@ export async function solveProblem(
           routes?: Array<{ vehicleId: number; nodes: number[] }>;
           nodeTimes?: Record<string, number>;
         };
-        resolve({
-          makespan: msg.makespan,
-          totalDistance: msg.totalDistance,
-          totalCost: msg.totalCost,
-          totalCo2: msg.totalCo2,
-          feasible: msg.feasible,
-          routes: solData.routes ?? [],
-          nodeTimes: solData.nodeTimes ?? {},
-          nodeTimesEntries: Object.entries(solData.nodeTimes ?? {}).map(
-            ([k, v]) => [Number(k), v] as [number, number],
-          ),
-        });
-        ws.close();
+        finish(() => resolve({
+            id: msg.solutionId,
+            makespan: msg.makespan,
+            totalDistance: msg.totalDistance,
+            totalCost: msg.totalCost,
+            totalCo2: msg.totalCo2,
+            feasible: msg.feasible,
+            routes: solData.routes ?? [],
+            nodeTimes: solData.nodeTimes ?? {},
+            nodeTimesEntries: Object.entries(solData.nodeTimes ?? {}).map(
+              ([k, v]) => [Number(k), v] as [number, number],
+            ),
+          }));
       } else if (msg.type === 'error') {
-        reject(new Error(msg.error));
-        ws.close();
+        finish(() => reject(new Error(msg.error)));
       }
     };
 
     ws.onerror = () => {
-      reject(new Error('WebSocket connection failed'));
+      finish(() => reject(new Error('WebSocket connection failed')));
     };
   });
 }

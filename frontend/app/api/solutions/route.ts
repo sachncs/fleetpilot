@@ -33,9 +33,17 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       .from(solutions)
       .innerJoin(problems, eq(solutions.problemId, problems.id))
       .orderBy(desc(solutions.createdAt))
-      .limit(limit);
+      .limit(limit)
+      .all();
 
-    return NextResponse.json({ solutions: rows });
+    return NextResponse.json({
+      solutions: rows.map((row) => ({
+        ...row,
+        totalDistance: row.totalDistance / 100,
+        totalCost: row.totalCost / 100,
+        totalCo2: row.totalCo2 / 100,
+      })),
+    });
   } catch (err) {
     log.error('[API] GET /api/solutions error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -116,9 +116,9 @@ export function OrderDialog({ open, onOpenChange, onSubmit }: OrderDialogProps):
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New order</DialogTitle>
+          <DialogTitle>Add delivery</DialogTitle>
           <DialogDescription>
-            Registry entry. Set a time window to have simulate flag late arrivals.
+            Add the stop, service window, and load FleetPilot should plan around.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
@@ -205,7 +205,7 @@ export function OrderDialog({ open, onOpenChange, onSubmit }: OrderDialogProps):
             </Button>
             <Button type="submit" disabled={!ref.trim() || !picked || busy}>
               {busy && <Loader2 className="animate-spin" />}
-              Create order
+              Add delivery
             </Button>
           </DialogFooter>
         </form>

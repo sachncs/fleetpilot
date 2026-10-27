@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
-import { Loader2, Play, Sparkles, TriangleAlert } from 'lucide-react';
+import { Download, Loader2, Play, Sparkles, Square, TriangleAlert } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -89,6 +89,7 @@ export function OptimizeClient(): React.ReactElement {
   const [scenario, setScenario] = React.useState<ScenarioDetail | null>(null);
   const [caps, setCaps] = React.useState<Caps | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const abortRef = React.useRef<AbortController | null>(null);
 
   // Best previous run for this scenario, for the compare view.
   const previousBest = React.useMemo<SolverSolution['makespan'] | null>(() => {
@@ -103,7 +104,7 @@ export function OptimizeClient(): React.ReactElement {
 
   const authHeaders = React.useCallback(
     (): HeadersInit => ({
-      Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? ''}`,
+      Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console'}`,
     }),
     [],
   );
@@ -145,20 +146,30 @@ export function OptimizeClient(): React.ReactElement {
     setStatus('solving');
     setError(null);
     setProgress(null);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
       const sol = await solveProblem(
         problem,
         values,
         (p) => setProgress(p),
         { problemId: problemId ?? undefined, name: scenario?.name },
+        { signal: controller.signal },
       );
       setSolution(sol);
       setStatus('success');
       setProgress(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setStatus('error');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError(null);
+        setStatus('idle');
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+        setStatus('error');
+      }
       setProgress(null);
+    } finally {
+      abortRef.current = null;
     }
   });
 
@@ -219,7 +230,7 @@ export function OptimizeClient(): React.ReactElement {
             <CardTitle>Solver configuration</CardTitle>
             <CardDescription>
               Limits are clamped to server caps{caps ? ` (${caps.maxGenerations} gens · ${Math.round(caps.maxTimeMs / 1000)}s)` : ''}.
-              Runs cannot be cancelled once started.
+              Runs are time-bounded and can be cancelled while queued or running.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -242,10 +253,17 @@ export function OptimizeClient(): React.ReactElement {
                     )}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={solving || !problem}>
-                  {solving ? <Loader2 className="animate-spin" /> : <Play />}
-                  {solving ? 'Running…' : 'Run optimization'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1" disabled={solving || !problem}>
+                    {solving ? <Loader2 className="animate-spin" /> : <Play />}
+                    {solving ? 'Running…' : 'Run optimization'}
+                  </Button>
+                  {solving && (
+                    <Button type="button" variant="outline" onClick={() => abortRef.current?.abort()}>
+                      <Square /> Cancel
+                    </Button>
+                  )}
+                </div>
               </form>
             </Form>
 
@@ -296,11 +314,11 @@ export function OptimizeClient(): React.ReactElement {
               <>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <Metric label="Makespan" value={solution.makespan.toFixed(1)} unit="min" />
-                  <Metric label="Distance" value={(solution.totalDistance / 100).toFixed(2)} unit="km" />
-                  <Metric label="Cost" value={(solution.totalCost / 100).toFixed(2)} />
-                  <Metric label="CO₂e" value={(solution.totalCo2 / 100).toFixed(2)} unit="kg" />
+                  <Metric label="Distance" value={solution.totalDistance.toFixed(2)} unit="km" />
+                  <Metric label="Cost" value={solution.totalCost.toFixed(2)} />
+                  <Metric label="CO₂e" value={solution.totalCo2.toFixed(2)} unit="kg" />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={solution.feasible ? 'success' : 'destructive'}>
                     {solution.feasible ? 'Feasible' : 'Infeasible'}
                   </Badge>
@@ -315,6 +333,23 @@ export function OptimizeClient(): React.ReactElement {
                     </Button>
                   )}
                 </div>
+                {solution.id && (
+                  <div className="matte-glass flex flex-wrap items-center gap-2 rounded-xl p-3">
+                    <div className="mr-auto">
+                      <p className="flex items-center gap-2 text-sm font-medium">
+                        <Download className="size-4" /> Export dispatch plan
+                      </p>
+                      <p className="text-muted-foreground text-xs">Use routes in GIS tools, navigation systems, or spreadsheets.</p>
+                    </div>
+                    {(['geojson', 'kml', 'csv'] as const).map((format) => (
+                      <Button key={format} asChild size="sm" variant="outline">
+                        <a href={`/api/solutions/${solution.id}/export?format=${format}`} download>
+                          {format.toUpperCase()}
+                        </a>
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </>
             )}
             {solving && (

@@ -33,18 +33,9 @@ export default function DashboardPage(): React.ReactElement {
   const [jobs, setJobs] = React.useState<Job[]>([]);
   const [loading, setLoading] = React.useState(true);
 
-  const [apiKey, setApiKey] = React.useState('');
+  const apiKey = 'fp_public_console';
 
   React.useEffect(() => {
-    setApiKey(localStorage.getItem('fleetpilot_api_key') ?? '');
-  }, []);
-
-  React.useEffect(() => {
-    if (!apiKey) {
-      setLoading(false);
-      return;
-    }
-
     const headers = { Authorization: `Bearer ${apiKey}` };
 
     Promise.all([
@@ -55,7 +46,7 @@ export default function DashboardPage(): React.ReactElement {
       setJobs(jobData.jobs);
       setLoading(false);
     }).catch(() => setLoading(false));
-  }, [apiKey]);
+  }, []);
 
   const deleteProblem = async (id: string): Promise<void> => {
     await fetch(`/api/problems/${id}`, {
@@ -75,14 +66,6 @@ export default function DashboardPage(): React.ReactElement {
             </Link>
           </Button>
         </div>
-
-        {!apiKey && (
-          <Card className="mb-6">
-            <CardContent className="py-6 text-center text-muted-foreground">
-              Set your API key in <Link href="/settings" className="underline">Settings</Link> to get started.
-            </CardContent>
-          </Card>
-        )}
 
         <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
           <Card>

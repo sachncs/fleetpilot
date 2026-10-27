@@ -24,7 +24,7 @@ export const depotUpdateSchema = depotCreateSchema.partial();
 export const vehicleCreateSchema = z.object({
   name: z.string().min(1).max(200),
   status: z.enum(['active', 'maintenance', 'retired']).optional(),
-  capacityKg: z.number().int().min(0).nullable().optional(),
+  capacityKg: z.number().int().positive().nullable().optional(),
   costPerKm: z.number().min(0).nullable().optional(),
   co2PerKm: z.number().min(0).nullable().optional(),
   depotId: z.string().nullable().optional(),

@@ -34,7 +34,7 @@ const PAGE_SIZE = 50;
 
 function authHeaders(): HeadersInit {
   return {
-    Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? ''}`,
+    Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console'}`,
     'content-type': 'application/json',
   };
 }
@@ -42,7 +42,6 @@ function authHeaders(): HeadersInit {
 const ENTITY_TABS = ['all', 'problem', 'solution', 'vehicle', 'depot', 'order'] as const;
 
 export default function HistoryPage(): React.ReactElement {
-  const [hasKey, setHasKey] = React.useState<boolean | null>(null);
   const [entries, setEntries] = React.useState<AuditEntry[]>([]);
   const [cursor, setCursor] = React.useState<number | null>(null);
   const [entity, setEntity] = React.useState<(typeof ENTITY_TABS)[number]>('all');
@@ -78,12 +77,6 @@ export default function HistoryPage(): React.ReactElement {
 
   const load = React.useCallback(
     async (mode: 'reset' | 'more', whichEntity: (typeof ENTITY_TABS)[number]) => {
-      if (!localStorage.getItem('fleetpilot_api_key')) {
-        setHasKey(false);
-        setLoading(false);
-        return;
-      }
-      setHasKey(true);
       try {
         const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
         if (whichEntity !== 'all') params.set('entity', whichEntity);
@@ -115,20 +108,6 @@ export default function HistoryPage(): React.ReactElement {
     setLoading(true);
     void load('reset', value);
   };
-
-  if (hasKey === false) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <EmptyState
-          icon={HistoryIcon}
-          title="API key required"
-          description="The audit trail is stored behind the local API. Add an API key in Settings."
-          actionLabel="Open settings"
-          actionHref="/settings"
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4 overflow-auto p-6">

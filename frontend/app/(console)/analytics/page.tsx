@@ -22,7 +22,7 @@ interface SolutionKpi {
 }
 
 const distanceConfig = {
-  distance: { label: 'Distance (m)', color: 'var(--chart-1)' },
+  distance: { label: 'Distance (km)', color: 'var(--chart-1)' },
 } satisfies ChartConfig;
 
 const costConfig = {
@@ -39,19 +39,12 @@ function shortLabel(row: SolutionKpi, index: number): string {
 }
 
 export default function AnalyticsPage(): React.ReactElement {
-  const [hasKey, setHasKey] = React.useState<boolean | null>(null);
   const [rows, setRows] = React.useState<SolutionKpi[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
-    const apiKey = localStorage.getItem('fleetpilot_api_key');
-    if (!apiKey) {
-      setHasKey(false);
-      setLoading(false);
-      return;
-    }
-    setHasKey(true);
+    const apiKey = localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console';
     try {
       const res = await fetch('/api/solutions?limit=30', {
         headers: { Authorization: `Bearer ${apiKey}` },
@@ -73,20 +66,6 @@ export default function AnalyticsPage(): React.ReactElement {
     const timer = setInterval(() => void load(), POLL_MS);
     return () => clearInterval(timer);
   }, [load]);
-
-  if (hasKey === false) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <EmptyState
-          icon={Activity}
-          title="API key required"
-          description="Analytics reads run metrics behind the local API. Add an API key in Settings."
-          actionLabel="Open settings"
-          actionHref="/settings"
-        />
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -138,7 +117,7 @@ export default function AnalyticsPage(): React.ReactElement {
           <div className="grid gap-3 sm:grid-cols-3">
             <Card>
               <CardHeader className="pb-1"><CardDescription>Total distance</CardDescription></CardHeader>
-              <CardContent className="text-xl font-semibold tabular-nums">{(totals.distance / 1000).toFixed(1)} km</CardContent>
+              <CardContent className="text-xl font-semibold tabular-nums">{totals.distance.toFixed(1)} km</CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-1"><CardDescription>Total cost</CardDescription></CardHeader>
@@ -146,21 +125,21 @@ export default function AnalyticsPage(): React.ReactElement {
             </Card>
             <Card>
               <CardHeader className="pb-1"><CardDescription>Total CO₂e</CardDescription></CardHeader>
-              <CardContent className="text-xl font-semibold tabular-nums">{(totals.co2 / 1000).toFixed(1)} kg</CardContent>
+              <CardContent className="text-xl font-semibold tabular-nums">{totals.co2.toFixed(1)} kg</CardContent>
             </Card>
           </div>
 
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Distance per run</CardTitle>
-              <CardDescription>Metres travelled by all vehicles.</CardDescription>
+              <CardDescription>Kilometres travelled by all vehicles.</CardDescription>
             </CardHeader>
             <CardContent>
               <ChartContainer config={distanceConfig} className="h-64 w-full">
                 <BarChart data={chartData} margin={{ left: 8 }}>
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="label" tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                  <YAxis tickLine={false} axisLine={false} width={56} tickFormatter={(v: number) => `${Math.round(v / 1000)}k`} />
+                  <YAxis tickLine={false} axisLine={false} width={56} tickFormatter={(v: number) => v.toFixed(0)} />
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar dataKey="distance" fill="var(--color-distance)" radius={4} />
                 </BarChart>

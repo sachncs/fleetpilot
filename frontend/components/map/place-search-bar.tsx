@@ -43,7 +43,7 @@ export function PlaceSearchBar({ onPick }: PlaceSearchBarProps): React.ReactElem
       setSearching(true);
       setError(null);
       try {
-        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? '';
+        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console';
         const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
