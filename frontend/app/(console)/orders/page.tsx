@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ClipboardList, Route } from 'lucide-react';
+import { ClipboardList, FileUp, Route } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ import { SkeletonCard } from '@/components/shared/skeleton-card';
 
 import { OrderDialog } from '@/components/registry/order-dialog';
 import { RegistryPlanDialog } from '@/components/registry/registry-plan-dialog';
+import { DeliveryImportDialog } from '@/components/registry/delivery-import-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
 type OrderStatus = 'unassigned' | 'planned' | 'exception';
@@ -73,6 +74,7 @@ export default function OrdersPage(): React.ReactElement {
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [planDialogOpen, setPlanDialogOpen] = React.useState(false);
+  const [importDialogOpen, setImportDialogOpen] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
   const load = React.useCallback(async () => {
@@ -258,6 +260,9 @@ export default function OrdersPage(): React.ReactElement {
           <Button variant="outline" disabled={selectedIds.size === 0} onClick={() => setPlanDialogOpen(true)}>
             <Route /> Plan selected {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
           </Button>
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+            <FileUp /> Import CSV
+          </Button>
           <Button onClick={() => setDialogOpen(true)}>Add delivery</Button>
         </div>
       </div>
@@ -282,6 +287,7 @@ export default function OrdersPage(): React.ReactElement {
       </Tabs>
 
       <OrderDialog open={dialogOpen} onOpenChange={setDialogOpen} onSubmit={submitOrder} />
+      <DeliveryImportDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} onImported={load} />
       <RegistryPlanDialog
         open={planDialogOpen}
         onOpenChange={setPlanDialogOpen}
