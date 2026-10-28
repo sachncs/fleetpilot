@@ -12,6 +12,7 @@ WORKDIR /app
 
 COPY package.json package-lock.json ./
 COPY frontend/package.json frontend/
+COPY scripts ./scripts
 RUN npm ci --no-audit --no-fund
 
 COPY tsconfig.json rollup.config.mjs ./
@@ -20,6 +21,7 @@ COPY frontend ./frontend
 
 RUN npm run build
 RUN npm run build -w @fleetpilot/web
+RUN npm prune --omit=dev
 
 # ---- Stage 2: runtime ---------------------------------------------------
 FROM node:${NODE_VERSION} AS runtime

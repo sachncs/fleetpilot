@@ -82,13 +82,20 @@ jobs:
       - run: npm ci
       - name: Build image
         run: npm run docker:build
-      - name: Run fleetpilot inside image
+      - name: Run unified web app inside image
         run: |
-          docker run --rm \
+          docker run --rm -d \
             --name fleetpilot-smoke \
-            fleetpilot:test \
-            fleetpilot --help > /tmp/help.txt
-          test -s /tmp/help.txt
+            -p 3000:3000 \
+            fleetpilot:test
+          trap 'docker rm -f fleetpilot-smoke >/dev/null 2>&1 || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/overview > /tmp/overview.html; then
+              break
+            fi
+            sleep 1
+          done
+          test -s /tmp/overview.html
       - name: Image size check
         run: |
           SIZE=$(docker image inspect fleetpilot:test --format '{{.Size}}' | numfmt --to=iec)
