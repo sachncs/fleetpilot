@@ -1,11 +1,8 @@
 'use client';
 
 import * as React from 'react';
-import { TileLayer, type TileLayerProps } from 'react-leaflet';
-import { useTheme } from 'next-themes';
-
-import { ALIDADE_SMOOTH, ALIDADE_SMOOTH_DARK } from '@/lib/map/tiles';
-import { log } from '@/lib/log';
+import type { TileLayerProps } from 'react-leaflet';
+import { MapTileLayer as ShadcnMapTileLayer } from '@/components/ui/map';
 
 export interface MapTileLayerProps extends Omit<TileLayerProps, 'url'> {
   url?: string;
@@ -15,28 +12,20 @@ export interface MapTileLayerProps extends Omit<TileLayerProps, 'url'> {
 }
 
 export const MapTileLayer: React.FC<MapTileLayerProps> = ({
-  url = ALIDADE_SMOOTH.url,
-  darkUrl = ALIDADE_SMOOTH_DARK.url,
-  attribution = ALIDADE_SMOOTH.attribution,
-  darkAttribution = ALIDADE_SMOOTH_DARK.attribution,
+  url,
+  darkUrl,
+  attribution,
+  darkAttribution,
   ...props
-}) => {
-  const { resolvedTheme } = useTheme();
-  // Tiles stay light until the theme resolves (first paint), then follow
-  // the app theme so the basemap matches the ThemeToggle.
-  const isDark = resolvedTheme === 'dark';
-
-  React.useEffect(() => {
-    log.debug('MapTileLayer mount', { isDark, url: isDark ? darkUrl : url });
-  }, [isDark, url, darkUrl]);
-
-  return (
-    <TileLayer
-      key={isDark ? 'dark' : 'light'}
-      attribution={isDark ? darkAttribution : attribution}
-      url={isDark ? darkUrl : url}
-      {...props}
-    />
-  );
-};
+}) => (
+  <ShadcnMapTileLayer
+    vectorStyleUrl="https://tiles.openfreemap.org/styles/positron"
+    darkVectorStyleUrl="https://tiles.openfreemap.org/styles/dark"
+    rasterUrl={url ?? '/map-fallback-light.svg'}
+    darkRasterUrl={darkUrl ?? '/map-fallback-dark.svg'}
+    rasterAttribution={attribution ?? 'FleetPilot degraded map mode'}
+    darkRasterAttribution={darkAttribution ?? 'FleetPilot degraded map mode'}
+    {...props}
+  />
+);
 MapTileLayer.displayName = 'MapTileLayer';

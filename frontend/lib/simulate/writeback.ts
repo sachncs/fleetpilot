@@ -6,6 +6,7 @@ import type { Problem } from '@/lib/problem-schema';
 
 export interface WindowViolation {
   nodeId: number;
+  orderId?: string;
   kind: 'late' | 'early';
   /** Solver clock minutes at arrival. */
   arrival: number;
@@ -20,6 +21,7 @@ interface CustomerWindowLike {
   latestDeliveryTime?: number;
   earliestPickupTime?: number;
   latestPickupTime?: number;
+  orderId?: string;
 }
 
 function checkArrival(
@@ -28,11 +30,12 @@ function checkArrival(
   earliest: number | undefined,
   latest: number | undefined,
   out: WindowViolation[],
+  orderId?: string,
 ): void {
   if (latest !== undefined && arrival > latest) {
-    out.push({ nodeId, kind: 'late', arrival, windowStart: earliest ?? null, windowEnd: latest });
+    out.push({ nodeId, orderId, kind: 'late', arrival, windowStart: earliest ?? null, windowEnd: latest });
   } else if (earliest !== undefined && arrival < earliest) {
-    out.push({ nodeId, kind: 'early', arrival, windowStart: earliest, windowEnd: latest ?? null });
+    out.push({ nodeId, orderId, kind: 'early', arrival, windowStart: earliest, windowEnd: latest ?? null });
   }
 }
 
@@ -51,11 +54,11 @@ export function detectWindowViolations(
   for (const c of customers) {
     const deliveryArrival = nodeTimes[String(c.deliveryNodeId)];
     if (deliveryArrival !== undefined) {
-      checkArrival(c.deliveryNodeId, deliveryArrival, c.earliestDeliveryTime, c.latestDeliveryTime, violations);
+      checkArrival(c.deliveryNodeId, deliveryArrival, c.earliestDeliveryTime, c.latestDeliveryTime, violations, c.orderId);
     }
     const pickupArrival = nodeTimes[String(c.pickupNodeId)];
     if (pickupArrival !== undefined) {
-      checkArrival(c.pickupNodeId, pickupArrival, c.earliestPickupTime, c.latestPickupTime, violations);
+      checkArrival(c.pickupNodeId, pickupArrival, c.earliestPickupTime, c.latestPickupTime, violations, c.orderId);
     }
   }
 

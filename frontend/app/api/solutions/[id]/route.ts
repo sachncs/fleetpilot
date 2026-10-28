@@ -23,7 +23,12 @@ export async function GET(
       return NextResponse.json({ error: 'Solution not found' }, { status: 404 });
     }
 
-    return NextResponse.json(solution);
+    return NextResponse.json({
+      ...solution,
+      totalDistance: solution.totalDistance / 100,
+      totalCost: solution.totalCost / 100,
+      totalCo2: solution.totalCo2 / 100,
+    });
   } catch (err) {
     log.error('[API] GET /api/solutions/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

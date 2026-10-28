@@ -61,11 +61,6 @@ export class MultiDepotProblem {
           `Depot ${depot.id} has invalid coordinates: x=${depot.x}, y=${depot.y}`,
         );
       }
-      if (depot.x < 0 || depot.y < 0) {
-        throw new ValidationError(
-          `Depot ${depot.id} has negative coordinates: x=${depot.x}, y=${depot.y}`,
-        );
-      }
     }
 
     const vehicleIds = new Set(vehicles.map((v) => v.id));

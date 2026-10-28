@@ -1,27 +1,23 @@
 'use client';
 
 import * as React from 'react';
-import { MapContainer, type MapContainerProps } from 'react-leaflet';
+import type { MapContainerProps } from 'react-leaflet';
 import L from 'leaflet';
 
 import { cn } from '@/lib/utils';
-import { log } from '@/lib/log';
+import { Map as ShadcnMap } from '@/components/ui/map';
 
-import 'leaflet/dist/leaflet.css';
-
-export interface MapProps extends Omit<MapContainerProps, 'ref'> {
+export interface MapProps extends Omit<MapContainerProps, 'ref' | 'center'> {
+  center: L.LatLngExpression;
   className?: string;
 }
 
-export const Map = React.forwardRef<L.Map, MapProps>(({ className, ...props }, ref) => {
+export const Map = React.forwardRef<L.Map, MapProps>(({ className, style, ...props }, ref) => {
   return (
-    <MapContainer
+    <ShadcnMap
       ref={ref}
-      className={cn('h-full w-full', className)}
-      zoomControl={false}
-      whenReady={() => {
-        log.debug('Leaflet container ready');
-      }}
+      className={cn('fleet-map h-full w-full rounded-none bg-background', className)}
+      style={{ ...style, filter: 'grayscale(1)' }}
       {...props}
     />
   );

@@ -34,6 +34,8 @@ export class Customer {
     public readonly deliveryNodeId: number,
     public readonly pickupNodeId: number,
     public readonly processingTime: number,
+    /** Load units consumed while this job is on the vehicle. Defaults to one for legacy inputs. */
+    public readonly demand: number = 1,
   ) {}
 }
 
@@ -60,8 +62,9 @@ export class CustomerWithTimeWindows extends Customer {
     public readonly latestDeliveryTime: number,
     public readonly earliestPickupTime: number,
     public readonly latestPickupTime: number,
+    demand: number = 1,
   ) {
-    super(id, deliveryNodeId, pickupNodeId, processingTime);
+    super(id, deliveryNodeId, pickupNodeId, processingTime, demand);
     if (
       !Number.isFinite(earliestDeliveryTime) ||
       !Number.isFinite(latestDeliveryTime) ||

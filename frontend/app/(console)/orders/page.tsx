@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, FileUp, Route } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,10 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { SkeletonCard } from '@/components/shared/skeleton-card';
 
 import { OrderDialog } from '@/components/registry/order-dialog';
+import { RegistryPlanDialog } from '@/components/registry/registry-plan-dialog';
+import { DeliveryImportDialog } from '@/components/registry/delivery-import-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
+import { ConfirmActionDialog } from '@/components/shared/confirm-action-dialog';
 
 type OrderStatus = 'unassigned' | 'planned' | 'exception';
 
@@ -30,10 +34,11 @@ interface OrderRow {
   priority: number;
   status: OrderStatus;
   quantity: number | null;
+  processingMin?: number | null;
   windowStart: string | null;
   windowEnd: string | null;
-  lat: number | null;
-  lng: number | null;
+  lat: number;
+  lng: number;
   region: string | null;
 }
 
@@ -41,7 +46,7 @@ const POLL_MS = 30_000;
 
 function authHeaders(): HeadersInit {
   return {
-    Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? ''}`,
+    Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console'}`,
     'content-type': 'application/json',
   };
 }
@@ -52,27 +57,37 @@ const statusVariant: Record<OrderStatus, 'default' | 'secondary' | 'destructive'
   exception: 'destructive',
 };
 
+const statusLabel: Record<OrderStatus, string> = {
+  unassigned: 'Unplanned',
+  planned: 'Planned',
+  exception: 'Exception',
+};
+
+const kindLabel: Record<OrderRow['kind'], string> = {
+  delivery: 'Delivery',
+  pickup: 'Pickup',
+  pair: 'Pickup + delivery',
+};
+
 export default function OrdersPage(): React.ReactElement {
-  const [hasKey, setHasKey] = React.useState<boolean | null>(null);
   const [orders, setOrders] = React.useState<OrderRow[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [editingOrder, setEditingOrder] = React.useState<OrderRow | null>(null);
+  const [orderToDelete, setOrderToDelete] = React.useState<OrderRow | null>(null);
+  const [planDialogOpen, setPlanDialogOpen] = React.useState(false);
+  const [importDialogOpen, setImportDialogOpen] = React.useState(false);
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
 
   const load = React.useCallback(async () => {
-    const apiKey = localStorage.getItem('fleetpilot_api_key');
-    if (!apiKey) {
-      setHasKey(false);
-      setLoading(false);
-      return;
-    }
-    setHasKey(true);
     try {
       const res = await fetch('/api/orders?limit=200', { headers: authHeaders() });
       if (!res.ok) throw new Error('Orders load failed');
       const data = (await res.json()) as { orders: OrderRow[] };
       setOrders(data.orders);
+      setSelectedIds((current) => new Set([...current].filter((id) => data.orders.some((order) => order.id === id))));
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Orders load failed');
@@ -88,8 +103,8 @@ export default function OrdersPage(): React.ReactElement {
   }, [load]);
 
   const submitOrder = async (values: Parameters<React.ComponentProps<typeof OrderDialog>['onSubmit']>[0]) => {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
+    const res = await fetch(editingOrder ? `/api/orders/${editingOrder.id}` : '/api/orders', {
+      method: editingOrder ? 'PATCH' : 'POST',
       headers: authHeaders(),
       body: JSON.stringify(values),
     });
@@ -120,25 +135,10 @@ export default function OrdersPage(): React.ReactElement {
     const res = await fetch(`/api/orders/${id}`, { method: 'DELETE', headers: authHeaders() });
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
-      setActionError(data.error ?? `Delete failed (${res.status})`);
-      return;
+      throw new Error(data.error ?? `Delete failed (${res.status})`);
     }
     await load();
   };
-
-  if (hasKey === false) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <EmptyState
-          icon={ClipboardList}
-          title="API key required"
-          description="The orders registry lives behind the local API. Add an API key in Settings to manage orders."
-          actionLabel="Open settings"
-          actionHref="/settings"
-        />
-      </div>
-    );
-  }
 
   if (loading) {
     return (
@@ -159,7 +159,7 @@ export default function OrdersPage(): React.ReactElement {
         title="No orders here"
         description={
           rows === orders
-            ? 'Add customer stops so plans can be built against real demand.'
+            ? 'Add delivery stops so today’s routes can be built against real demand.'
             : 'Nothing matches this filter right now.'
         }
       />
@@ -167,6 +167,22 @@ export default function OrdersPage(): React.ReactElement {
       <Table>
         <TableHeader>
           <TableRow>
+            <TableHead className="w-10">
+              <Checkbox
+                aria-label="Select all visible orders"
+                checked={rows.length > 0 && rows.every((order) => selectedIds.has(order.id))}
+                onCheckedChange={(value) => {
+                  setSelectedIds((current) => {
+                    const next = new Set(current);
+                    for (const order of rows) {
+                      if (value === true) next.add(order.id);
+                      else next.delete(order.id);
+                    }
+                    return next;
+                  });
+                }}
+              />
+            </TableHead>
             <TableHead>Ref</TableHead>
             <TableHead>Kind</TableHead>
             <TableHead>Status</TableHead>
@@ -180,13 +196,27 @@ export default function OrdersPage(): React.ReactElement {
         <TableBody>
           {rows.map((o) => (
             <TableRow key={o.id}>
+              <TableCell>
+                <Checkbox
+                  aria-label={`Select ${o.ref}`}
+                  checked={selectedIds.has(o.id)}
+                  onCheckedChange={(value) => {
+                    setSelectedIds((current) => {
+                      const next = new Set(current);
+                      if (value === true) next.add(o.id);
+                      else next.delete(o.id);
+                      return next;
+                    });
+                  }}
+                />
+              </TableCell>
               <TableCell className="font-medium">
                 {o.ref}
                 {o.region && <span className="text-muted-foreground ml-2 text-xs">{o.region}</span>}
               </TableCell>
-              <TableCell className="text-muted-foreground text-sm">{o.kind}</TableCell>
+              <TableCell className="text-muted-foreground text-sm">{kindLabel[o.kind]}</TableCell>
               <TableCell>
-                <Badge variant={statusVariant[o.status]}>{o.status}</Badge>
+                <Badge variant={statusVariant[o.status]}>{statusLabel[o.status]}</Badge>
               </TableCell>
               <TableCell className="text-right tabular-nums">{o.priority}</TableCell>
               <TableCell className="text-right tabular-nums">
@@ -196,19 +226,22 @@ export default function OrdersPage(): React.ReactElement {
               </TableCell>
               <TableCell className="text-right tabular-nums">{o.quantity ?? '—'}</TableCell>
               <TableCell className="text-muted-foreground max-w-40 truncate text-sm">
-                {o.lat !== null && o.lng !== null ? `${o.lat.toFixed(4)}, ${o.lng.toFixed(4)}` : 'no location'}
+                {o.lat.toFixed(4)}, {o.lng.toFixed(4)}
               </TableCell>
               <TableCell className="text-right whitespace-nowrap">
                 {o.status === 'exception' && (
                   <Button size="sm" variant="ghost" onClick={() => void markPlanned(o.id)}>
-                    Mark planned
+                    Resolve
                   </Button>
                 )}
+                <Button size="sm" variant="ghost" onClick={() => { setEditingOrder(o); setDialogOpen(true); }}>
+                  Edit
+                </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => void deleteOrder(o.id)}
+                  onClick={() => setOrderToDelete(o)}
                 >
                   Delete
                 </Button>
@@ -223,12 +256,21 @@ export default function OrdersPage(): React.ReactElement {
     <div className="space-y-4 overflow-auto p-6">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Orders</h1>
+          <p className="text-muted-foreground mb-1 font-mono text-[10px] uppercase tracking-[0.16em]">Demand</p>
+          <h1 className="text-3xl font-medium tracking-[-0.04em]">Deliveries</h1>
           <p className="text-muted-foreground text-sm">
-            Customer stops and pickups with service windows. Exceptions are written back by simulate.
+            Organize delivery demand, choose what goes out today, and turn it into a route plan.
           </p>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>New order</Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" disabled={selectedIds.size === 0} onClick={() => setPlanDialogOpen(true)}>
+            <Route /> Plan selected {selectedIds.size > 0 ? `(${selectedIds.size})` : ''}
+          </Button>
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+            <FileUp /> Import CSV
+          </Button>
+          <Button onClick={() => { setEditingOrder(null); setDialogOpen(true); }}>Add delivery</Button>
+        </div>
       </div>
 
       {(error || actionError) && (
@@ -240,7 +282,7 @@ export default function OrdersPage(): React.ReactElement {
       <Tabs defaultValue="all">
         <TabsList>
           <TabsTrigger value="all">All ({orders.length})</TabsTrigger>
-          <TabsTrigger value="unassigned">Unassigned ({filtered('unassigned').length})</TabsTrigger>
+          <TabsTrigger value="unassigned">Unplanned ({filtered('unassigned').length})</TabsTrigger>
           <TabsTrigger value="planned">Planned ({filtered('planned').length})</TabsTrigger>
           <TabsTrigger value="exception">Exceptions ({filtered('exception').length})</TabsTrigger>
         </TabsList>
@@ -250,7 +292,28 @@ export default function OrdersPage(): React.ReactElement {
         <TabsContent value="exception" className="mt-4">{renderTable(filtered('exception'))}</TabsContent>
       </Tabs>
 
-      <OrderDialog open={dialogOpen} onOpenChange={setDialogOpen} onSubmit={submitOrder} />
+      <OrderDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editingOrder ?? undefined} onSubmit={submitOrder} />
+      <DeliveryImportDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} onImported={load} />
+      <RegistryPlanDialog
+        open={planDialogOpen}
+        onOpenChange={setPlanDialogOpen}
+        orderIds={[...selectedIds]}
+        onCreated={async () => {
+          setSelectedIds(new Set());
+          await load();
+        }}
+      />
+      <ConfirmActionDialog
+        open={orderToDelete !== null}
+        onOpenChange={(next) => !next && setOrderToDelete(null)}
+        title="Delete delivery?"
+        description={`Remove ${orderToDelete?.ref ?? 'this delivery'} from the registry? Existing saved plans remain unchanged.`}
+        onConfirm={async () => {
+          if (!orderToDelete) return;
+          await deleteOrder(orderToDelete.id);
+          setOrderToDelete(null);
+        }}
+      />
     </div>
   );
 }

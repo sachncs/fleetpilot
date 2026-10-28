@@ -75,6 +75,47 @@ describe('C1 - Cost and CO2 per-route correctness', () => {
     expect(solution.totalCost).to.equal(40 * 5);
     expect(solution.totalCo2).to.equal(40 * 5);
   });
+
+  it('BRKGA finalizes distance, cost, and CO2 on the returned winner', async () => {
+    const nodes: Record<number, LocationNode> = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 10, 0, 'Delivery'),
+      2: new LocationNode(2, 20, 0, 'Pickup'),
+    };
+    const problem = new Problem(
+      nodes,
+      [new Customer(1, 1, 2, 5)],
+      [new Vehicle(1, 10, 0, 0, 2, 3)],
+      0,
+    );
+
+    const solution = await new BRKGA(problem, {
+      populationSize: 10,
+      maxGenerations: 2,
+      seed: 7,
+    }).solve();
+
+    expect(solution.isFeasible()).to.equal(true);
+    expect(solution.totalDistance).to.be.greaterThan(0);
+    expect(solution.totalCost).to.equal(solution.totalDistance * 2);
+    expect(solution.totalCo2).to.equal(solution.totalDistance * 3);
+  });
+});
+
+describe('C1b - Quantity-aware vehicle capacity', () => {
+  it('uses customer demand instead of counting every job as one unit', () => {
+    const nodes = {
+      0: new LocationNode(0, 0, 0, 'Depot'),
+      1: new LocationNode(1, 1, 0, 'Delivery'),
+      2: new LocationNode(2, 1, 0, 'Complete'),
+    };
+    const customer = new Customer(1, 1, 2, 0, 6);
+    const problem = new Problem(nodes, [customer], [new Vehicle(1, 5)], 0);
+    const solution = new Solution(problem, [new Route(1, [1, 2])]);
+
+    solution.calculateSchedule();
+    expect(solution.checkCapacity()).to.equal(false);
+  });
 });
 
 // ============================================================

@@ -30,6 +30,7 @@ export interface SolutionMessage {
   totalCost: number;
   totalCo2: number;
   feasible: boolean;
+  solutionId: string;
 }
 
 export interface ErrorMessage {

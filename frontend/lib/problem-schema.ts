@@ -6,8 +6,8 @@ import { z } from 'zod';
 
 export const LocationNodeSchema = z.object({
   id: z.number().int(),
-  x: z.number().finite().nonnegative(),
-  y: z.number().finite().nonnegative(),
+  x: z.number().finite(),
+  y: z.number().finite(),
   name: z.string().optional(),
 });
 
@@ -17,6 +17,12 @@ export const CustomerSchema = z
     deliveryNodeId: z.number().int(),
     pickupNodeId: z.number().int(),
     processingTime: z.number().finite().nonnegative(),
+    demand: z.number().finite().positive().optional(),
+    orderId: z.string().optional(),
+    orderRef: z.string().optional(),
+    orderKind: z.enum(['delivery', 'pickup', 'pair']).optional(),
+    pickupOrderId: z.string().optional(),
+    pickupOrderRef: z.string().optional(),
     earliestDeliveryTime: z.number().finite().optional(),
     latestDeliveryTime: z.number().finite().optional(),
     earliestPickupTime: z.number().finite().optional(),
@@ -34,6 +40,8 @@ export const VehicleSchema = z.object({
   endDepotId: z.number().int().optional(),
   costPerKm: z.number().finite().optional(),
   co2PerKm: z.number().finite().optional(),
+  name: z.string().optional(),
+  registryId: z.string().optional(),
 });
 
 export const ReferenceOriginSchema = z.object({
@@ -50,6 +58,11 @@ export const ProblemSchema = z.object({
   customers: z.array(CustomerSchema).min(1, 'At least one customer is required'),
   vehicles: z.array(VehicleSchema).min(1, 'At least one vehicle is required'),
   referenceOrigin: ReferenceOriginSchema.optional(),
+  registry: z.object({
+    depotId: z.string(),
+    orderIds: z.array(z.string()),
+    vehicleIds: z.array(z.string()),
+  }).optional(),
 });
 
 export type Problem = z.infer<typeof ProblemSchema>;

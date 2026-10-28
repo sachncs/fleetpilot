@@ -20,6 +20,23 @@ export interface PlaceSearchBarProps {
 const DEBOUNCE_MS = 300;
 const MIN_QUERY_LEN = 2;
 
+function parseCoordinateQuery(query: string): GeocodeHit | null {
+  const match = query.trim().match(/^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/);
+  if (!match) return null;
+
+  const lat = Number(match[1]);
+  const lng = Number(match[2]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+    return null;
+  }
+
+  return {
+    displayName: `${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+    lat,
+    lng,
+  };
+}
+
 /** Address search backed by the server-side /api/geocode proxy. */
 export function PlaceSearchBar({ onPick }: PlaceSearchBarProps): React.ReactElement {
   const [query, setQuery] = React.useState('');
@@ -38,12 +55,22 @@ export function PlaceSearchBar({ onPick }: PlaceSearchBarProps): React.ReactElem
       return;
     }
 
+    const coordinateHit = parseCoordinateQuery(q);
+    if (coordinateHit) {
+      seqRef.current += 1;
+      setResults([coordinateHit]);
+      setSearching(false);
+      setOpen(true);
+      setError(null);
+      return;
+    }
+
     const seq = ++seqRef.current;
     const timer = setTimeout(async () => {
       setSearching(true);
       setError(null);
       try {
-        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? '';
+        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console';
         const res = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`, {
           headers: { Authorization: `Bearer ${apiKey}` },
         });
@@ -72,27 +99,25 @@ export function PlaceSearchBar({ onPick }: PlaceSearchBarProps): React.ReactElem
   };
 
   return (
-    <Popover open={open && results.length > 0} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <div className="relative w-72 max-w-full">
-          <Search className="text-muted-foreground pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search a place or address…"
-            className="bg-background pl-8 pr-8"
-            aria-label="Search a place or address"
-          />
-          {searching && (
-            <Loader2 className="text-muted-foreground absolute right-2.5 top-1/2 size-4 -translate-y-1/2 animate-spin" />
-          )}
-        </div>
-      </PopoverTrigger>
-      <PopoverContent className="w-72 p-1" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
-        {error ? (
-          <p className="text-muted-foreground px-3 py-2 text-xs">{error}</p>
-        ) : (
-          results.map((hit) => (
+    <div className="w-72 max-w-full space-y-1">
+      <Popover open={open && results.length > 0} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <div className="relative w-full">
+            <Search className="text-muted-foreground pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search address or coordinates…"
+              className="bg-background pl-8 pr-8"
+              aria-label="Search address or enter latitude, longitude"
+            />
+            {searching && (
+              <Loader2 className="text-muted-foreground absolute right-2.5 top-1/2 size-4 -translate-y-1/2 animate-spin" />
+            )}
+          </div>
+        </PopoverTrigger>
+        <PopoverContent className="w-72 p-1" align="start" onOpenAutoFocus={(e) => e.preventDefault()}>
+          {results.map((hit) => (
             <Button
               key={`${hit.lat},${hit.lng}`}
               variant="ghost"
@@ -102,9 +127,14 @@ export function PlaceSearchBar({ onPick }: PlaceSearchBarProps): React.ReactElem
               <MapPin className="text-muted-foreground size-4 shrink-0" />
               <span className="line-clamp-2 text-xs font-normal">{hit.displayName}</span>
             </Button>
-          ))
-        )}
-      </PopoverContent>
-    </Popover>
+          ))}
+        </PopoverContent>
+      </Popover>
+      {error && (
+        <p role="alert" className="text-destructive text-xs">
+          {error}. Enter latitude, longitude to continue manually.
+        </p>
+      )}
+    </div>
   );
 }

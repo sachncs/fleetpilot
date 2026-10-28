@@ -29,6 +29,7 @@ export interface SolverProgress {
 export type NodeTimeEntry = [number, number];
 
 export interface SolverSolution {
+  id?: string;
   makespan: number;
   totalDistance: number;
   totalCost: number;

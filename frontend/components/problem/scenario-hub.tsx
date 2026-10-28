@@ -27,7 +27,7 @@ interface ScenarioRow {
 
 function authHeaders(): HeadersInit {
   return {
-    Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? ''}`,
+    Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console'}`,
     'content-type': 'application/json',
   };
 }
@@ -41,14 +41,8 @@ export function ScenarioHub(): React.ReactElement {
   const [scenarios, setScenarios] = React.useState<ScenarioRow[]>([]);
   const [busy, setBusy] = React.useState<'save' | null>(null);
   const [message, setMessage] = React.useState<string | null>(null);
-  const [hasKey, setHasKey] = React.useState(true);
 
   const refreshList = React.useCallback(async () => {
-    if (!localStorage.getItem('fleetpilot_api_key')) {
-      setHasKey(false);
-      return;
-    }
-    setHasKey(true);
     try {
       const res = await fetch('/api/problems?limit=20', { headers: authHeaders() });
       if (!res.ok) return;
@@ -126,8 +120,6 @@ export function ScenarioHub(): React.ReactElement {
     }
   };
 
-  if (!hasKey) return <></>;
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -161,7 +153,7 @@ export function ScenarioHub(): React.ReactElement {
                 <div className="min-w-0">
                   <p className="truncate text-xs font-medium">{s.name}</p>
                   <p className="text-muted-foreground text-[11px]">
-                    {s.customerCount} customers · {s.vehicleCount} vehicles
+                    {s.customerCount} route jobs · {s.vehicleCount} vehicles
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-0.5">

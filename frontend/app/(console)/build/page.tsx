@@ -62,12 +62,15 @@ export default function BuildPage(): React.ReactElement {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b bg-background px-4 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b bg-background/70 px-5 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-3">
-          <h1 className="text-lg font-semibold">Planning</h1>
+          <div>
+            <p className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted-foreground">Route workspace</p>
+            <h1 className="mt-0.5 text-lg font-medium tracking-[-0.025em]">Plan routes</h1>
+          </div>
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge variant="outline">{nodeCount} nodes</Badge>
-            <Badge variant="outline">{customerCount} customers</Badge>
+            <Badge variant="outline">{customerCount} route jobs</Badge>
             <Badge variant="outline">{vehicleCount} vehicles</Badge>
             {solution && (
               <Badge variant={solution.feasible ? 'success' : 'destructive'}>
@@ -95,7 +98,7 @@ export default function BuildPage(): React.ReactElement {
         </div>
       </header>
 
-      <div className="flex items-center gap-4 border-b bg-background px-4 py-2">
+      <div className="matte-glass z-10 mx-4 mt-4 flex items-center gap-4 rounded-xl px-3 py-2">
         <div className="flex items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
@@ -153,8 +156,8 @@ export default function BuildPage(): React.ReactElement {
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[1fr] gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_420px]">
-        <div className="relative h-full min-h-[400px]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[1fr] gap-4 overflow-hidden p-4 lg:grid-cols-[1fr_400px]">
+        <div className="relative h-full min-h-[400px] overflow-hidden rounded-2xl shadow-[0_24px_70px_-44px_rgba(0,0,0,.5)]">
           <DynamicBuildMap
             tool={tool}
             selectedNodeId={selectedNodeId}

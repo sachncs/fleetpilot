@@ -93,13 +93,24 @@ async function processJob(job: Job): Promise<void> {
     const { FleetPilotSolver, Problem, LocationNode, Customer, CustomerWithTimeWindows, Vehicle } = await import('../../../src/index.js');
 
     const probData = JSON.parse(problem.problem_json) as Record<string, unknown>;
+    // Map-authored scenarios store projected coordinates in metres. The core
+    // solver's frontend contract uses kilometres as the distance unit, which
+    // also makes its default travel rate equal to 60 km/h (1 km/minute).
+    // CLI-compatible scenarios without a geographic origin keep their native
+    // unit unchanged.
+    const coordinateScale = probData['referenceOrigin'] ? 0.001 : 1;
     const nodeList = Array.isArray(probData['nodes'])
       ? (probData['nodes'] as Array<{ id: number; x: number; y: number; name?: string }>)
       : Object.values(probData['nodes'] as Record<string, { id: number; x: number; y: number; name?: string }>);
 
     const nodes: Record<number, InstanceType<typeof LocationNode>> = {};
     for (const n of nodeList) {
-      nodes[n.id] = new LocationNode(n.id, n.x, n.y, n.name ?? '');
+      nodes[n.id] = new LocationNode(
+        n.id,
+        n.x * coordinateScale,
+        n.y * coordinateScale,
+        n.name ?? '',
+      );
     }
 
     const customers = (probData['customers'] as Array<Record<string, unknown>>).map((c) => {
@@ -113,9 +124,16 @@ async function processJob(job: Job): Promise<void> {
           c['latestDeliveryTime'] as number,
           c['earliestPickupTime'] as number,
           c['latestPickupTime'] as number,
+          (c['demand'] as number | undefined) ?? 1,
         );
       }
-      return new Customer(c['id'] as number, c['deliveryNodeId'] as number, c['pickupNodeId'] as number, c['processingTime'] as number);
+      return new Customer(
+        c['id'] as number,
+        c['deliveryNodeId'] as number,
+        c['pickupNodeId'] as number,
+        c['processingTime'] as number,
+        (c['demand'] as number | undefined) ?? 1,
+      );
     });
 
     const vehicles = (probData['vehicles'] as Array<Record<string, unknown>>).map((v) => {
@@ -200,6 +218,7 @@ async function processJob(job: Job): Promise<void> {
       totalCost: solution.totalCost,
       totalCo2: solution.totalCo2,
       feasible: solution.isFeasible(),
+      solutionId,
     });
     send({ type: 'completed', jobId: job.id });
   } catch (err) {

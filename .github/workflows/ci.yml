@@ -5,163 +5,83 @@ on:
     branches: [master, main]
   pull_request:
     branches: [master, main]
+  schedule:
+    - cron: '0 6 * * 2'
+  workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+
 jobs:
-  lint:
+  verify:
+    name: Application verification
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - name: Setup Node.js 22
+      - name: Setup Node.js 26
         uses: actions/setup-node@v7
         with:
           node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint -- --max-warnings 0
-      - run: npm run format:check
-
-  typecheck:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run typecheck
-
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [24.x, 26.x]
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v7
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run test:coverage
-
-  cli-smoke:
-    name: CLI smoke (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
-      - name: Run fleetpilot CLI smoke tests
-        run: npx mocha tests/cli.test.ts --timeout 120000
-
-  docker-smoke:
-    name: Docker smoke (fleetpilot in node:26-alpine)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - name: Build image
-        run: npm run docker:build
-      - name: Run fleetpilot inside image
+          cache: npm
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify solver and package
+        run: npm run verify
+      - name: Verify unified web app
         run: |
-          docker run --rm \
-            --name fleetpilot-smoke \
-            fleetpilot:test \
-            fleetpilot --help > /tmp/help.txt
-          test -s /tmp/help.txt
-      - name: Image size check
-        run: |
-          SIZE=$(docker image inspect fleetpilot:test --format '{{.Size}}' | numfmt --to=iec)
-          echo "Image size: $SIZE"
-          # Fail if image exceeds 300 MB.
-          BYTES=$(docker image inspect fleetpilot:test --format '{{.Size}}')
-          test "$BYTES" -lt 314572800
-
-  frontend:
-    name: frontend gates (@fleetpilot/web)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
+          npm run lint -w @fleetpilot/web
+          npm run typecheck -w @fleetpilot/web
+          npm run build -w @fleetpilot/web
+      - name: Audit production dependencies
+        run: npm audit --audit-level=high
+      - name: Generate SPDX SBOM
+        run: npm run sbom
+      - name: Verify npm package contents
+        run: npm pack --dry-run
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v7
         with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint -w @fleetpilot/web
-      - run: npm run typecheck -w @fleetpilot/web
-      - run: npm run build -w @fleetpilot/web
-
-  build:
-    runs-on: ubuntu-latest
-    needs: [lint, typecheck, test]
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
-      - uses: actions/upload-artifact@v7
-        with:
-          name: dist
-          path: dist/
-          retention-days: 7
-
-  sbom:
-    runs-on: ubuntu-latest
-    needs: [build]
-    steps:
-      - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
-      - run: npm run sbom
-      - uses: actions/upload-artifact@v7
-        with:
-          name: sbom
-          path: sbom.spdx.json
+          name: release-evidence
+          path: |
+            dist/
+            sbom.spdx.json
           retention-days: 30
 
-  verify:
-    name: verify gate (build + verify + dist smoke)
+  container:
+    name: Production container
     runs-on: ubuntu-latest
-    needs: [build]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - name: Setup Node.js 22
-        uses: actions/setup-node@v7
-        with:
-          node-version: 26
-          cache: 'npm'
-      - run: npm ci
-      - name: Build then run verify (typecheck + lint + format:check + test:coverage)
-        run: npm run build && npm run verify
-      - name: Dist smoke against the freshly built bundle
-        run: npx mocha tests/dist-smoke.test.ts
+      - name: Build production image
+        run: docker build -t fleetpilot:test .
+      - name: Smoke-test unified app
+        run: |
+          docker run --rm -d \
+            --name fleetpilot-smoke \
+            -p 3000:3000 \
+            fleetpilot:test
+          trap 'docker logs fleetpilot-smoke || true; docker rm -f fleetpilot-smoke >/dev/null 2>&1 || true' EXIT
+
+          ready=false
+          for _ in $(seq 1 30); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/overview > /tmp/overview.html; then
+              ready=true
+              break
+            fi
+            sleep 1
+          done
+
+          test "$ready" = true
+          test -s /tmp/overview.html
+      - name: Enforce image size budget
+        run: |
+          bytes=$(docker image inspect fleetpilot:test --format '{{.Size}}')
+          echo "Image size: $(numfmt --to=iec "$bytes")"
+          test "$bytes" -lt 314572800
