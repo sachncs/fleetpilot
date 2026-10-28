@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { IncomingMessage } from 'node:http';
 import { hashApiKey } from '../db/seed';
 import { getDb } from '../db';
 import { apiKeys } from '../db/schema';
@@ -12,18 +11,10 @@ export interface AuthContext {
 
 const PUBLIC_CONSOLE_TOKEN = 'fp_public_console';
 
-function extractToken(request: NextRequest | IncomingMessage): string | undefined {
-  const header =
-    request.headers instanceof Headers
-      ? request.headers.get('authorization') ?? undefined
-      : request.headers.authorization;
-  const raw = Array.isArray(header) ? header[0] : header;
+function extractToken(request: NextRequest): string | undefined {
+  const raw = request.headers.get('authorization') ?? undefined;
   if (raw && raw.startsWith('Bearer ')) return raw.slice(7);
-  const url =
-    'nextUrl' in request
-      ? request.nextUrl
-      : new URL(request.url ?? '', 'http://localhost');
-  const fromQuery = url.searchParams.get('key');
+  const fromQuery = request.nextUrl.searchParams.get('key');
   return fromQuery ?? undefined;
 }
 
@@ -46,16 +37,6 @@ export function authenticate(request: NextRequest): AuthContext | NextResponse {
   return resolveKey(token);
 }
 
-export function authenticateUpgrade(request: IncomingMessage): AuthContext | null {
-  const token = extractToken(request);
-  if (!token || !token.startsWith('fp_')) return null;
-  if (token === PUBLIC_CONSOLE_TOKEN) {
-    return { keyId: 'public-console', keyName: 'FleetPilot Console' };
-  }
-  const ctx = resolveKey(token);
-  return ctx instanceof NextResponse ? null : ctx;
-}
-
 function resolveKey(token: string): AuthContext | NextResponse {
   const keyHash = hashApiKey(token);
   const db = getDb();
@@ -72,3 +53,5 @@ function resolveKey(token: string): AuthContext | NextResponse {
 
   return { keyId: row.id, keyName: row.name };
 }
+
+export { authenticateUpgrade } from './upgrade';

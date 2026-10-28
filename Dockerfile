@@ -21,7 +21,25 @@ COPY frontend ./frontend
 
 RUN npm run build
 RUN npm run build -w @fleetpilot/web
-RUN npm prune --omit=dev
+RUN npx esbuild frontend/server.ts \
+      --bundle \
+      --platform=node \
+      --format=esm \
+      --target=node26 \
+      --external:next \
+      --external:next/* \
+      --external:better-sqlite3 \
+      --external:ws \
+      --outfile=custom-server.mjs \
+    && npx esbuild frontend/lib/worker/process.ts \
+      --bundle \
+      --platform=node \
+      --format=esm \
+      --target=node26 \
+      --external:better-sqlite3 \
+      --outfile=worker.mjs \
+    && node scripts/trace-container-runtime.mjs \
+    && rm -rf runtime/data
 
 # ---- Stage 2: runtime ---------------------------------------------------
 FROM node:${NODE_VERSION} AS runtime
@@ -34,19 +52,21 @@ LABEL org.opencontainers.image.title="fleetpilot" \
 ENV NODE_OPTIONS="--max-old-space-size=1024" \
     UV_THREADPOOL_SIZE=8 \
     NODE_ENV=production \
-    DATABASE_URL=file:/app/data/fleetpilot.db
+    DATABASE_URL=file:/app/data/fleetpilot.db \
+    FLEETPILOT_DATA_DIR=/app/data \
+    FLEETPILOT_APP_DIR=/app/frontend \
+    FLEETPILOT_WORKER_PATH=/app/worker.mjs
 
 WORKDIR /app
 
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/frontend ./frontend
+COPY --from=builder /app/runtime ./
+COPY --from=builder /app/frontend/.next/static ./frontend/.next/static
+COPY --from=builder /app/frontend/public ./frontend/public
 
-RUN mkdir -p /app/data && chown -R node:node /app/data /app/frontend
+RUN mkdir -p /app/data && chown -R node:node /app/data
 
 EXPOSE 3000
 
 USER node
 
-CMD ["node", "--import", "tsx/esm", "frontend/server.ts"]
+CMD ["node", "custom-server.mjs"]

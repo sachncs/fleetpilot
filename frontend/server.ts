@@ -16,6 +16,7 @@ import { runOnboarding } from './lib/onboarding';
 import { log } from './lib/log';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const appDir = process.env['FLEETPILOT_APP_DIR'] ?? __dirname;
 
 async function main(): Promise<void> {
   const { default: next } = await import('next');
@@ -53,7 +54,7 @@ async function main(): Promise<void> {
   // 'upgrade' listener attaches to the same instance as our progress WS.
   const server = createServer();
 
-  const app = next({ dev, dir: __dirname, hostname, port, httpServer: server });
+  const app = next({ dev, dir: appDir, hostname, port, httpServer: server });
   const handle = app.getRequestHandler();
 
   await app.prepare();
