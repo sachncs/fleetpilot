@@ -87,10 +87,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 409 },
       );
     }
+    const orderByRef = new Map(selectedOrders.map((order) => [order.ref, order]));
+    const pairedOrderIds = new Set<string>();
+    const partnerByPairId = new Map<string, (typeof selectedOrders)[number]>();
+    for (const order of selectedOrders) {
+      if (order.kind !== 'pair') continue;
+      const partner = order.pairRefId ? orderByRef.get(order.pairRefId) : undefined;
+      if (!partner) {
+        return NextResponse.json(
+          { error: `${order.ref} requires its paired order ${order.pairRefId ?? 'reference'} to be selected.` },
+          { status: 409 },
+        );
+      }
+      if (partner.id === order.id || partner.kind === 'pair') {
+        return NextResponse.json(
+          { error: `${order.ref} must reference a separate pickup or delivery order.` },
+          { status: 409 },
+        );
+      }
+      if (pairedOrderIds.has(partner.id)) {
+        return NextResponse.json(
+          { error: `${partner.ref} is already used by another paired order.` },
+          { status: 409 },
+        );
+      }
+      pairedOrderIds.add(partner.id);
+      partnerByPairId.set(order.id, partner);
+    }
+
+    const planningOrders = selectedOrders.filter((order) => !pairedOrderIds.has(order.id));
+    const demandFor = (order: (typeof selectedOrders)[number]): number => {
+      const partner = partnerByPairId.get(order.id);
+      return Math.max(order.quantity, partner?.quantity ?? 0, 1);
+    };
     const largestCapacity = Math.max(...selectedVehicles.map((vehicle) => vehicle.capacityKg!));
-    const oversizedOrder = selectedOrders.find((order) => (order.quantity > 0 ? order.quantity : 1) > largestCapacity);
+    const oversizedOrder = planningOrders.find((order) => demandFor(order) > largestCapacity);
     if (oversizedOrder) {
-      const demand = oversizedOrder.quantity > 0 ? oversizedOrder.quantity : 1;
+      const demand = demandFor(oversizedOrder);
       return NextResponse.json(
         { error: `${oversizedOrder.ref} needs ${demand.toLocaleString()} kg, but the largest selected vehicle holds ${largestCapacity.toLocaleString()} kg.` },
         { status: 409 },
@@ -100,31 +133,43 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const nodes: Array<{ id: number; x: number; y: number; name: string }> = [
       { id: 0, x: 0, y: 0, name: depot.name },
     ];
-    const customers = selectedOrders.map((order, index) => {
+    const customers = planningOrders.map((order, index) => {
       const [x, y] = project(depot, order.lat, order.lng);
+      const partner = partnerByPairId.get(order.id);
+      const [pickupX, pickupY] = partner ? project(depot, partner.lat, partner.lng) : [0, 0];
       const deliveryNodeId = index * 2 + 1;
       const pickupNodeId = index * 2 + 2;
       nodes.push(
-        { id: deliveryNodeId, x, y, name: `${order.ref} · service` },
-        { id: pickupNodeId, x, y, name: `${order.ref} · complete` },
+        { id: deliveryNodeId, x, y, name: `${order.ref} · ${order.kind === 'pickup' ? 'pickup' : 'delivery'}` },
+        {
+          id: pickupNodeId,
+          x: pickupX,
+          y: pickupY,
+          name: partner ? `${partner.ref} · pickup` : `${order.ref} · depot return`,
+        },
       );
 
       const windowStart = clockMinutes(order.windowStart);
       const windowEnd = clockMinutes(order.windowEnd);
+      const pickupWindowStart = clockMinutes(partner?.windowStart ?? null);
+      const pickupWindowEnd = clockMinutes(partner?.windowEnd ?? null);
+      const hasWindow = windowStart !== null || windowEnd !== null || pickupWindowStart !== null || pickupWindowEnd !== null;
       return {
         id: index + 1,
         deliveryNodeId,
         pickupNodeId,
         processingTime: order.processingMin,
-        demand: order.quantity > 0 ? order.quantity : 1,
+        demand: demandFor(order),
         orderId: order.id,
         orderRef: order.ref,
-        ...(windowStart !== null || windowEnd !== null
+        orderKind: order.kind,
+        ...(partner ? { pickupOrderId: partner.id, pickupOrderRef: partner.ref } : {}),
+        ...(hasWindow
           ? {
               earliestDeliveryTime: windowStart ?? 0,
               latestDeliveryTime: windowEnd ?? 1440,
-              earliestPickupTime: windowStart ?? 0,
-              latestPickupTime: windowEnd ?? 1440,
+              earliestPickupTime: pickupWindowStart ?? 0,
+              latestPickupTime: pickupWindowEnd ?? 1440,
             }
           : {}),
       };
@@ -185,7 +230,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     });
 
     return NextResponse.json(
-      { id, name: input.name, orderCount: customers.length, vehicleCount: scenarioVehicles.length },
+      { id, name: input.name, orderCount: selectedOrders.length, vehicleCount: scenarioVehicles.length },
       { status: 201 },
     );
   } catch (error) {

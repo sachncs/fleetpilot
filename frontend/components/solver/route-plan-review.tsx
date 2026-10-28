@@ -43,6 +43,7 @@ interface ReviewRoute {
   routeIndex: number;
   path: Array<[number, number]>;
   stops: Array<{
+    customerId: number;
     nodeId: number;
     name: string;
     orderRef: string;
@@ -59,7 +60,11 @@ interface ReviewRoute {
 export function RoutePlanReview({ problem, solution }: { problem: Problem; solution: SolverSolution }): React.ReactElement {
   const nodes = Array.isArray(problem.nodes) ? problem.nodes : Object.values(problem.nodes);
   const nodeById = new globalThis.Map(nodes.map((node) => [node.id, node]));
-  const customerByDelivery = new globalThis.Map(problem.customers.map((customer) => [customer.deliveryNodeId, customer]));
+  const serviceByNode = new globalThis.Map<number, (typeof problem.customers)[number]>();
+  for (const customer of problem.customers) {
+    serviceByNode.set(customer.deliveryNodeId, customer);
+    if (customer.orderKind === 'pair') serviceByNode.set(customer.pickupNodeId, customer);
+  }
   const vehicleById = new globalThis.Map(problem.vehicles.map((vehicle) => [vehicle.id, vehicle]));
   const depot = nodeById.get(problem.depotNodeId);
   const origin = problem.referenceOrigin;
@@ -77,13 +82,16 @@ export function RoutePlanReview({ problem, solution }: { problem: Problem; solut
       const pathIds = [depotId, ...route.nodes, endDepotId];
       const path = pathIds.map(positionFor).filter((point): point is [number, number] => Boolean(point));
       const stops = route.nodes.flatMap((nodeId) => {
-        const customer = customerByDelivery.get(nodeId);
+        const customer = serviceByNode.get(nodeId);
         if (!customer) return [];
         const node = nodeById.get(nodeId);
         return [{
+          customerId: customer.id,
           nodeId,
-          name: node?.name?.replace(/ · service$/, '') ?? customer.orderRef ?? `Stop ${customer.id}`,
-          orderRef: customer.orderRef ?? `Job ${customer.id}`,
+          name: node?.name ?? customer.orderRef ?? `Stop ${customer.id}`,
+          orderRef: nodeId === customer.pickupNodeId
+            ? customer.pickupOrderRef ?? customer.orderRef ?? `Job ${customer.id}`
+            : customer.orderRef ?? `Job ${customer.id}`,
           demand: customer.demand ?? 1,
           eta: solution.nodeTimes[String(nodeId)],
           position: positionFor(nodeId),
@@ -95,13 +103,17 @@ export function RoutePlanReview({ problem, solution }: { problem: Problem; solut
         const current = nodeById.get(pathIds[index]!);
         if (previous && current) distanceKm += Math.hypot(current.x - previous.x, current.y - previous.y) / (origin ? 1000 : 1);
       }
+      const assignedCustomers = new Set(stops.map((stop) => stop.customerId));
       return {
         vehicleId: route.vehicleId,
         vehicleName: vehicle?.name ?? `Vehicle ${route.vehicleId}`,
         routeIndex,
         path,
         stops,
-        load: stops.reduce((sum, stop) => sum + stop.demand, 0),
+        load: problem.customers.reduce(
+          (sum, customer) => sum + (assignedCustomers.has(customer.id) ? customer.demand ?? 1 : 0),
+          0,
+        ),
         capacity: vehicle?.capacity ?? 0,
         duration: solution.nodeTimes[`depot_return_${routeIndex}`] ?? 0,
         distanceKm,
