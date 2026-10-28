@@ -1,9 +1,8 @@
 import {
-  Activity,
+  BarChart3,
   ClipboardList,
-  Gauge,
+  CalendarDays,
   History,
-  LayoutDashboard,
   MapPinned,
   Play,
   Settings,
@@ -29,32 +28,31 @@ export interface NavGroup {
  */
 export const NAV_GROUPS: NavGroup[] = [
   {
+    title: 'Workspace',
+    items: [
+      { href: '/overview', label: 'Today', icon: CalendarDays },
+      { href: '/build', label: 'Route planner', icon: MapPinned },
+      { href: '/optimize', label: 'Optimization', icon: Zap },
+      { href: '/simulate', label: 'Route playback', icon: Play },
+    ],
+  },
+  {
     title: 'Operations',
     items: [
-      { href: '/overview', label: 'Overview', icon: Gauge },
-      { href: '/build', label: 'Planning', icon: MapPinned },
-      { href: '/optimize', label: 'Optimize', icon: Zap },
-      { href: '/simulate', label: 'Simulation', icon: Play },
+      { href: '/orders', label: 'Deliveries', icon: ClipboardList },
+      { href: '/fleet', label: 'Vehicles & depots', icon: Truck },
     ],
   },
   {
-    title: 'Resources',
+    title: 'Review',
     items: [
-      { href: '/fleet', label: 'Fleet', icon: Truck },
-      { href: '/orders', label: 'Orders', icon: ClipboardList },
+      { href: '/analytics', label: 'Performance', icon: BarChart3 },
+      { href: '/history', label: 'Activity', icon: History },
     ],
   },
   {
-    title: 'Insights',
+    title: '',
     items: [
-      { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/analytics', label: 'Analytics', icon: Activity },
-    ],
-  },
-  {
-    title: 'System',
-    items: [
-      { href: '/history', label: 'History', icon: History },
       { href: '/settings', label: 'Settings', icon: Settings },
     ],
   },

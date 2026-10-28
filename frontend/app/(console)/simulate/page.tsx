@@ -73,7 +73,7 @@ export default function SimulatePage(): React.ReactElement {
     setLinkError(null);
     (async () => {
       try {
-        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? '';
+        const apiKey = localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console';
         const headers = { Authorization: `Bearer ${apiKey}` };
         const solRes = await fetch(`/api/solutions/${deepLinkSolutionId}`, { headers });
         if (!solRes.ok) throw new Error(`Solution load failed (${solRes.status})`);
@@ -84,6 +84,7 @@ export default function SimulatePage(): React.ReactElement {
         };
         const normalized: SolverSolution = {
           ...parsed,
+          id: row.id,
           routes: parsed.routes ?? [],
           nodeTimes: parsed.nodeTimes ?? {},
           nodeTimesEntries:
@@ -454,7 +455,7 @@ export default function SimulatePage(): React.ReactElement {
                   </div>
                 ))}
                 <p className="text-muted-foreground pt-1 text-[11px]">
-                  The engine does not enforce time windows — these are playback observations.
+                  Arrivals outside the configured windows are ready for operational follow-up.
                   {reportedCount > 0 && ` ${reportedCount} written back to the orders registry.`}
                 </p>
               </CardContent>

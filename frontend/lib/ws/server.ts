@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { Server, IncomingMessage } from 'node:http';
 import { getPubSub } from './pubsub';
 import type { WorkerMessage } from '../worker/ipc';
-import { authenticateUpgrade } from '../auth/api-key';
+import { authenticateUpgrade } from '../auth/upgrade';
 
 /**
  * Attaches the solve-progress WebSocket endpoint (/ws/progress/:jobId).

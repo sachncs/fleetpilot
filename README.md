@@ -517,13 +517,14 @@ src/
 
 ## Web UI
 
-`frontend/` (`@fleetpilot/web`) is a Next.js 16 + shadcn/ui frontend that lets users drop
-a depot and customer stops on a real map, configure vehicles and time windows,
-and step through the solved routes on a replayable timeline.
+`frontend/` (`@fleetpilot/web`) is the unified FleetPilot product: the branded public
+landing page, operations console, REST API, WebSocket progress stream, planning map,
+solver controls, route simulation, fleet registry, and analytics all ship from one
+Next.js 16 application. The console is open by design and does not require a login.
 
 ```bash
 npm install
-npm run build
+npm run build:frontend
 
 # Development (custom server with WebSocket progress streaming)
 npm run dev:frontend              # http://localhost:3000
@@ -535,9 +536,10 @@ npm run start -w @fleetpilot/web
 docker compose up --build        # mounts ./data for SQLite persistence
 ```
 
-On first launch an interactive setup wizard runs (skipped automatically in
-non-interactive environments such as Docker) and prints a generated API key
-used by the REST API.
+On first launch an interactive setup wizard configures local storage and solver
+limits (it is skipped automatically in non-interactive environments such as
+Docker). The browser console opens directly; generated API keys are only for
+external clients integrating with the protected REST API.
 
 ## Contributing
 

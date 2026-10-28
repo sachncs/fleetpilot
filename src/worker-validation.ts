@@ -12,6 +12,7 @@ export interface WorkerCustomerData {
   deliveryNodeId: number;
   pickupNodeId: number;
   processingTime: number;
+  demand?: number;
   earliestDeliveryTime?: number;
   latestDeliveryTime?: number;
   earliestPickupTime?: number;
@@ -133,6 +134,9 @@ export function validateWorkerData(data: WorkerData): string | null {
     }
     if (typeof c.processingTime !== 'number' || c.processingTime < 0) {
       return `customer ${c.id}: processingTime must be >= 0`;
+    }
+    if (c.demand !== undefined && (!Number.isFinite(c.demand) || c.demand <= 0)) {
+      return `customer ${c.id}: demand must be > 0`;
     }
     const twFields: Array<[string, number | undefined]> = [
       ['earliestDeliveryTime', c.earliestDeliveryTime],

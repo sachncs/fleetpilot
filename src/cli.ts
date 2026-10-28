@@ -90,9 +90,16 @@ function parseNodesAndCustomers(data: Record<string, unknown>): {
         c.latestDeliveryTime,
         c.earliestPickupTime,
         c.latestPickupTime,
+        'demand' in c && typeof c.demand === 'number' ? c.demand : 1,
       );
     }
-    return new Customer(c.id, c.deliveryNodeId, c.pickupNodeId, c.processingTime);
+    return new Customer(
+      c.id,
+      c.deliveryNodeId,
+      c.pickupNodeId,
+      c.processingTime,
+      'demand' in c && typeof c.demand === 'number' ? c.demand : 1,
+    );
   });
   return { nodes, customers };
 }

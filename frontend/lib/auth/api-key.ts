@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import type { IncomingMessage } from 'node:http';
 import { hashApiKey } from '../db/seed';
 import { getDb } from '../db';
 import { apiKeys } from '../db/schema';
@@ -10,15 +9,12 @@ export interface AuthContext {
   keyName: string;
 }
 
-function extractToken(request: NextRequest | IncomingMessage): string | undefined {
-  const header = request.headers['authorization'] ?? request.headers['Authorization'];
-  const raw = Array.isArray(header) ? header[0] : header;
+const PUBLIC_CONSOLE_TOKEN = 'fp_public_console';
+
+function extractToken(request: NextRequest): string | undefined {
+  const raw = request.headers.get('authorization') ?? undefined;
   if (raw && raw.startsWith('Bearer ')) return raw.slice(7);
-  const url =
-    'nextUrl' in request
-      ? request.nextUrl
-      : new URL(request.url ?? '', 'http://localhost');
-  const fromQuery = url.searchParams.get('key');
+  const fromQuery = request.nextUrl.searchParams.get('key');
   return fromQuery ?? undefined;
 }
 
@@ -31,14 +27,14 @@ export function authenticate(request: NextRequest): AuthContext | NextResponse {
     return NextResponse.json({ error: 'Invalid API key format' }, { status: 401 });
   }
 
-  return resolveKey(token);
-}
+  // The first-party console is intentionally open: there is no account or
+  // login flow. External API clients still use revocable keys stored in the
+  // database, while the browser identifies itself with this public marker.
+  if (token === PUBLIC_CONSOLE_TOKEN) {
+    return { keyId: 'public-console', keyName: 'FleetPilot Console' };
+  }
 
-export function authenticateUpgrade(request: IncomingMessage): AuthContext | null {
-  const token = extractToken(request);
-  if (!token || !token.startsWith('fp_')) return null;
-  const ctx = resolveKey(token);
-  return ctx instanceof NextResponse ? null : ctx;
+  return resolveKey(token);
 }
 
 function resolveKey(token: string): AuthContext | NextResponse {
@@ -57,3 +53,5 @@ function resolveKey(token: string): AuthContext | NextResponse {
 
   return { keyId: row.id, keyName: row.name };
 }
+
+export { authenticateUpgrade } from './upgrade';

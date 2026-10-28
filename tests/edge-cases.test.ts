@@ -35,15 +35,13 @@ describe('Edge Cases', () => {
     );
   });
 
-  it('rejects negative coordinates', () => {
-    expect(
-      () =>
-        new Problem(
-          { 0: new LocationNode(0, -1, 0) },
-          [new Customer(1, 0, 0, 10)],
-          [new Vehicle(1, 5)],
-        ),
-    ).to.throw(ValidationError);
+  it('supports signed coordinates for geographic projections', () => {
+    const problem = new Problem(
+      { 0: new LocationNode(0, -1, 0) },
+      [new Customer(1, 0, 0, 10)],
+      [new Vehicle(1, 5)],
+    );
+    expect(problem.nodes[0]?.x).to.equal(-1);
   });
 
   it('rejects zero capacity', () => {

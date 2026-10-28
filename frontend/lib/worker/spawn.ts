@@ -55,10 +55,10 @@ export function startWorker(): void {
   if (worker) return;
   if (shuttingDown) return;
 
-  const scriptPath = resolve(__dirname, 'process.ts');
+  const scriptPath = process.env['FLEETPILOT_WORKER_PATH'] ?? resolve(__dirname, 'process.ts');
 
   worker = fork(scriptPath, [], {
-    execArgv: ['--import', 'tsx/esm'],
+    execArgv: scriptPath.endsWith('.ts') ? ['--import', 'tsx/esm'] : [],
     env: { ...process.env },
     stdio: ['ignore', 'pipe', 'pipe', 'ipc'],
   });

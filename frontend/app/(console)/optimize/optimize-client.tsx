@@ -6,7 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormContext } from 'react-hook-form';
 import { z } from 'zod';
-import { Loader2, Play, Sparkles, TriangleAlert } from 'lucide-react';
+import { Download, Gauge, Loader2, Play, Sparkles, Square, TriangleAlert } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 
 import { useProblemStore, type SolverSolution } from '@/lib/problem-store';
 import { solveProblem } from '@/lib/solver-client';
+import { RoutePlanReview } from '@/components/solver/route-plan-review';
 
 interface ScenarioDetail {
   id: string;
@@ -38,9 +39,11 @@ interface ScenarioDetail {
   problemJson: string;
   solutions: Array<{
     id: string;
+    solutionJson: string;
     makespan: number;
     totalDistance: number;
     totalCost: number;
+    totalCo2: number;
     feasible: boolean;
     createdAt: string;
   }>;
@@ -61,6 +64,12 @@ const DEFAULTS = {
   warmStart: true,
 };
 
+const PRESETS = {
+  fast: { label: 'Fast', detail: 'A quick operational answer', alnsIterations: 80, populationSize: 250, maxGenerations: 120, maxTimeMs: 3_000 },
+  balanced: { label: 'Balanced', detail: 'Best default for daily planning', alnsIterations: 200, populationSize: 1000, maxGenerations: 500, maxTimeMs: 10_000 },
+  deep: { label: 'Deep', detail: 'More search for difficult days', alnsIterations: 700, populationSize: 2000, maxGenerations: 1500, maxTimeMs: 30_000 },
+} as const;
+
 const formSchema = z.object({
   alnsIterations: z.number().int().min(1).max(1_000_000),
   populationSize: z.number().int().min(1).max(1_000_000),
@@ -71,6 +80,11 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+
+function clockTime(minutes: number): string {
+  const normalized = Math.max(0, Math.round(minutes)) % 1440;
+  return `${String(Math.floor(normalized / 60)).padStart(2, '0')}:${String(normalized % 60).padStart(2, '0')}`;
+}
 
 export function OptimizeClient(): React.ReactElement {
   const searchParams = useSearchParams();
@@ -89,6 +103,8 @@ export function OptimizeClient(): React.ReactElement {
   const [scenario, setScenario] = React.useState<ScenarioDetail | null>(null);
   const [caps, setCaps] = React.useState<Caps | null>(null);
   const [loadError, setLoadError] = React.useState<string | null>(null);
+  const abortRef = React.useRef<AbortController | null>(null);
+  const [preset, setPreset] = React.useState<keyof typeof PRESETS>('balanced');
 
   // Best previous run for this scenario, for the compare view.
   const previousBest = React.useMemo<SolverSolution['makespan'] | null>(() => {
@@ -101,9 +117,22 @@ export function OptimizeClient(): React.ReactElement {
     defaultValues: DEFAULTS,
   });
 
+  const applyPreset = (nextPreset: keyof typeof PRESETS): void => {
+    const values = PRESETS[nextPreset];
+    setPreset(nextPreset);
+    form.reset({
+      alnsIterations: values.alnsIterations,
+      populationSize: values.populationSize,
+      maxGenerations: values.maxGenerations,
+      maxTimeMs: values.maxTimeMs,
+      seed: form.getValues('seed'),
+      warmStart: true,
+    });
+  };
+
   const authHeaders = React.useCallback(
     (): HeadersInit => ({
-      Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? ''}`,
+      Authorization: `Bearer ${localStorage.getItem('fleetpilot_api_key') ?? 'fp_public_console'}`,
     }),
     [],
   );
@@ -128,11 +157,27 @@ export function OptimizeClient(): React.ReactElement {
         const data = (await res.json()) as ScenarioDetail;
         setScenario(data);
         setProblem(JSON.parse(data.problemJson));
+        const latest = data.solutions[0];
+        if (latest) {
+          const parsed = JSON.parse(latest.solutionJson) as Partial<SolverSolution>;
+          const nodeTimes = parsed.nodeTimes ?? {};
+          setSolution({
+            id: latest.id,
+            makespan: latest.makespan,
+            totalDistance: latest.totalDistance / 100,
+            totalCost: latest.totalCost / 100,
+            totalCo2: latest.totalCo2 / 100,
+            feasible: latest.feasible,
+            routes: parsed.routes ?? [],
+            nodeTimes,
+            nodeTimesEntries: Object.entries(nodeTimes).map(([key, value]) => [Number(key), value]),
+          });
+        }
       } catch (err) {
         setLoadError(err instanceof Error ? err.message : 'Scenario load failed');
       }
     })();
-  }, [problemId, setProblem, authHeaders]);
+  }, [problemId, setProblem, setSolution, authHeaders]);
 
   const run = form.handleSubmit(async (raw) => {
     if (!problem) return;
@@ -145,20 +190,30 @@ export function OptimizeClient(): React.ReactElement {
     setStatus('solving');
     setError(null);
     setProgress(null);
+    const controller = new AbortController();
+    abortRef.current = controller;
     try {
       const sol = await solveProblem(
         problem,
         values,
         (p) => setProgress(p),
         { problemId: problemId ?? undefined, name: scenario?.name },
+        { signal: controller.signal },
       );
       setSolution(sol);
       setStatus('success');
       setProgress(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-      setStatus('error');
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        setError(null);
+        setStatus('idle');
+      } else {
+        setError(err instanceof Error ? err.message : String(err));
+        setStatus('error');
+      }
       setProgress(null);
+    } finally {
+      abortRef.current = null;
     }
   });
 
@@ -198,7 +253,8 @@ export function OptimizeClient(): React.ReactElement {
   return (
     <div className="space-y-6 overflow-auto p-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Optimize</h1>
+        <p className="text-muted-foreground mb-1 font-mono text-[10px] uppercase tracking-[0.16em]">Route intelligence</p>
+        <h1 className="text-3xl font-medium tracking-[-0.04em]">Optimize routes</h1>
         <p className="text-muted-foreground text-sm">
           {scenario ? scenario.name : 'Loading scenario…'}
         </p>
@@ -216,36 +272,48 @@ export function OptimizeClient(): React.ReactElement {
       <div className="grid gap-4 lg:grid-cols-[420px_1fr]">
         <Card>
           <CardHeader>
-            <CardTitle>Solver configuration</CardTitle>
+            <CardTitle>Optimization quality</CardTitle>
             <CardDescription>
-              Limits are clamped to server caps{caps ? ` (${caps.maxGenerations} gens · ${Math.round(caps.maxTimeMs / 1000)}s)` : ''}.
-              Runs cannot be cancelled once started.
+              Choose how long FleetPilot should search. Balanced works well for most dispatch days.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={run} className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <NumField name="alnsIterations" label="ALNS iterations" />
-                  <NumField name="populationSize" label="Population size" />
-                  <NumField name="maxGenerations" label="Max generations" />
-                  <NumField name="maxTimeMs" label="Max time (ms)" />
-                  <NumField name="seed" label="Seed" />
-                  <FormField
-                    control={form.control}
-                    name="warmStart"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-end gap-2 pb-1">
-                        <Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} id="warm-start" />
-                        <Label htmlFor="warm-start">Warm start</Label>
-                      </FormItem>
-                    )}
-                  />
+                <div className="grid gap-2">
+                  {(Object.entries(PRESETS) as Array<[keyof typeof PRESETS, (typeof PRESETS)[keyof typeof PRESETS]]>).map(([key, value]) => (
+                    <button key={key} type="button" onClick={() => applyPreset(key)} className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${preset === key ? 'border-foreground bg-muted/60 shadow-sm' : 'hover:bg-muted/40'}`}>
+                      <span className={`grid size-8 place-items-center rounded-lg ${preset === key ? 'bg-foreground text-background' : 'bg-muted'}`}><Gauge className="size-4" /></span>
+                      <span className="min-w-0 flex-1"><strong className="block text-sm">{value.label}</strong><span className="text-xs text-muted-foreground">{value.detail}</span></span>
+                      <span className="text-xs tabular-nums text-muted-foreground">~{Math.round(value.maxTimeMs / 1000)}s</span>
+                    </button>
+                  ))}
                 </div>
-                <Button type="submit" className="w-full" disabled={solving || !problem}>
-                  {solving ? <Loader2 className="animate-spin" /> : <Play />}
-                  {solving ? 'Running…' : 'Run optimization'}
-                </Button>
+                <details className="rounded-xl border px-3 py-2">
+                  <summary className="cursor-pointer text-xs font-medium">Advanced solver controls</summary>
+                  <div className="mt-3 grid grid-cols-2 gap-3">
+                    <NumField name="alnsIterations" label="ALNS iterations" />
+                    <NumField name="populationSize" label="Population size" />
+                    <NumField name="maxGenerations" label="Max generations" />
+                    <NumField name="maxTimeMs" label="Max time (ms)" />
+                    <NumField name="seed" label="Seed" />
+                    <FormField control={form.control} name="warmStart" render={({ field }) => (
+                      <FormItem className="flex flex-row items-end gap-2 pb-1"><Checkbox checked={field.value} onCheckedChange={(v) => field.onChange(v === true)} id="warm-start" /><Label htmlFor="warm-start">Warm start</Label></FormItem>
+                    )} />
+                  </div>
+                  {caps && <p className="mt-2 text-[10px] text-muted-foreground">Server cap: {caps.maxGenerations} generations · {Math.round(caps.maxTimeMs / 1000)} seconds</p>}
+                </details>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1" disabled={solving || !problem}>
+                    {solving ? <Loader2 className="animate-spin" /> : <Play />}
+                    {solving ? 'Optimizing…' : 'Optimize routes'}
+                  </Button>
+                  {solving && (
+                    <Button type="button" variant="outline" onClick={() => abortRef.current?.abort()}>
+                      <Square /> Cancel
+                    </Button>
+                  )}
+                </div>
               </form>
             </Form>
 
@@ -275,7 +343,7 @@ export function OptimizeClient(): React.ReactElement {
 
             {status === 'error' && (
               <p className="text-destructive mt-4 text-sm">
-                Run failed — check that the scenario has at least one customer and vehicle.
+                Run failed—check that the scenario has at least one route job and vehicle.
               </p>
             )}
           </CardContent>
@@ -295,18 +363,24 @@ export function OptimizeClient(): React.ReactElement {
             {solution && (
               <>
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                  <Metric label="Makespan" value={solution.makespan.toFixed(1)} unit="min" />
-                  <Metric label="Distance" value={(solution.totalDistance / 100).toFixed(2)} unit="km" />
-                  <Metric label="Cost" value={(solution.totalCost / 100).toFixed(2)} />
-                  <Metric label="CO₂e" value={(solution.totalCo2 / 100).toFixed(2)} unit="kg" />
+                  <Metric
+                    label={problem?.registry ? 'Plan complete' : 'Makespan'}
+                    value={problem?.registry ? clockTime(solution.makespan) : solution.makespan.toFixed(1)}
+                    unit={problem?.registry ? undefined : 'min'}
+                  />
+                  <Metric label="Distance" value={solution.totalDistance.toFixed(2)} unit="km" />
+                  <Metric label="Cost" value={solution.totalCost.toFixed(2)} />
+                  <Metric label="CO₂e" value={solution.totalCo2.toFixed(2)} unit="kg" />
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant={solution.feasible ? 'success' : 'destructive'}>
                     {solution.feasible ? 'Feasible' : 'Infeasible'}
                   </Badge>
                   {delta !== null && (
                     <Badge variant={delta <= 0 ? 'default' : 'secondary'}>
-                      {delta <= 0 ? '▲' : '▼'} {Math.abs(delta).toFixed(1)}% vs best ({previousBest!.toFixed(1)} min)
+                      {Math.abs(delta) < 0.05
+                        ? 'Best saved plan'
+                        : `${delta < 0 ? '▲' : '▼'} ${Math.abs(delta).toFixed(1)}% vs best`}
                     </Badge>
                   )}
                   {solution.feasible && (
@@ -315,6 +389,23 @@ export function OptimizeClient(): React.ReactElement {
                     </Button>
                   )}
                 </div>
+                {solution.id && (
+                  <div className="matte-glass flex flex-wrap items-center gap-2 rounded-xl p-3">
+                    <div className="mr-auto">
+                      <p className="flex items-center gap-2 text-sm font-medium">
+                        <Download className="size-4" /> Export dispatch plan
+                      </p>
+                      <p className="text-muted-foreground text-xs">Use routes in GIS tools, navigation systems, or spreadsheets.</p>
+                    </div>
+                    {(['geojson', 'kml', 'csv'] as const).map((format) => (
+                      <Button key={format} asChild size="sm" variant="outline">
+                        <a href={`/api/solutions/${solution.id}/export?format=${format}`} download>
+                          {format.toUpperCase()}
+                        </a>
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </>
             )}
             {solving && (
@@ -325,6 +416,8 @@ export function OptimizeClient(): React.ReactElement {
           </CardContent>
         </Card>
       </div>
+
+      {solution && problem && <RoutePlanReview problem={problem} solution={solution} />}
     </div>
   );
 }

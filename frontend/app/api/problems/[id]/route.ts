@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticate } from '@/lib/auth/api-key';
 import { getDb } from '@/lib/db';
-import { problems, solutions, jobs } from '@/lib/db/schema';
+import { problems, solutions, jobs, orders } from '@/lib/db/schema';
 import { ensureSchema } from '@/lib/db/migrate';
 import { log } from '@/lib/log';
 import { eq, desc } from 'drizzle-orm';
+import { writeAudit } from '@/lib/audit';
 
 export async function GET(
   _request: NextRequest,
@@ -61,9 +62,30 @@ export async function DELETE(
       return NextResponse.json({ error: 'Problem not found' }, { status: 404 });
     }
 
-    db.delete(problems).where(eq(problems.id, id)).run();
+    const linkedOrders = db.select().from(orders).where(eq(orders.problemId, id)).all();
+    const now = new Date().toISOString();
+    db.transaction((transaction) => {
+      for (const order of linkedOrders) {
+        transaction.update(orders)
+          .set({
+            problemId: null,
+            status: order.status === 'planned' ? 'unassigned' : order.status,
+            updatedAt: now,
+          })
+          .where(eq(orders.id, order.id))
+          .run();
+      }
+      transaction.delete(problems).where(eq(problems.id, id)).run();
+    });
+    writeAudit({
+      entity: 'problem',
+      entityId: id,
+      action: 'deleted',
+      actor: auth.keyName,
+      payload: { releasedOrders: linkedOrders.length },
+    });
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, releasedOrders: linkedOrders.length });
   } catch (err) {
     log.error('[API] DELETE /api/problems/[id] error:', err);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

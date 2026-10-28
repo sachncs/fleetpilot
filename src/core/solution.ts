@@ -597,10 +597,10 @@ export class Solution {
       let minLoadNeeded = 0;
       let currentLoad = 0;
       for (const nodeId of route.nodes) {
-        const isDelivery = this.problem.deliveryNodeMap.has(nodeId);
-        const isPickup = this.problem.pickupNodeMap.has(nodeId);
-        if (isDelivery) currentLoad--;
-        if (isPickup) currentLoad++;
+        const delivery = this.problem.deliveryNodeMap.get(nodeId);
+        const pickup = this.problem.pickupNodeMap.get(nodeId);
+        if (delivery) currentLoad -= delivery.demand;
+        if (pickup) currentLoad += pickup.demand;
         if (currentLoad < minLoadNeeded) minLoadNeeded = currentLoad;
       }
 
@@ -609,10 +609,10 @@ export class Solution {
       if (load > k) return false;
 
       for (const nodeId of route.nodes) {
-        const isDelivery = this.problem.deliveryNodeMap.has(nodeId);
-        const isPickup = this.problem.pickupNodeMap.has(nodeId);
-        if (isDelivery) load--;
-        if (isPickup) load++;
+        const delivery = this.problem.deliveryNodeMap.get(nodeId);
+        const pickup = this.problem.pickupNodeMap.get(nodeId);
+        if (delivery) load -= delivery.demand;
+        if (pickup) load += pickup.demand;
         if (load < 0 || load > k) return false;
       }
     }

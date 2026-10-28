@@ -8,6 +8,7 @@ import { Map } from '@/components/map/map';
 import { MapTileLayer } from '@/components/map/map-tile-layer';
 import { MapMarker } from '@/components/map/map-marker';
 import { MapPopup } from '@/components/map/map-popup';
+import { MapFullscreenControl, MapLocateControl, MapZoomControl } from '@/components/ui/map';
 
 import { useProblemStore } from '@/lib/problem-store';
 import { log } from '@/lib/log';
@@ -27,14 +28,15 @@ const WORLD_ZOOM = 2;
 
 function nodeLabelHtml(id: number, isDepot: boolean, isSelected: boolean): string {
   const ring = isSelected
-    ? 'box-shadow: 0 0 0 4px rgba(59,130,246,0.55), 0 0 0 2px rgba(0,0,0,0.4);'
-    : 'box-shadow: 0 0 0 2px rgba(0,0,0,0.4);';
-  const bg = isDepot ? '#0f172a' : isSelected ? '#3b82f6' : '#64748b';
+    ? 'box-shadow: 0 0 0 5px rgba(0,0,0,0.14), 0 0 0 1px rgba(0,0,0,0.75);'
+    : 'box-shadow: 0 0 0 1px rgba(0,0,0,0.55);';
+  const bg = isDepot || isSelected ? '#0a0a0a' : '#ffffff';
+  const color = isDepot || isSelected ? '#ffffff' : '#0a0a0a';
   return `<div style="
     width:24px;height:24px;
     background:${bg};
-    color:white;
-    border:2px solid white;
+    color:${color};
+    border:2px solid ${isDepot || isSelected ? 'white' : '#0a0a0a'};
     border-radius:50%;
     display:flex;align-items:center;justify-content:center;
     font-size:11px;font-weight:700;
@@ -111,7 +113,7 @@ export function BuildMap({
         const existing = Array.isArray(current.nodes) ? current.nodes : Object.values(current.nodes);
         setProblem({
           ...current,
-          nodes: [...existing, { id: nextId, x: Math.abs(mx), y: Math.abs(my), name }],
+          nodes: [...existing, { id: nextId, x: mx, y: my, name }],
         });
       }
       onSelectNode(nextId);
@@ -130,7 +132,7 @@ export function BuildMap({
       setProblem({
         ...current,
         nodes: existing.map((n) =>
-          n.id === nodeId ? { ...n, x: Math.abs(mx), y: Math.abs(my) } : n,
+          n.id === nodeId ? { ...n, x: mx, y: my } : n,
         ),
       });
     },
@@ -165,10 +167,13 @@ export function BuildMap({
     <Map
       center={origin ? [origin.lat, origin.lng] : WORLD_CENTER}
       zoom={origin ? 12 : WORLD_ZOOM}
-      className={`rounded-xl border ${tool === 'place' ? 'cursor-crosshair' : ''}`}
+      className={`rounded-2xl border ${tool === 'place' ? 'cursor-crosshair' : ''}`}
       preferCanvas={nodeList.length > CANVAS_NODE_THRESHOLD}
     >
       <MapTileLayer />
+      <MapZoomControl position="top-3 left-3" />
+      <MapFullscreenControl position="top-3 right-3" />
+      <MapLocateControl position="right-3 bottom-3" />
       <ClickHandler onClick={handleClick} />
       <Recenter origin={origin} />
       {nodeList.map((node) => {
@@ -211,7 +216,7 @@ export function BuildMap({
           </MapMarker>
         );
       })}
-      <div className="pointer-events-none absolute bottom-2 left-2 z-[1000] rounded-md bg-background/90 px-3 py-1.5 text-xs shadow">
+      <div className="matte-glass pointer-events-none absolute bottom-3 left-3 z-[1000] rounded-xl px-3 py-2 text-[11px]">
         {tool === 'place'
           ? 'Click the map to drop a stop · drag markers to adjust'
           : 'Select mode — click a marker to inspect'}

@@ -16,3 +16,4 @@ docs/md/
 *.tsbuildinfo
 .env.local
 .env.*.local
+public/maplibre-gl-worker.mjs

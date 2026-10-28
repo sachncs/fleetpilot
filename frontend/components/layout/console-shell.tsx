@@ -9,6 +9,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar';
 import { CommandPalette } from '@/components/layout/command-palette';
 import { ThemeToggle } from '@/components/layout/theme-toggle';
 import { NAV_GROUPS, isActivePath } from '@/lib/nav';
+import { BrandMark } from '@/components/brand-mark';
 
 function pageTitle(pathname: string | null): string {
   if (!pathname) return 'FleetPilot';
@@ -22,15 +23,35 @@ function pageTitle(pathname: string | null): string {
 
 export function ConsoleShell({ children }: { children: React.ReactNode }): React.JSX.Element {
   const pathname = usePathname();
+  const [accessReady, setAccessReady] = React.useState(false);
+
+  React.useEffect(() => {
+    // The product console is deliberately open and has no login flow. The
+    // public marker distinguishes first-party browser traffic from external
+    // API clients, which continue to use revocable API keys.
+    localStorage.setItem('fleetpilot_api_key', 'fp_public_console');
+    setAccessReady(true);
+  }, []);
+
+  if (!accessReady) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background">
+        <div className="flex items-center gap-3 text-sm font-medium text-muted-foreground">
+          <BrandMark className="size-8 rounded-[10px]" />
+          Preparing FleetPilot…
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <SidebarProvider>
+    <SidebarProvider className="bg-muted/30">
       <AppSidebar />
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-12 shrink-0 items-center gap-2 border-b bg-background px-3">
+        <header className="matte-glass sticky top-0 z-20 flex h-14 shrink-0 items-center gap-2 border-x-0 border-t-0 px-4">
           <SidebarTrigger />
           <Separator orientation="vertical" className="!h-4" />
-          <span className="text-sm font-medium">{pageTitle(pathname)}</span>
+          <span className="text-[13px] font-medium">{pageTitle(pathname)}</span>
           <div className="ml-auto flex items-center gap-1.5">
             <CommandPalette />
             <ThemeToggle />

@@ -15,6 +15,7 @@ export interface FleetPilotConfig {
 }
 
 function getDefaultDataDir(): string {
+  if (process.env['FLEETPILOT_DATA_DIR']) return resolve(process.env['FLEETPILOT_DATA_DIR']);
   // frontend/lib -> frontend -> repo root
   return resolve(__dirname, '../../data');
 }

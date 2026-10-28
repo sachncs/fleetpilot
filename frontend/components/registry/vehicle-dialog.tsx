@@ -44,7 +44,7 @@ export interface VehicleDialogValues {
 const schema = z.object({
   name: z.string().min(1, 'Name is required').max(200),
   status: z.enum(['active', 'maintenance', 'retired']),
-  capacityKg: z.string().refine((v) => v === '' || (Number(v) >= 0 && Number.isInteger(Number(v))), 'Whole kg ≥ 0'),
+  capacityKg: z.string().refine((v) => v === '' || (Number(v) > 0 && Number.isInteger(Number(v))), 'Whole kg > 0'),
   costPerKm: z.string().refine((v) => v === '' || Number(v) >= 0, '≥ 0'),
   co2PerKm: z.string().refine((v) => v === '' || Number(v) >= 0, '≥ 0'),
   depotId: z.string(),
@@ -151,7 +151,7 @@ export function VehicleDialog({
               />
             </div>
             <div className="space-y-1">
-              <Label htmlFor="veh-depot">Station</Label>
+              <Label htmlFor="veh-depot">Depot</Label>
               <ControllerSelect
                 value={form.watch('depotId') || 'none'}
                 onChange={(v) => form.setValue('depotId', v)}

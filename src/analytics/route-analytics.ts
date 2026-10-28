@@ -44,15 +44,15 @@ export class RouteAnalytics {
       let customerCount = 0;
 
       for (const nodeId of route.nodes) {
-        const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
-        const isPickup = this.problem.customers.some((c) => c.pickupNodeId === nodeId);
+        const delivery = this.problem.deliveryNodeMap.get(nodeId);
+        const pickup = this.problem.pickupNodeMap.get(nodeId);
 
-        if (isDelivery) {
-          currentLoad--;
+        if (delivery) {
+          currentLoad -= delivery.demand;
           customerCount++;
         }
-        if (isPickup) {
-          currentLoad++;
+        if (pickup) {
+          currentLoad += pickup.demand;
         }
         if (currentLoad < maxLoadNeeded) {
           maxLoadNeeded = currentLoad;
@@ -138,10 +138,10 @@ export class RouteAnalytics {
     // Calculate initial load needed
     let minLoadNeeded = 0;
     for (const nodeId of route.nodes) {
-      const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
-      const isPickup = this.problem.customers.some((c) => c.pickupNodeId === nodeId);
-      if (isDelivery) currentLoad--;
-      if (isPickup) currentLoad++;
+      const delivery = this.problem.deliveryNodeMap.get(nodeId);
+      const pickup = this.problem.pickupNodeMap.get(nodeId);
+      if (delivery) currentLoad -= delivery.demand;
+      if (pickup) currentLoad += pickup.demand;
       if (currentLoad < minLoadNeeded) minLoadNeeded = currentLoad;
     }
 
@@ -153,11 +153,11 @@ export class RouteAnalytics {
       const travelTime = this.problem.getDistance(prevNode, nodeId);
       currentTime += travelTime;
 
-      const isDelivery = this.problem.customers.some((c) => c.deliveryNodeId === nodeId);
-      const isPickup = this.problem.customers.some((c) => c.pickupNodeId === nodeId);
+      const delivery = this.problem.deliveryNodeMap.get(nodeId);
+      const pickup = this.problem.pickupNodeMap.get(nodeId);
 
-      if (isDelivery) currentLoad--;
-      if (isPickup) currentLoad++;
+      if (delivery) currentLoad -= delivery.demand;
+      if (pickup) currentLoad += pickup.demand;
 
       result.push({ time: currentTime, load: currentLoad });
       prevNode = nodeId;
