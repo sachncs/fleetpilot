@@ -20,6 +20,7 @@ import { SkeletonCard } from '@/components/shared/skeleton-card';
 
 import { VehicleDialog, type DepotOption } from '@/components/registry/vehicle-dialog';
 import { DepotDialog } from '@/components/registry/depot-dialog';
+import { ConfirmActionDialog } from '@/components/shared/confirm-action-dialog';
 
 interface VehicleRow {
   id: string;
@@ -30,6 +31,7 @@ interface VehicleRow {
   co2PerKm: number | null;
   depotId: string | null;
   region: string | null;
+  notes?: string | null;
 }
 
 interface DepotRow {
@@ -64,6 +66,9 @@ export default function FleetPage(): React.ReactElement {
   const [vehicleDialogOpen, setVehicleDialogOpen] = React.useState(false);
   const [editingVehicle, setEditingVehicle] = React.useState<VehicleRow | null>(null);
   const [depotDialogOpen, setDepotDialogOpen] = React.useState(false);
+  const [editingDepot, setEditingDepot] = React.useState<DepotRow | null>(null);
+  const [vehicleToDelete, setVehicleToDelete] = React.useState<VehicleRow | null>(null);
+  const [depotToDelete, setDepotToDelete] = React.useState<DepotRow | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
 
   const load = React.useCallback(async () => {
@@ -118,15 +123,14 @@ export default function FleetPage(): React.ReactElement {
     const res = await fetch(`/api/fleet/${id}`, { method: 'DELETE', headers: authHeaders() });
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
-      setActionError(data.error ?? `Delete failed (${res.status})`);
-      return;
+      throw new Error(data.error ?? `Delete failed (${res.status})`);
     }
     await load();
   };
 
   const submitDepot = async (values: { name: string; lat: number; lng: number; region: string | null; notes: string | null }) => {
-    const res = await fetch('/api/depots', {
-      method: 'POST',
+    const res = await fetch(editingDepot ? `/api/depots/${editingDepot.id}` : '/api/depots', {
+      method: editingDepot ? 'PATCH' : 'POST',
       headers: authHeaders(),
       body: JSON.stringify(values),
     });
@@ -142,8 +146,7 @@ export default function FleetPage(): React.ReactElement {
     const res = await fetch(`/api/depots/${id}`, { method: 'DELETE', headers: authHeaders() });
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
-      setActionError(data.error === undefined ? `Delete failed (${res.status})` : data.error);
-      return;
+      throw new Error(data.error === undefined ? `Delete failed (${res.status})` : data.error);
     }
     await load();
   };
@@ -188,7 +191,7 @@ export default function FleetPage(): React.ReactElement {
               setEditingVehicle(null);
               setVehicleDialogOpen(true);
             }}
-            onNewStation={() => setDepotDialogOpen(true)}
+            onNewStation={() => { setEditingDepot(null); setDepotDialogOpen(true); }}
           />
         </div>
 
@@ -241,7 +244,7 @@ export default function FleetPage(): React.ReactElement {
                       >
                         Edit
                       </Button>
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => void deleteVehicle(v.id)}>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setVehicleToDelete(v)}>
                         Delete
                       </Button>
                     </TableCell>
@@ -278,7 +281,10 @@ export default function FleetPage(): React.ReactElement {
                       {d.lat.toFixed(5)}, {d.lng.toFixed(5)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => void deleteDepot(d.id)}>
+                      <Button size="sm" variant="ghost" onClick={() => { setEditingDepot(d); setDepotDialogOpen(true); }}>
+                        Edit
+                      </Button>
+                      <Button size="sm" variant="ghost" className="text-destructive hover:text-destructive" onClick={() => setDepotToDelete(d)}>
                         Delete
                       </Button>
                     </TableCell>
@@ -311,7 +317,29 @@ export default function FleetPage(): React.ReactElement {
         }
         onSubmit={submitVehicle}
       />
-      <DepotDialog open={depotDialogOpen} onOpenChange={setDepotDialogOpen} onSubmit={submitDepot} />
+      <DepotDialog open={depotDialogOpen} onOpenChange={setDepotDialogOpen} initial={editingDepot ?? undefined} onSubmit={submitDepot} />
+      <ConfirmActionDialog
+        open={vehicleToDelete !== null}
+        onOpenChange={(next) => !next && setVehicleToDelete(null)}
+        title="Delete vehicle?"
+        description={`Remove ${vehicleToDelete?.name ?? 'this vehicle'} from the fleet? Saved plans remain available.`}
+        onConfirm={async () => {
+          if (!vehicleToDelete) return;
+          await deleteVehicle(vehicleToDelete.id);
+          setVehicleToDelete(null);
+        }}
+      />
+      <ConfirmActionDialog
+        open={depotToDelete !== null}
+        onOpenChange={(next) => !next && setDepotToDelete(null)}
+        title="Delete depot?"
+        description={`Remove ${depotToDelete?.name ?? 'this depot'}? Reassign its vehicles first.`}
+        onConfirm={async () => {
+          if (!depotToDelete) return;
+          await deleteDepot(depotToDelete.id);
+          setDepotToDelete(null);
+        }}
+      />
     </div>
   );
 }
@@ -326,7 +354,7 @@ function TabActions({
   return (
     <div className="flex items-center gap-2">
       <Button size="sm" variant="outline" onClick={onNewStation}>
-        <Plus /> New station
+        <Plus /> New depot
       </Button>
       <Button size="sm" onClick={onNewVehicle}>
         <Plus /> New vehicle

@@ -27,6 +27,20 @@ import { PlaceSearchBar } from '@/components/map/place-search-bar';
 export interface OrderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initial?: {
+    id: string;
+    ref: string;
+    kind: 'delivery' | 'pickup' | 'pair';
+    pairRefId?: string | null;
+    priority: number;
+    quantity: number | null;
+    windowStart: string | null;
+    windowEnd: string | null;
+    processingMin?: number | null;
+    lat: number;
+    lng: number;
+    region: string | null;
+  };
   onSubmit: (values: {
     ref: string;
     kind: 'delivery' | 'pickup' | 'pair';
@@ -47,7 +61,7 @@ export interface OrderDialogProps {
  * Coordinates come exclusively from the address search — no manual
  * lat/lng entry anywhere in the console. Windows are HH:MM strings.
  */
-export function OrderDialog({ open, onOpenChange, onSubmit }: OrderDialogProps): React.ReactElement {
+export function OrderDialog({ open, onOpenChange, initial, onSubmit }: OrderDialogProps): React.ReactElement {
   const [ref, setRef] = React.useState('');
   const [kind, setKind] = React.useState<'delivery' | 'pickup' | 'pair'>('delivery');
   const [pairRefId, setPairRefId] = React.useState('');
@@ -74,6 +88,25 @@ export function OrderDialog({ open, onOpenChange, onSubmit }: OrderDialogProps):
     setPicked(null);
     setError(null);
   };
+
+  React.useEffect(() => {
+    if (!open) return;
+    if (!initial) {
+      reset();
+      return;
+    }
+    setRef(initial.ref);
+    setKind(initial.kind);
+    setPairRefId(initial.pairRefId ?? '');
+    setPriority(String(initial.priority));
+    setQuantity(initial.quantity?.toString() ?? '');
+    setWindowStart(initial.windowStart ?? '');
+    setWindowEnd(initial.windowEnd ?? '');
+    setProcessingMin(initial.processingMin?.toString() ?? '');
+    setRegion(initial.region ?? '');
+    setPicked({ displayName: `${initial.lat.toFixed(5)}, ${initial.lng.toFixed(5)}`, lat: initial.lat, lng: initial.lng });
+    setError(null);
+  }, [open, initial]);
 
   const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -116,9 +149,9 @@ export function OrderDialog({ open, onOpenChange, onSubmit }: OrderDialogProps):
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[85vh] overflow-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Add delivery</DialogTitle>
+          <DialogTitle>{initial ? 'Edit delivery' : 'Add delivery'}</DialogTitle>
           <DialogDescription>
-            Add the stop, service window, and load FleetPilot should plan around.
+            {initial ? 'Correct the stop, service window, or load used in future plans.' : 'Add the stop, service window, and load FleetPilot should plan around.'}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
@@ -205,7 +238,7 @@ export function OrderDialog({ open, onOpenChange, onSubmit }: OrderDialogProps):
             </Button>
             <Button type="submit" disabled={!ref.trim() || !picked || busy}>
               {busy && <Loader2 className="animate-spin" />}
-              Add delivery
+              {initial ? 'Save changes' : 'Add delivery'}
             </Button>
           </DialogFooter>
         </form>

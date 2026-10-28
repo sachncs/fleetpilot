@@ -22,6 +22,7 @@ import { OrderDialog } from '@/components/registry/order-dialog';
 import { RegistryPlanDialog } from '@/components/registry/registry-plan-dialog';
 import { DeliveryImportDialog } from '@/components/registry/delivery-import-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ConfirmActionDialog } from '@/components/shared/confirm-action-dialog';
 
 type OrderStatus = 'unassigned' | 'planned' | 'exception';
 
@@ -33,10 +34,11 @@ interface OrderRow {
   priority: number;
   status: OrderStatus;
   quantity: number | null;
+  processingMin?: number | null;
   windowStart: string | null;
   windowEnd: string | null;
-  lat: number | null;
-  lng: number | null;
+  lat: number;
+  lng: number;
   region: string | null;
 }
 
@@ -73,6 +75,8 @@ export default function OrdersPage(): React.ReactElement {
   const [error, setError] = React.useState<string | null>(null);
   const [actionError, setActionError] = React.useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [editingOrder, setEditingOrder] = React.useState<OrderRow | null>(null);
+  const [orderToDelete, setOrderToDelete] = React.useState<OrderRow | null>(null);
   const [planDialogOpen, setPlanDialogOpen] = React.useState(false);
   const [importDialogOpen, setImportDialogOpen] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
@@ -99,8 +103,8 @@ export default function OrdersPage(): React.ReactElement {
   }, [load]);
 
   const submitOrder = async (values: Parameters<React.ComponentProps<typeof OrderDialog>['onSubmit']>[0]) => {
-    const res = await fetch('/api/orders', {
-      method: 'POST',
+    const res = await fetch(editingOrder ? `/api/orders/${editingOrder.id}` : '/api/orders', {
+      method: editingOrder ? 'PATCH' : 'POST',
       headers: authHeaders(),
       body: JSON.stringify(values),
     });
@@ -131,8 +135,7 @@ export default function OrdersPage(): React.ReactElement {
     const res = await fetch(`/api/orders/${id}`, { method: 'DELETE', headers: authHeaders() });
     if (!res.ok) {
       const data = (await res.json().catch(() => ({}))) as { error?: string };
-      setActionError(data.error ?? `Delete failed (${res.status})`);
-      return;
+      throw new Error(data.error ?? `Delete failed (${res.status})`);
     }
     await load();
   };
@@ -223,7 +226,7 @@ export default function OrdersPage(): React.ReactElement {
               </TableCell>
               <TableCell className="text-right tabular-nums">{o.quantity ?? '—'}</TableCell>
               <TableCell className="text-muted-foreground max-w-40 truncate text-sm">
-                {o.lat !== null && o.lng !== null ? `${o.lat.toFixed(4)}, ${o.lng.toFixed(4)}` : 'no location'}
+                {o.lat.toFixed(4)}, {o.lng.toFixed(4)}
               </TableCell>
               <TableCell className="text-right whitespace-nowrap">
                 {o.status === 'exception' && (
@@ -231,11 +234,14 @@ export default function OrdersPage(): React.ReactElement {
                     Resolve
                   </Button>
                 )}
+                <Button size="sm" variant="ghost" onClick={() => { setEditingOrder(o); setDialogOpen(true); }}>
+                  Edit
+                </Button>
                 <Button
                   size="sm"
                   variant="ghost"
                   className="text-destructive hover:text-destructive"
-                  onClick={() => void deleteOrder(o.id)}
+                  onClick={() => setOrderToDelete(o)}
                 >
                   Delete
                 </Button>
@@ -263,7 +269,7 @@ export default function OrdersPage(): React.ReactElement {
           <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
             <FileUp /> Import CSV
           </Button>
-          <Button onClick={() => setDialogOpen(true)}>Add delivery</Button>
+          <Button onClick={() => { setEditingOrder(null); setDialogOpen(true); }}>Add delivery</Button>
         </div>
       </div>
 
@@ -286,7 +292,7 @@ export default function OrdersPage(): React.ReactElement {
         <TabsContent value="exception" className="mt-4">{renderTable(filtered('exception'))}</TabsContent>
       </Tabs>
 
-      <OrderDialog open={dialogOpen} onOpenChange={setDialogOpen} onSubmit={submitOrder} />
+      <OrderDialog open={dialogOpen} onOpenChange={setDialogOpen} initial={editingOrder ?? undefined} onSubmit={submitOrder} />
       <DeliveryImportDialog open={importDialogOpen} onOpenChange={setImportDialogOpen} onImported={load} />
       <RegistryPlanDialog
         open={planDialogOpen}
@@ -295,6 +301,17 @@ export default function OrdersPage(): React.ReactElement {
         onCreated={async () => {
           setSelectedIds(new Set());
           await load();
+        }}
+      />
+      <ConfirmActionDialog
+        open={orderToDelete !== null}
+        onOpenChange={(next) => !next && setOrderToDelete(null)}
+        title="Delete delivery?"
+        description={`Remove ${orderToDelete?.ref ?? 'this delivery'} from the registry? Existing saved plans remain unchanged.`}
+        onConfirm={async () => {
+          if (!orderToDelete) return;
+          await deleteOrder(orderToDelete.id);
+          setOrderToDelete(null);
         }}
       />
     </div>

@@ -20,6 +20,14 @@ import { PlaceSearchBar } from '@/components/map/place-search-bar';
 export interface DepotDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  initial?: {
+    id: string;
+    name: string;
+    lat: number;
+    lng: number;
+    region: string | null;
+    notes?: string | null;
+  };
   onSubmit: (values: {
     name: string;
     lat: number;
@@ -33,7 +41,7 @@ export interface DepotDialogProps {
  * Coordinates come exclusively from the address search — there is no
  * manual lat/lng entry anywhere in the console.
  */
-export function DepotDialog({ open, onOpenChange, onSubmit }: DepotDialogProps): React.ReactElement {
+export function DepotDialog({ open, onOpenChange, initial, onSubmit }: DepotDialogProps): React.ReactElement {
   const [name, setName] = React.useState('');
   const [region, setRegion] = React.useState('');
   const [notes, setNotes] = React.useState('');
@@ -48,6 +56,19 @@ export function DepotDialog({ open, onOpenChange, onSubmit }: DepotDialogProps):
     setPicked(null);
     setError(null);
   };
+
+  React.useEffect(() => {
+    if (!open) return;
+    if (!initial) {
+      reset();
+      return;
+    }
+    setName(initial.name);
+    setRegion(initial.region ?? '');
+    setNotes(initial.notes ?? '');
+    setPicked({ displayName: `${initial.lat.toFixed(5)}, ${initial.lng.toFixed(5)}`, lat: initial.lat, lng: initial.lng });
+    setError(null);
+  }, [open, initial]);
 
   const submit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -75,8 +96,8 @@ export function DepotDialog({ open, onOpenChange, onSubmit }: DepotDialogProps):
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>New station</DialogTitle>
-          <DialogDescription>Find the location by address — coordinates are set from the match.</DialogDescription>
+          <DialogTitle>{initial ? 'Edit depot' : 'New depot'}</DialogTitle>
+          <DialogDescription>{initial ? 'Update the depot identity or search for a new location.' : 'Find the location by address—coordinates are set from the match.'}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1">
@@ -110,7 +131,7 @@ export function DepotDialog({ open, onOpenChange, onSubmit }: DepotDialogProps):
             </Button>
             <Button type="submit" disabled={!name.trim() || !picked || busy}>
               {busy && <Loader2 className="animate-spin" />}
-              Create station
+              {initial ? 'Save changes' : 'Create depot'}
             </Button>
           </DialogFooter>
         </form>

@@ -48,6 +48,11 @@ export async function PATCH(request: NextRequest, ctx: Ctx): Promise<NextRespons
     const row = db.select().from(orders).where(eq(orders.id, id)).get();
     if (!row) return NextResponse.json({ error: 'Order not found' }, { status: 404 });
 
+    if (parsed.data.ref && parsed.data.ref !== row.ref) {
+      const duplicate = db.select({ id: orders.id }).from(orders).where(eq(orders.ref, parsed.data.ref)).get();
+      if (duplicate) return NextResponse.json({ error: `Order ref '${parsed.data.ref}' already exists` }, { status: 409 });
+    }
+
     if (parsed.data.windowStart && parsed.data.windowEnd && parsed.data.windowStart > parsed.data.windowEnd) {
       return NextResponse.json({ error: 'windowStart is after windowEnd' }, { status: 400 });
     }
