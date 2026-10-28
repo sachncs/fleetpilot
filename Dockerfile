@@ -39,6 +39,7 @@ RUN npx esbuild frontend/server.ts \
       --external:better-sqlite3 \
       --outfile=worker.mjs \
     && node scripts/trace-container-runtime.mjs \
+    && find runtime -type f -name '*.map' -delete \
     && rm -rf runtime/data
 
 # ---- Stage 2: runtime ---------------------------------------------------
