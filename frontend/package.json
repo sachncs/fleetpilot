@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node ../scripts/copy-maplibre-worker.mjs",
     "dev": "next dev --webpack",
+    "prebuild": "node ../scripts/copy-maplibre-worker.mjs",
     "build": "next build --webpack",
     "start": "NODE_ENV=production tsx ./server.ts",
     "start:prod": "npm run start",
