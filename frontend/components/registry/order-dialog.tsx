@@ -57,10 +57,7 @@ export interface OrderDialogProps {
   }) => Promise<void>;
 }
 
-/**
- * Coordinates come exclusively from the address search — no manual
- * lat/lng entry anywhere in the console. Windows are HH:MM strings.
- */
+/** Address search accepts a coordinate pair fallback. Windows are HH:MM strings. */
 export function OrderDialog({ open, onOpenChange, initial, onSubmit }: OrderDialogProps): React.ReactElement {
   const [ref, setRef] = React.useState('');
   const [kind, setKind] = React.useState<'delivery' | 'pickup' | 'pair'>('delivery');

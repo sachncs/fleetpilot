@@ -37,10 +37,7 @@ export interface DepotDialogProps {
   }) => Promise<void>;
 }
 
-/**
- * Coordinates come exclusively from the address search — there is no
- * manual lat/lng entry anywhere in the console.
- */
+/** Address search also accepts a latitude, longitude pair as a resilient fallback. */
 export function DepotDialog({ open, onOpenChange, initial, onSubmit }: DepotDialogProps): React.ReactElement {
   const [name, setName] = React.useState('');
   const [region, setRegion] = React.useState('');
@@ -97,7 +94,7 @@ export function DepotDialog({ open, onOpenChange, initial, onSubmit }: DepotDial
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{initial ? 'Edit depot' : 'New depot'}</DialogTitle>
-          <DialogDescription>{initial ? 'Update the depot identity or search for a new location.' : 'Find the location by address—coordinates are set from the match.'}</DialogDescription>
+          <DialogDescription>{initial ? 'Update the depot identity or choose a new location.' : 'Search by address or enter latitude, longitude to place the depot.'}</DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
           <div className="space-y-1">
