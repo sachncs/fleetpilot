@@ -1,0 +1,355 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-ink-50: oklch(0.98 0.005 250);
+  --color-ink-100: oklch(0.96 0.008 250);
+  --color-ink-200: oklch(0.92 0.012 250);
+  --color-ink-300: oklch(0.84 0.018 250);
+  --color-ink-400: oklch(0.68 0.025 250);
+  --color-ink-500: oklch(0.55 0.03 250);
+  --color-ink-600: oklch(0.42 0.04 250);
+  --color-ink-700: oklch(0.28 0.05 250);
+  --color-ink-800: oklch(0.16 0.04 250);
+  --color-ink-900: oklch(0.1 0.035 250);
+  --color-ink-950: oklch(0.06 0.025 250);
+
+  --color-paper: oklch(0.995 0.003 250);
+  --color-paper-elev: oklch(1 0 0);
+
+  --color-ink: oklch(0.16 0.04 250);
+  --color-ink-soft: oklch(0.42 0.04 250);
+  --color-ink-muted: oklch(0.55 0.03 250);
+  --color-ink-faint: oklch(0.72 0.02 250);
+
+  --color-line: oklch(0.92 0.01 250);
+  --color-line-strong: oklch(0.86 0.015 250);
+
+  --color-accent: oklch(0.62 0.18 252);
+  --color-accent-soft: oklch(0.72 0.14 252);
+  --color-accent-deep: oklch(0.48 0.2 256);
+
+  --color-iris: oklch(0.62 0.18 290);
+  --color-aurora: oklch(0.78 0.14 195);
+  --color-amber-glow: oklch(0.82 0.14 80);
+
+  --font-sans:
+    'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-display:
+    'Inter Display', 'Inter', ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, sans-serif;
+  --font-mono:
+    'JetBrains Mono', ui-monospace, SFMono-Regular, 'SF Mono', Menlo,
+    Consolas, 'Liberation Mono', monospace;
+  --font-serif:
+    'Instrument Serif', 'Iowan Old Style', 'Apple Garamond', Georgia, serif;
+}
+
+:root {
+  color-scheme: light;
+  --bg: var(--color-paper);
+  --bg-elev: var(--color-paper-elev);
+  --fg: var(--color-ink);
+  --fg-soft: var(--color-ink-soft);
+  --fg-muted: var(--color-ink-muted);
+  --fg-faint: var(--color-ink-faint);
+  --line: var(--color-line);
+  --line-strong: var(--color-line-strong);
+  --accent: var(--color-accent);
+  --accent-deep: var(--color-accent-deep);
+  --halo: oklch(0.72 0.14 252 / 0.18);
+  --grid: oklch(0.84 0.018 250 / 0.5);
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: oklch(0.07 0.018 250);
+  --bg-elev: oklch(0.1 0.022 250);
+  --fg: oklch(0.97 0.005 250);
+  --fg-soft: oklch(0.82 0.015 250);
+  --fg-muted: oklch(0.68 0.025 250);
+  --fg-faint: oklch(0.5 0.025 250);
+  --line: oklch(0.22 0.025 250);
+  --line-strong: oklch(0.3 0.03 250);
+  --accent: oklch(0.78 0.15 252);
+  --accent-deep: oklch(0.65 0.2 256);
+  --halo: oklch(0.7 0.18 252 / 0.22);
+  --grid: oklch(0.22 0.025 250 / 0.5);
+}
+
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    background: var(--bg);
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    font-feature-settings: 'cv11', 'ss01';
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background: color-mix(in oklab, var(--accent) 28%, transparent);
+    color: var(--fg);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.025em;
+    color: var(--fg);
+  }
+}
+
+@utility container-wide {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  max-width: 1280px;
+}
+
+@utility container-narrow {
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+  max-width: 960px;
+}
+
+@utility shell {
+  position: relative;
+  isolation: isolate;
+}
+
+@utility hairline {
+  border: 1px solid var(--line);
+}
+
+@utility surface {
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, var(--fg) 4%, transparent) inset,
+    0 20px 50px -32px color-mix(in oklab, var(--fg) 24%, transparent);
+}
+
+@utility surface-soft {
+  background: color-mix(in oklab, var(--bg-elev) 80%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  backdrop-filter: blur(14px);
+}
+
+@utility ink-muted {
+  color: var(--fg-muted);
+}
+
+@utility ink-soft {
+  color: var(--fg-soft);
+}
+
+@utility ink-faint {
+  color: var(--fg-faint);
+}
+
+@utility display {
+  font-family: var(--font-display);
+  letter-spacing: -0.035em;
+  font-weight: 500;
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--fg-muted);
+}
+
+@utility btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 500;
+  font-size: 0.92rem;
+  letter-spacing: -0.005em;
+  transition: transform 220ms ease, opacity 220ms ease;
+  box-shadow:
+    0 1px 0 0 color-mix(in oklab, white 14%, transparent) inset,
+    0 18px 40px -22px color-mix(in oklab, var(--fg) 60%, transparent);
+}
+
+@utility btn-primary {
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@utility btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1.1rem;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fg);
+  font-weight: 500;
+  font-size: 0.92rem;
+  border: 1px solid var(--line-strong);
+  transition: background 220ms ease, border-color 220ms ease;
+}
+
+@utility btn-ghost {
+  &:hover {
+    background: color-mix(in oklab, var(--fg) 4%, transparent);
+    border-color: var(--fg-faint);
+  }
+}
+
+@utility chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in oklab, var(--bg-elev) 75%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: var(--fg-muted);
+  backdrop-filter: blur(8px);
+}
+
+@utility shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      1200px 600px at 50% -10%,
+      var(--halo),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 500px at 100% 10%,
+      color-mix(in oklab, var(--accent-soft) 18%, transparent),
+      transparent 60%
+    );
+  z-index: -1;
+}
+
+@utility grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: radial-gradient(
+    color-mix(in oklab, var(--fg) 6%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 3px 3px;
+  z-index: -1;
+}
+
+@utility grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(
+    900px 600px at 50% 0%,
+    black,
+    transparent 70%
+  );
+  z-index: -1;
+}
+
+@utility mono {
+  font-family: var(--font-mono);
+  font-feature-settings: 'calt' 0;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0.6;
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes dash-flow {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+@keyframes halo-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.06);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
