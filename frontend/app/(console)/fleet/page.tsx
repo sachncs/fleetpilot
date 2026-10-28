@@ -260,7 +260,7 @@ export default function FleetPage(): React.ReactElement {
             <EmptyState
               icon={Truck}
               title="No depots yet"
-              description="Depots anchor your network—search an address to place the first one."
+              description="Depots anchor your network—search an address or enter coordinates to place the first one."
             />
           ) : (
             <Table>
