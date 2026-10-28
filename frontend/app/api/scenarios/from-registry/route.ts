@@ -87,6 +87,15 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
         { status: 409 },
       );
     }
+    const largestCapacity = Math.max(...selectedVehicles.map((vehicle) => vehicle.capacityKg!));
+    const oversizedOrder = selectedOrders.find((order) => (order.quantity > 0 ? order.quantity : 1) > largestCapacity);
+    if (oversizedOrder) {
+      const demand = oversizedOrder.quantity > 0 ? oversizedOrder.quantity : 1;
+      return NextResponse.json(
+        { error: `${oversizedOrder.ref} needs ${demand.toLocaleString()} kg, but the largest selected vehicle holds ${largestCapacity.toLocaleString()} kg.` },
+        { status: 409 },
+      );
+    }
 
     const nodes: Array<{ id: number; x: number; y: number; name: string }> = [
       { id: 0, x: 0, y: 0, name: depot.name },
