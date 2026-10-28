@@ -1,6 +1,8 @@
 node_modules/
 dist/
 coverage/
+sbom.cdx.json
+sbom.spdx.json
 docs/api/
 docs/md/
 data/
