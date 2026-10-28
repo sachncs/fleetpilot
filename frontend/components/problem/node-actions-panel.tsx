@@ -31,7 +31,7 @@ export function NodeActionsPanel({
           <CardTitle className="text-base">Selected node</CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-muted-foreground">
-          Click a node on the map to set it as the depot, rename it, or drop a customer there. Click
+          Click a node on the map to set it as the depot, rename it, or add a route job there. Click
           the map (not a node) to add a new node.
         </CardContent>
       </Card>
@@ -67,13 +67,13 @@ export function NodeActionsPanel({
   };
 
   const deleteNode = (): void => {
-    // Block delete if this node is the depot or used by a customer.
+    // Block delete if this node is the depot or used by a route job.
     if (isDepot) {
       alert('This node is the depot. Promote another node to depot first.');
       return;
     }
     if (usedAsDelivery || usedAsPickup) {
-      alert('This node is referenced by a customer. Remove or reassign that customer first.');
+      alert('This node is referenced by a route job. Remove or reassign that job first.');
       return;
     }
     const nodes = nodeList.filter((n) => n.id !== node.id);
@@ -132,7 +132,7 @@ export function NodeActionsPanel({
         <div className="text-xs text-muted-foreground">
           {usedAsDelivery || usedAsPickup
             ? `Used as ${[usedAsDelivery && 'delivery', usedAsPickup && 'pickup'].filter(Boolean).join(' and ')} stop.`
-            : 'Not yet linked to a customer.'}
+            : 'Not yet linked to a route job.'}
         </div>
         <Button
           size="sm"

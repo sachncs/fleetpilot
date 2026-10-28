@@ -53,7 +53,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const parsed = requestSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: 'Choose a name, station, at least one order, and at least one vehicle.', issues: parsed.error.issues },
+      { error: 'Choose a name, depot, at least one delivery, and at least one vehicle.', issues: parsed.error.issues },
       { status: 400 },
     );
   }
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     const db = getDb();
     const input = parsed.data;
     const depot = db.select().from(depots).where(eq(depots.id, input.depotId)).get();
-    if (!depot) return NextResponse.json({ error: 'Station not found' }, { status: 404 });
+    if (!depot) return NextResponse.json({ error: 'Depot not found' }, { status: 404 });
 
     const selectedOrders = db.select().from(orders).where(inArray(orders.id, input.orderIds)).all();
     if (selectedOrders.length !== new Set(input.orderIds).size) {

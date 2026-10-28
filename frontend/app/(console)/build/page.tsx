@@ -70,7 +70,7 @@ export default function BuildPage(): React.ReactElement {
           </div>
           <div className="flex flex-wrap items-center gap-1.5">
             <Badge variant="outline">{nodeCount} nodes</Badge>
-            <Badge variant="outline">{customerCount} customers</Badge>
+            <Badge variant="outline">{customerCount} route jobs</Badge>
             <Badge variant="outline">{vehicleCount} vehicles</Badge>
             {solution && (
               <Badge variant={solution.feasible ? 'success' : 'destructive'}>

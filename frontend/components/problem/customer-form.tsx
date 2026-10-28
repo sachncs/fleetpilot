@@ -84,7 +84,7 @@ export function CustomerForm(): React.ReactElement {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base">Customers</CardTitle>
+        <CardTitle className="text-base">Route jobs</CardTitle>
         <Button size="sm" variant="outline" onClick={addCustomer}>
           <Plus className="mr-1 h-3 w-3" /> Add
         </Button>
@@ -92,7 +92,7 @@ export function CustomerForm(): React.ReactElement {
       <CardContent className="space-y-3">
         {problem.customers.length === 0 && (
           <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
-            No customers yet. Click a node and use &quot;Drop here&quot; / &quot;Pickup here&quot;
+            No route jobs yet. Click a node and use &quot;Drop here&quot; / &quot;Pickup here&quot;
             to add one, or press Add.
           </div>
         )}
@@ -101,12 +101,12 @@ export function CustomerForm(): React.ReactElement {
           return (
             <div key={c.id} className="space-y-2 rounded-md border p-3">
               <div className="flex items-center justify-between">
-                <Badge variant="secondary">Customer #{c.id}</Badge>
+                <Badge variant="secondary">Job #{c.id}</Badge>
                 <Button
                   size="icon"
                   variant="ghost"
                   onClick={() => removeCustomer(idx)}
-                  aria-label="Remove customer"
+                  aria-label="Remove route job"
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>

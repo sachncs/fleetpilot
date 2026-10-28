@@ -193,7 +193,7 @@ export default function OverviewPage(): React.ReactElement {
 
       <div className="grid border-l border-t sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard title="Unplanned deliveries" value={String(unplannedOrders.length)} hint={`${state.orders.length} total today`} />
-        <KpiCard title="Available vehicles" value={String(activeVehicles.length)} hint={`${state.depots.length} dispatch station${state.depots.length === 1 ? '' : 's'}`} />
+        <KpiCard title="Available vehicles" value={String(activeVehicles.length)} hint={`${state.depots.length} dispatch depot${state.depots.length === 1 ? '' : 's'}`} />
         <KpiCard title="Saved plans" value={String(state.problems.length)} hint={`${activeJobs.length} optimization run${activeJobs.length === 1 ? '' : 's'} active`} />
         <KpiCard
           title="Exceptions"
@@ -207,7 +207,7 @@ export default function OverviewPage(): React.ReactElement {
         <div className="flex items-end justify-between gap-4">
           <div>
             <h2 className="text-lg font-medium tracking-[-0.025em]">Operating picture</h2>
-            <p className="text-muted-foreground mt-1 text-sm">Stations, available vehicles, and delivery demand on one map.</p>
+            <p className="text-muted-foreground mt-1 text-sm">Depots, available vehicles, and delivery demand on one map.</p>
           </div>
           <div className="hidden items-center gap-2 text-xs text-muted-foreground sm:flex"><span className="size-1.5 rounded-full bg-foreground" /> Refreshes every 30 seconds</div>
         </div>
@@ -289,7 +289,7 @@ export default function OverviewPage(): React.ReactElement {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium">{p.name}</p>
                     <p className="text-muted-foreground text-xs">
-                      {p.customerCount} customers · {p.vehicleCount} vehicles
+                      {p.customerCount} deliveries · {p.vehicleCount} vehicles
                     </p>
                   </div>
                   <Button asChild size="sm" variant="ghost"><Link href={`/optimize?problem=${p.id}`}>Open <ArrowUpRight /></Link></Button>

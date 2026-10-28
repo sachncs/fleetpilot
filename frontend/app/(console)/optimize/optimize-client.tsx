@@ -343,7 +343,7 @@ export function OptimizeClient(): React.ReactElement {
 
             {status === 'error' && (
               <p className="text-destructive mt-4 text-sm">
-                Run failed — check that the scenario has at least one customer and vehicle.
+                Run failed—check that the scenario has at least one route job and vehicle.
               </p>
             )}
           </CardContent>

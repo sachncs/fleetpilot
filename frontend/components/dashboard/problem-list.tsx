@@ -29,7 +29,7 @@ export function ProblemList({
         <TableRow>
           <TableHead>Name</TableHead>
           <TableHead className="text-center">Nodes</TableHead>
-          <TableHead className="text-center">Customers</TableHead>
+          <TableHead className="text-center">Route jobs</TableHead>
           <TableHead className="text-center">Vehicles</TableHead>
           <TableHead>Created</TableHead>
           <TableHead className="w-12" />

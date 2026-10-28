@@ -176,7 +176,7 @@ export default function HistoryPage(): React.ReactElement {
                         {c.versionLabel && <span className="ml-1 opacity-60">({c.versionLabel})</span>}
                       </Link>
                       <span className="text-muted-foreground">
-                        {c.customerCount} customers · {new Date(c.createdAt).toLocaleDateString()}
+                        {c.customerCount} route jobs · {new Date(c.createdAt).toLocaleDateString()}
                       </span>
                     </li>
                   ))}

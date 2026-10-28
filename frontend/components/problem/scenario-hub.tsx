@@ -153,7 +153,7 @@ export function ScenarioHub(): React.ReactElement {
                 <div className="min-w-0">
                   <p className="truncate text-xs font-medium">{s.name}</p>
                   <p className="text-muted-foreground text-[11px]">
-                    {s.customerCount} customers · {s.vehicleCount} vehicles
+                    {s.customerCount} route jobs · {s.vehicleCount} vehicles
                   </p>
                 </div>
                 <div className="flex shrink-0 items-center gap-0.5">

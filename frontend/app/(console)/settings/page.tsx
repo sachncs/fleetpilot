@@ -69,9 +69,9 @@ function SystemCard(): React.ReactElement {
   const rows: Array<[string, number]> = [
     ['Scenarios', info.database.counts.scenarios],
     ['Solutions', info.database.counts.solutions],
-    ['Orders', info.database.counts.orders],
+    ['Deliveries', info.database.counts.orders],
     ['Vehicles', info.database.counts.vehicles],
-    ['Stations', info.database.counts.stations],
+    ['Depots', info.database.counts.stations],
     ['Audit entries', info.database.counts.auditEntries],
   ];
 

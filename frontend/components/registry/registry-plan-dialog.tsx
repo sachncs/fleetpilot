@@ -75,7 +75,7 @@ export function RegistryPlanDialog({
           fetch('/api/depots?limit=200', { headers: headers() }),
           fetch('/api/fleet?status=active&limit=200', { headers: headers() }),
         ]);
-        if (!depotRes.ok || !fleetRes.ok) throw new Error('Could not load stations and fleet.');
+        if (!depotRes.ok || !fleetRes.ok) throw new Error('Could not load depots and fleet.');
         const depotData = (await depotRes.json()) as { depots: DepotOption[] };
         const fleetData = (await fleetRes.json()) as { fleet: VehicleOption[] };
         setDepots(depotData.depots);
@@ -161,7 +161,7 @@ export function RegistryPlanDialog({
             <div className="space-y-1.5">
               <Label>Dispatch depot</Label>
               <Select value={depotId} onValueChange={setDepotId}>
-                <SelectTrigger className="w-full"><SelectValue placeholder="Choose a station" /></SelectTrigger>
+                <SelectTrigger className="w-full"><SelectValue placeholder="Choose a depot" /></SelectTrigger>
                 <SelectContent>
                   {depots.map((depot) => <SelectItem key={depot.id} value={depot.id}>{depot.name}</SelectItem>)}
                 </SelectContent>
