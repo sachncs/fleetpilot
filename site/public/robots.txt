@@ -1,4 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://fleetpilot.sachncs.com/sitemap.xml

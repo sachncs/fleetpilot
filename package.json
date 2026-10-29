@@ -40,6 +40,7 @@
     "clean": "rm -rf dist docs/api docs/md",
     "lint": "eslint src tests",
     "lint:fix": "eslint src tests --fix",
+    "deadcode": "knip --include files,dependencies,exports,types,duplicates",
     "format": "prettier --write src tests README.md CHANGELOG.md docs/internal/review-history.md",
     "format:check": "prettier --check src tests README.md CHANGELOG.md docs/internal/review-history.md",
     "pretest": "npm run build",
@@ -115,6 +116,7 @@
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-import-x": "4.17.1",
     "eslint-plugin-jsdoc": "^65.4.2",
+    "knip": "6.43.0",
     "mocha": "12.0.3",
     "prettier": "3.9.10",
     "react": "19.3.1",
@@ -127,8 +129,7 @@
     "typedoc-plugin-markdown": "4.14.1",
     "typescript": "npm:@typescript/typescript6@6.0.2",
     "typescript-7": "npm:typescript@7.0.2",
-    "typescript-eslint": "8.72.1",
-    "web-worker": "1.5.0"
+    "typescript-eslint": "8.72.1"
   },
   "optionalDependencies": {
     "@tailwindcss/oxide-linux-arm64-musl": "^4.3.3",

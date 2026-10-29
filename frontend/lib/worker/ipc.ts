@@ -1,17 +1,4 @@
-export interface SolveJobPayload {
-  jobId: string;
-  problemJson: string;
-  solverOptions: {
-    alnsIterations: number;
-    populationSize: number;
-    maxGenerations: number;
-    maxTimeMs: number;
-    seed: number;
-    warmStart: boolean;
-  };
-}
-
-export interface ProgressMessage {
+interface ProgressMessage {
   type: 'progress';
   jobId: string;
   stage: 'ALNS' | 'BRKGA' | 'parallel';
@@ -21,7 +8,7 @@ export interface ProgressMessage {
   elapsedMs: number;
 }
 
-export interface SolutionMessage {
+interface SolutionMessage {
   type: 'solution';
   jobId: string;
   solutionJson: string;
@@ -33,20 +20,10 @@ export interface SolutionMessage {
   solutionId: string;
 }
 
-export interface ErrorMessage {
+interface ErrorMessage {
   type: 'error';
   jobId: string;
   error: string;
 }
 
 export type WorkerMessage = ProgressMessage | SolutionMessage | ErrorMessage;
-
-export interface CancelMessage {
-  type: 'cancel';
-  jobId: string;
-}
-
-export interface EnqueueMessage {
-  type: 'enqueue';
-  jobId: string;
-}

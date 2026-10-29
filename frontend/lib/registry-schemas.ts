@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-export const LAT_MIN = -90;
-export const LAT_MAX = 90;
-export const LNG_MIN = -180;
-export const LNG_MAX = 180;
+const LAT_MIN = -90;
+const LAT_MAX = 90;
+const LNG_MIN = -180;
+const LNG_MAX = 180;
 
 /** Coordinate pair — hard range validation at the API boundary. */
-export const coordSchema = z.object({
+const coordSchema = z.object({
   lat: z.number().min(LAT_MIN, 'lat out of range').max(LAT_MAX, 'lat out of range'),
   lng: z.number().min(LNG_MIN, 'lng out of range').max(LNG_MAX, 'lng out of range'),
 });
@@ -62,7 +62,3 @@ export const orderCreateSchema = orderBaseSchema.refine(
 );
 
 export const orderUpdateSchema = orderBaseSchema.partial();
-
-export type DepotCreateInput = z.infer<typeof depotCreateSchema>;
-export type VehicleCreateInput = z.infer<typeof vehicleCreateSchema>;
-export type OrderCreateInput = z.infer<typeof orderCreateSchema>;

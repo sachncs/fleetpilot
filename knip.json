@@ -1,0 +1,18 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": [
+        "benchmarks/generators/*.mjs",
+        "benchmarks/runner/aggregate-smoke.mjs",
+        "benchmarks/runner/runner.ts",
+        "examples/transfer-example.ts",
+        "scripts/trace-container-runtime.mjs",
+        "tests/hooks.ts"
+      ]
+    },
+    "frontend": {
+      "entry": ["lib/worker/process.ts"]
+    }
+  }
+}

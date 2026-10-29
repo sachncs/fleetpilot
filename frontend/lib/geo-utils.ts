@@ -34,15 +34,3 @@ export function metresToLatLng(origin: ReferenceOrigin, x: number, y: number): [
 export function metresToLatLngExpr(origin: ReferenceOrigin, x: number, y: number): LatLngExpression {
   return metresToLatLng(origin, x, y);
 }
-
-/** Great-circle distance between two lat/lng points, in metres. */
-export function haversineMetres(a: [number, number], b: [number, number]): number {
-  const [lat1, lng1] = a;
-  const [lat2, lng2] = b;
-  const dLat = (lat2 - lat1) * DEG_TO_RAD;
-  const dLng = (lng2 - lng1) * DEG_TO_RAD;
-  const aH =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * DEG_TO_RAD) * Math.cos(lat2 * DEG_TO_RAD) * Math.sin(dLng / 2) ** 2;
-  return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(aH));
-}

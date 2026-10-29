@@ -8,7 +8,7 @@
  * info in prod) and only console.* methods exist anyway.
  */
 
-export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
+type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
 
 const ORDER: Record<LogLevel, number> = {
   debug: 10,

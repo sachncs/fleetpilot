@@ -17,7 +17,7 @@ import { useProblemStore } from '@/lib/problem-store';
 
 const LAST_SCENARIO_KEY = 'fleetpilot:last-scenario';
 
-export function getLastScenarioId(): string | null {
+function getLastScenarioId(): string | null {
   try {
     return localStorage.getItem(LAST_SCENARIO_KEY);
   } catch {

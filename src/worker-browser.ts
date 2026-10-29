@@ -1,7 +1,7 @@
 /**
  * Browser counterpart to `src/worker.ts`. Uses `self.postMessage` and
  * `self.onmessage` to communicate with the orchestrator. The orchestrator
- * (or a `web-worker` polyfill in tests) is responsible for posting the
+ * is responsible for posting the
  * `WorkerData` after the worker emits a `ready` signal.
  */
 
@@ -9,7 +9,6 @@ import { runWorkerTask, type WorkerIO } from './worker-core.js';
 import { isWorkerData, validateWorkerData } from './worker-validation.js';
 
 // `DedicatedWorkerGlobalScope` is the type of `self` inside a Web Worker
-// (or a `web-worker` polyfill in Node).
 interface WorkerGlobalScope {
   postMessage(msg: unknown): void;
   onmessage: ((event: { data: unknown }) => void) | null;

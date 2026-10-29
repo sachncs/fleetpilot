@@ -30,7 +30,7 @@ export interface DepotOption {
   name: string;
 }
 
-export interface VehicleDialogValues {
+interface VehicleDialogValues {
   name: string;
   status: 'active' | 'maintenance' | 'retired';
   capacityKg: string;

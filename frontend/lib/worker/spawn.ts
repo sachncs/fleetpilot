@@ -102,8 +102,3 @@ export function stopWorker(): void {
     worker = null;
   }
 }
-
-export function resetWorkerForRestart(): void {
-  shuttingDown = false;
-  restartAttempts = 0;
-}

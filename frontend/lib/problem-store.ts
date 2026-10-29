@@ -26,8 +26,6 @@ export interface SolverProgress {
   elapsedMs: number;
 }
 
-export type NodeTimeEntry = [number, number];
-
 export interface SolverSolution {
   id?: string;
   makespan: number;
@@ -40,7 +38,7 @@ export interface SolverSolution {
   nodeTimesEntries: Array<[number, number]>;
 }
 
-export type SolverStatus = 'idle' | 'solving' | 'success' | 'error';
+type SolverStatus = 'idle' | 'solving' | 'success' | 'error';
 
 export interface ProblemStore {
   problem: Problem | null;
@@ -59,7 +57,7 @@ export interface ProblemStore {
   reset: () => void;
 }
 
-export const DEFAULT_OPTIONS: SolverSolveOptions = {
+const DEFAULT_OPTIONS: SolverSolveOptions = {
   alnsIterations: 200,
   populationSize: 1000,
   maxGenerations: 500,

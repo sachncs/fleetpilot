@@ -64,29 +64,3 @@ export function detectWindowViolations(
 
   return violations;
 }
-
-export interface ExceptionPayload {
-  orderId: string | null;
-  nodeId: number;
-  kind: 'late' | 'early';
-  arrival: number;
-  windowStart: number | null;
-  windowEnd: number | null;
-  reportedAt: string;
-}
-
-/** Map a playback violation to the payload accepted by the orders API. */
-export function buildExceptionPayload(
-  violation: WindowViolation,
-  options: { orderId?: string | null; reportedAt?: Date } = {},
-): ExceptionPayload {
-  return {
-    orderId: options.orderId ?? null,
-    nodeId: violation.nodeId,
-    kind: violation.kind,
-    arrival: violation.arrival,
-    windowStart: violation.windowStart,
-    windowEnd: violation.windowEnd,
-    reportedAt: (options.reportedAt ?? new Date()).toISOString(),
-  };
-}

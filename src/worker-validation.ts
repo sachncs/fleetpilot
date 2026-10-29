@@ -1,5 +1,5 @@
 /** Wire-serializable node (matches LocationNode's serialized fields). */
-export interface WorkerNodeData {
+interface WorkerNodeData {
   id: number;
   x: number;
   y: number;
@@ -39,7 +39,7 @@ export interface WorkerTrafficSegmentData {
 }
 
 /** Wire-serializable time-dependent factor (multiplier after `startTime`). */
-export interface WorkerTimeFactorData {
+interface WorkerTimeFactorData {
   startTime: number;
   factor: number;
 }

@@ -45,10 +45,10 @@ export { SolutionWithTransfers, ProblemWithTransfers } from './core/solution-wit
 
 // Algorithms
 export { ALNS } from './algorithms/alns/alns.js';
-export type { ALNSOptions } from './algorithms/alns/alns.js';
+export type { ALNSOptions, ALNSProgress } from './algorithms/alns/alns.js';
 export { BRKGA } from './algorithms/brkga/brkga.js';
-export type { BRKGAOptions, Individual } from './algorithms/brkga/brkga.js';
-export type { Chromosome } from './algorithms/brkga/decoder.js';
+export type { BRKGAOptions, BRKGAProgress, Individual } from './algorithms/brkga/brkga.js';
+export { Decoder, type Chromosome } from './algorithms/brkga/decoder.js';
 export {
   TransferAwareInsertionOperators,
   TransferAwareRemovalOperators,

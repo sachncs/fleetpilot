@@ -16,7 +16,7 @@ export interface WireIndividual {
  * Periodic checkpoint message sent by an island worker, reporting the
  * current population so the orchestrator can decide on migration.
  */
-export interface IslandCheckpointMessage {
+interface IslandCheckpointMessage {
   type: 'checkpoint';
   islandId: number;
   generation: number;
@@ -27,7 +27,7 @@ export interface IslandCheckpointMessage {
  * Terminal message sent by an island worker when the orchestrator
  * asks it to stop; carries the best individual found.
  */
-export interface IslandFinishMessage {
+interface IslandFinishMessage {
   type: 'finish';
   islandId: number;
   bestIndividual: WireIndividual | null;
@@ -37,19 +37,19 @@ export interface IslandFinishMessage {
 export type IslandWorkerMessage = IslandCheckpointMessage | IslandFinishMessage;
 
 /** Tell an island worker to evolve for `generations` generations and report a checkpoint. */
-export interface EvolveCommand {
+interface EvolveCommand {
   type: 'evolve';
   generations: number;
 }
 
 /** Replace the lowest-fitness individuals in an island with these migrants. */
-export interface InjectCommand {
+interface InjectCommand {
   type: 'inject';
   migrants: Chromosome[];
 }
 
 /** Tell an island worker to stop evolving and report its best individual. */
-export interface FinishCommand {
+interface FinishCommand {
   type: 'finish';
 }
 

@@ -53,5 +53,3 @@ function resolveKey(token: string): AuthContext | NextResponse {
 
   return { keyId: row.id, keyName: row.name };
 }
-
-export { authenticateUpgrade } from './upgrade';

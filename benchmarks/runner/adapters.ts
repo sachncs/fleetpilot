@@ -16,7 +16,7 @@ import {
 // Li & Lim PDPTW
 // ============================================================================
 
-export interface LiLimNode {
+interface LiLimNode {
   id: number;
   x: number;
   y: number;
@@ -27,13 +27,13 @@ export interface LiLimNode {
   pairedNodeId: number;
 }
 
-export interface LiLimInstance {
+interface LiLimInstance {
   numVehicles: number;
   capacity: number;
   nodes: LiLimNode[];
 }
 
-export function parseLiLim(filePath: string): LiLimInstance {
+function parseLiLim(filePath: string): LiLimInstance {
   const lines = readFileSync(filePath, 'utf8')
     .split(/\r?\n/)
     .filter((l) => l.trim().length > 0);
@@ -59,7 +59,7 @@ export function parseLiLim(filePath: string): LiLimInstance {
   return { numVehicles, capacity, nodes };
 }
 
-export function liLimToProblem(parsed: LiLimInstance): Problem {
+function liLimToProblem(parsed: LiLimInstance): Problem {
   const nodes: Record<number, LocationNode> = {};
   for (const n of parsed.nodes) {
     nodes[n.id] = new LocationNode(n.id, n.x, n.y, `L${n.id}`);
@@ -101,7 +101,7 @@ export function liLimToProblem(parsed: LiLimInstance): Problem {
 // Solomon / Gehring-Homberger VRPTW (degenerate P/D)
 // ============================================================================
 
-export interface SolomonNode {
+interface SolomonNode {
   id: number;
   x: number;
   y: number;
@@ -111,14 +111,14 @@ export interface SolomonNode {
   serviceTime: number;
 }
 
-export interface SolomonInstance {
+interface SolomonInstance {
   name: string;
   numVehicles: number;
   capacity: number;
   nodes: SolomonNode[];
 }
 
-export function parseSolomon(filePath: string): SolomonInstance {
+function parseSolomon(filePath: string): SolomonInstance {
   const raw = readFileSync(filePath, 'utf8');
   const lines = raw.split(/\r?\n/);
   const name = lines[0]?.trim() ?? 'solomon-unknown';
@@ -164,7 +164,7 @@ export function parseSolomon(filePath: string): SolomonInstance {
   return { name, numVehicles, capacity, nodes };
 }
 
-export function solomonToProblem(parsed: SolomonInstance): Problem {
+function solomonToProblem(parsed: SolomonInstance): Problem {
   const nodes: Record<number, LocationNode> = {};
   for (const n of parsed.nodes) {
     nodes[n.id] = new LocationNode(n.id, n.x, n.y, `S${n.id}`);
@@ -202,14 +202,14 @@ export function solomonToProblem(parsed: SolomonInstance): Problem {
 // FleetPilot native JSON (Cordeau, DARP, Salhi-Nagy, synthetic)
 // ============================================================================
 
-export interface FleetPilotJsonNode {
+interface FleetPilotJsonNode {
   id: number;
   x: number;
   y: number;
   name?: string;
 }
 
-export interface FleetPilotJsonShape {
+interface FleetPilotJsonShape {
   depotNodeId: number;
   nodes: Array<FleetPilotJsonNode> | Record<string, FleetPilotJsonNode>;
   customers: Array<{
@@ -231,12 +231,12 @@ export interface FleetPilotJsonShape {
   depots?: Array<{ id: number; x: number; y: number; name?: string }>;
 }
 
-export function parseFleetPilotJson(filePath: string): FleetPilotJsonShape {
+function parseFleetPilotJson(filePath: string): FleetPilotJsonShape {
   const data = JSON.parse(readFileSync(filePath, 'utf8')) as FleetPilotJsonShape;
   return data;
 }
 
-export function fleetPilotJsonToProblem(parsed: FleetPilotJsonShape): Problem {
+function fleetPilotJsonToProblem(parsed: FleetPilotJsonShape): Problem {
   const nodes: Record<number, LocationNode> = {};
   const nodeList = Array.isArray(parsed.nodes)
     ? parsed.nodes

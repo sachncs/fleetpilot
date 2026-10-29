@@ -5,7 +5,7 @@ import type { GeoJsonFeature } from './geo-json-feature.js';
 import type { GeoJson } from './geo-json.js';
 import type { KmlPlacemark } from './kml-placemark.js';
 
-export type { GeoJson, GeoJsonFeature, KmlPlacemark };
+export type { GeoJson };
 
 /**
  * Exports FleetPilot solutions to GIS formats (GeoJson, KML).
