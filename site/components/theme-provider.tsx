@@ -35,9 +35,12 @@ export function ThemeProvider({
 
   React.useEffect(() => {
     const initial = readInitialTheme();
-    setThemeState(initial);
     document.documentElement.classList.toggle('dark', initial === 'dark');
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setThemeState(initial);
+      setMounted(true);
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const setTheme = React.useCallback((next: Theme) => {

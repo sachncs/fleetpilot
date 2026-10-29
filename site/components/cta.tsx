@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowUpRight, Github, TerminalSquare, BookOpen } from 'lucide-react';
+import { ArrowUpRight, GitBranch, TerminalSquare, BookOpen } from 'lucide-react';
 
 export function Cta(): React.ReactElement {
   return (
@@ -63,7 +63,7 @@ export function Cta(): React.ReactElement {
                 rel="noreferrer noopener"
                 className="btn-ghost justify-center text-[15px] sm:px-6"
               >
-                <Github className="size-4" strokeWidth={1.75} />
+                <GitBranch className="size-4" strokeWidth={1.75} />
                 Open repository
               </Link>
               <Link

@@ -2,10 +2,8 @@
 import { lstat, readlink, symlink, unlink } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const root = resolve(here, '..');
+const root = process.cwd();
 const tsc = resolve(root, 'node_modules', '.bin', 'tsc');
 const ts7bin = resolve(root, 'node_modules', 'typescript-7', 'bin', 'tsc');
 

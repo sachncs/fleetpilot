@@ -1,6 +1,6 @@
 import * as React from 'react';
 import Link from 'next/link';
-import { Github, Package, ShieldCheck } from 'lucide-react';
+import { GitBranch, Package, ShieldCheck } from 'lucide-react';
 
 type FooterLink = { label: string; href: string; external?: boolean };
 
@@ -81,7 +81,7 @@ export function SiteFooter(): React.ReactElement {
               pickup-and-delivery. Open source under the ISC license.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <Pill icon={Github} label="sachncs/fleetpilot" href="https://github.com/sachncs/fleetpilot" />
+              <Pill icon={GitBranch} label="sachncs/fleetpilot" href="https://github.com/sachncs/fleetpilot" />
               <Pill icon={Package} label="v2.0.0 on npm" href="https://www.npmjs.com/package/fleetpilot" />
               <Pill icon={ShieldCheck} label="ISC license" href="https://github.com/sachncs/fleetpilot/blob/master/LICENSE" />
             </div>

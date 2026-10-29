@@ -3,7 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowRight, Sparkles, Github, TerminalSquare } from 'lucide-react';
+import { ArrowRight, Sparkles, GitBranch, TerminalSquare } from 'lucide-react';
 
 export function Hero(): React.ReactElement {
   const prefersReducedMotion = useReducedMotion();
@@ -59,7 +59,7 @@ export function Hero(): React.ReactElement {
                 rel="noreferrer noopener"
                 className="btn-ghost"
               >
-                <Github className="size-4" strokeWidth={1.75} />
+                <GitBranch className="size-4" strokeWidth={1.75} />
                 Star on GitHub
               </Link>
               <Link
