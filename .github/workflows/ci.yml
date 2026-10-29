@@ -18,47 +18,132 @@ concurrency:
   cancel-in-progress: ${{ github.event_name != 'schedule' }}
 
 jobs:
-  verify:
-    name: Application verification
+  quality:
+    name: Static analysis
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Setup Node.js 26
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@v7.1.0
         with:
           node-version: 26
           cache: npm
+      - name: Use npm 12.2.1
+        run: npm install --global npm@12.2.1
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-      - name: Verify solver and package
-        run: npm run verify
-      - name: Verify unified web app
-        run: |
-          npm run lint -w @fleetpilot/web
-          npm run typecheck -w @fleetpilot/web
-          npm run build -w @fleetpilot/web
+      - name: Type-check solver package
+        run: npm run typecheck
+      - name: Lint solver package
+        run: npm run lint
+      - name: Check repository formatting
+        run: npm run format:check
+      - name: Type-check web application
+        run: npm run typecheck -w @fleetpilot/web
+      - name: Lint web application
+        run: npm run lint -w @fleetpilot/web
+
+  tests:
+    name: Solver tests and coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Setup Node.js 26
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+      - name: Use npm 12.2.1
+        run: npm install --global npm@12.2.1
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Run test suite with coverage gates
+        run: npm run test:coverage
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: coverage-report
+          path: coverage/
+          if-no-files-found: error
+          retention-days: 14
+
+  build:
+    name: Production builds and package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Setup Node.js 26
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 26
+          cache: npm
+      - name: Use npm 12.2.1
+        run: npm install --global npm@12.2.1
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build solver package
+        run: npm run build
+      - name: Build unified web application
+        run: npm run build -w @fleetpilot/web
+      - name: Build API documentation
+        run: npm run docs
       - name: Audit production dependencies
-        run: npm audit --audit-level=high
-      - name: Generate SPDX SBOM
-        run: npm run sbom
+        run: npm audit --omit=dev --audit-level=high
       - name: Verify npm package contents
         run: npm pack --dry-run
+      - name: Generate SPDX SBOM
+        run: npm run sbom
       - name: Upload release evidence
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: release-evidence
           path: |
             dist/
+            docs/api/
             sbom.spdx.json
+          if-no-files-found: error
           retention-days: 30
+
+  site:
+    name: Static product site
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Use npm 12.2.1
+        run: npm install --global npm@12.2.1
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Lint product site
+        run: npm run lint
+      - name: Type-check product site
+        run: npm run typecheck
+      - name: Build static export
+        run: npm run build
+        env:
+          GITHUB_ACTIONS: 'true'
+      - name: Verify export entry point
+        run: test -s out/index.html
 
   container:
     name: Production container
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v7.0.1
       - name: Build production image
         run: docker build -t fleetpilot:test .
       - name: Smoke-test unified app
@@ -80,6 +165,13 @@ jobs:
 
           test "$ready" = true
           test -s /tmp/overview.html
+          grep -qi '<html' /tmp/overview.html
+
+          curl --fail --silent --show-error \
+            -H 'Authorization: Bearer fp_public_console' \
+            http://127.0.0.1:3000/api/system \
+            > /tmp/system.json
+          node -e "const value = require('/tmp/system.json'); if (!value.database || !value.solverLimits) process.exit(1)"
       - name: Enforce image size budget
         run: |
           bytes=$(docker image inspect fleetpilot:test --format '{{.Size}}')
