@@ -61,7 +61,7 @@ npm install fleetpilot
 ```bash
 git clone https://github.com/sachncs/fleetpilot.git
 cd fleetpilot
-npm install
+npm ci --no-audit --no-fund
 ```
 
 ## Quick Start
@@ -238,7 +238,7 @@ const csv = exporter.toCsv(); // Excel
 const solution = await solver.solve({
   onProgress: (p) => {
     console.log(
-      `[${p.stage}] ${p.iteration}/${p.maxIterations} — best: ${p.bestMakespan.toFixed(1)}min`,
+      `[${p.stage}] ${p.iteration}/${p.maxGenerations} — best: ${p.bestMakespan.toFixed(1)}min`,
     );
   },
 });
@@ -387,6 +387,9 @@ Time-dependent travel speed: if `departureTime ≥ latest-matching factor.startT
 
 `transferDuration = amount × hub.transferTimePerUnit`. Each hub enforces a concurrency limit. Vehicles have directional transfer permissions.
 
+See the runnable [transfer example](examples/transfer-example.ts) for a complete
+hub, vehicle-capability, and transfer-aware solve setup.
+
 ## Performance Tips
 
 - **Quick test:** `alnsIterations: 100, populationSize: 1000, maxGenerations: 500`
@@ -398,14 +401,18 @@ Time-dependent travel speed: if `departureTime ≥ latest-matching factor.startT
 ## Development
 
 ```bash
-npm install
+npm ci --no-audit --no-fund
 npm run build              # rollup ESM + CJS bundles
 npm run dev                # rollup --watch
-npm test                   # 350+ tests
+npm test                   # complete Mocha suite
 npm run test:coverage      # c8 text + lcov + html
 npm run lint               # eslint src tests
 npm run lint:fix
 npm run typecheck          # tsc --noEmit
+npm run deadcode           # unreachable files, exports, types, and dependencies
+npm run lint -w @fleetpilot/web
+npm run typecheck -w @fleetpilot/web
+npm run build -w @fleetpilot/web
 npm run docs               # typedoc HTML
 npm run docs:md            # typedoc-plugin-markdown
 npm run clean              # rm -rf dist docs/api docs/md
@@ -414,7 +421,7 @@ npm run clean              # rm -rf dist docs/api docs/md
 ## Testing
 
 ```bash
-npm test                   # mocha (350+ tests)
+npm test                   # mocha
 npm run test:watch
 npm run test:coverage      # c8 with text / lcov / html reports and 85/85/70/85 thresholds
 ```
@@ -434,9 +441,9 @@ Artifacts:
 ## Release
 
 ```bash
-npm run lint && npm run typecheck && npm test && npm run build
-# Bump version in package.json (e.g. 0.1.2 → 0.1.3)
-git tag v0.1.X && git push origin v0.1.X
+npm run verify && npm run deadcode && npm run build
+# Bump version in package.json (e.g. 2.0.0 → 2.0.1)
+git tag v2.0.X && git push origin v2.0.X
 # .github/workflows/publish.yml publishes to npm via trusted publishing
 ```
 
@@ -498,7 +505,7 @@ src/
 | -------------- | --------------------------------------------------------------------------- |
 | Language       | TypeScript 7.0+                                                             |
 | Module system  | ES Modules with CommonJS + `.d.ts` support                                  |
-| Runtime        | Node.js ≥ 20                                                                |
+| Runtime        | Node.js ≥ 26                                                                |
 | Build          | Rollup + `@rollup/plugin-typescript` + `rollup-plugin-dts`                  |
 | Test framework | Mocha + Chai                                                                |
 | Coverage       | c8                                                                          |
@@ -509,12 +516,6 @@ src/
 | CLI            | `dist/cli.mjs` (`fleetpilot` bin)                                           |
 | Parallelism    | `worker_threads` (Node) / Web Worker (browser via `dist/worker.browser.js`) |
 
-## Roadmap
-
-- **v2.0.0** — Current: Next.js web console, SQLite-backed jobs/keys, multi-depot solver, island-mode BRKGA, deterministic seeded RNG, Docker image, regression test suite.
-- **Next minor** — Hardening: rate-limited geocoding, WebSocket auth, key self-protection, abort-signal coverage in the parallel and island paths, SBOM pipeline on npm 11.
-- **Future** — Exploring (under research, no committed schedule): traffic-aware transfer hubs, lower-cost transfer models, additional benchmark families.
-
 ## Web UI
 
 `frontend/` (`@fleetpilot/web`) is the unified FleetPilot product: the branded public
@@ -523,7 +524,7 @@ solver controls, route simulation, fleet registry, and analytics all ship from o
 Next.js 16 application. The console is open by design and does not require a login.
 
 ```bash
-npm install
+npm ci --no-audit --no-fund
 npm run build:frontend
 
 # Development (custom server with WebSocket progress streaming)

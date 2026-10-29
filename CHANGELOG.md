@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- CI now rejects unreachable files, exports, types, duplicate code, and unused
+  dependencies through a pinned Knip audit.
+- Contributor, security, release, web application, and worker deployment
+  documentation now matches the Node.js 26 / npm 12 / TypeScript 7 toolchain.
+
+### Removed
+
+- The obsolete standalone `site/` application; the product site is maintained
+  in `sachncs.github.io`, while this repository ships the unified app from
+  `frontend/`.
+- Unused frontend components, map/drawing integrations, helper functions,
+  exports, and their orphaned dependencies.
+
 ## [2.0.0] - 2026-08-22
 
 ### Changed

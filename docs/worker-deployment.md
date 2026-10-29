@@ -11,31 +11,25 @@ distinct parallel features:
 This guide covers the operational concerns of running the worker bundle in
 production.
 
-## 1. Thread-pool sizing
+## 1. Worker sizing
 
-Node multiplexes all `worker_threads` onto a single thread pool whose size is
-governed by `UV_THREADPOOL_SIZE`. The default is `4`. The Node thread pool is
-shared with `libuv` I/O, so a busy production server may need to be tuned.
+Each `worker_threads` worker runs on its own operating-system thread;
+`UV_THREADPOOL_SIZE` does not control their count. Reserve one core for the
+main process and I/O, then keep the combined island and parallel-worker count
+within the remaining physical cores. Oversubscription increases context
+switching and can reduce solver throughput.
 
-```bash
-# 8-thread pool (6 workers + 2 buffer for I/O)
-UV_THREADPOOL_SIZE=8 node your-solver.js
-```
-
-**Rule of thumb:** `UV_THREADPOOL_SIZE` should be **at least**
-`islands + max(0, parallel ? 1 : 0) + 2`. The "+2" buffer is for libuv
-file/network I/O.
-
-Setting `UV_THREADPOOL_SIZE` higher than the number of physical cores
-provides no benefit and may slow things down due to context switching.
+The libuv thread-pool setting only affects native asynchronous work such as
+some filesystem, DNS, compression, and cryptography operations. Tune it only
+when profiling shows those operations are a bottleneck.
 
 ## 2. Container memory ceiling
 
 The default Node heap is `~1.5 GB`. The paper-default config
-(`populationSize: 30000`, `maxGenerations: 20000`) holds comfortably in 512 MB
-of RSS, but the BRKGA decoder allocates per-generation arrays. In containers:
+(`populationSize: 30000`, `maxGenerations: 20000`) allocates per-generation
+arrays and should be measured against representative problem sizes. In containers:
 
-- **Production default**: `--max-old-space-size=512` (512 MB V8 heap).
+- **Repository image default**: `--max-old-space-size=1024` (1 GB V8 heap).
 - **Paper-quality**: `--max-old-space-size=2048` (2 GB).
 - **Stress-test**: `--max-old-space-size=4096` (4 GB).
 
@@ -45,7 +39,7 @@ room for native allocations and the worker thread stacks.
 ```dockerfile
 # Minimal Dockerfile pattern
 FROM node:26-alpine
-ENV NODE_OPTIONS="--max-old-space-size=512"
+ENV NODE_OPTIONS="--max-old-space-size=1024"
 CMD ["node", "your-solver.js"]
 ```
 

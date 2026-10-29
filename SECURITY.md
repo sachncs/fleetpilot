@@ -2,14 +2,15 @@
 
 ## Supported Versions
 
-The `fleetpilot` npm package is the only artifact covered by this policy.
+The supported FleetPilot solver package, unified web application, and production
+container are covered by this policy.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 2.0.x   | :white_check_mark: |
+| Version | Supported                                |
+| ------- | ---------------------------------------- |
+| 2.0.x   | :white_check_mark:                       |
 | 1.2.x   | :white_check_mark: (security fixes only) |
 | 1.1.x   | :white_check_mark: (security fixes only) |
-| < 1.1   | :x:                |
+| < 1.1   | :x:                                      |
 
 ## Scope
 
@@ -18,6 +19,8 @@ In scope:
 - The `fleetpilot` package published to npm (ESM, CJS, type definitions, browser worker bundle).
 - The `fleetpilot` CLI binary shipped with the package.
 - The `dist/worker.js` and `dist/worker.browser.js` worker bundles.
+- The Next.js application under `frontend/`, including its REST and WebSocket endpoints.
+- The production image built by the repository `Dockerfile`.
 
 Out of scope:
 
@@ -55,12 +58,12 @@ to consumers.
 
 We use CVSS v3.1 base scores to classify vulnerability severity:
 
-| Severity | CVSS v3.1 base score  | Response SLA              |
-| -------- | --------------------- | ------------------------- |
-| Critical | 9.0 – 10.0            | Patch within 24 hours     |
-| High     | 7.0 – 8.9             | Patch within 7 days       |
-| Medium   | 4.0 – 6.9             | Patch in next minor/major |
-| Low      | 0.1 – 3.9             | Patch in next minor/major |
+| Severity | CVSS v3.1 base score | Response SLA              |
+| -------- | -------------------- | ------------------------- |
+| Critical | 9.0 – 10.0           | Patch within 24 hours     |
+| High     | 7.0 – 8.9            | Patch within 7 days       |
+| Medium   | 4.0 – 6.9            | Patch in next minor/major |
+| Low      | 0.1 – 3.9            | Patch in next minor/major |
 
 "Patch" here means a release on npm with a CVE / GHSA advisory. The
 `chore(release)` commit and tag follow our normal process.
@@ -72,9 +75,8 @@ We use CVSS v3.1 base scores to classify vulnerability severity:
   npm package page.
 - Dependency updates are tracked by **Dependabot** (`.github/dependabot.yml`).
   Weekly PRs for minor/patch updates, separate PRs for major updates.
-- We run `npm audit --audit-level=high` on a weekly cron
-  (`.github/workflows/security-audit.yml`). Any unhandled high/critical CVE
-  fails the job.
+- Scheduled CI runs a production dependency audit every Tuesday. Any unhandled
+  high or critical vulnerability fails the build.
 - Two dev-only dependencies (`diff`, `serialize-javascript`) are pinned via
   `package.json` `overrides` to address known transitive CVEs without waiting
   for upstream fixes.
